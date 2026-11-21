@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         getWindow().setStatusBarColor(android.graphics.Color.rgb(248,249,250));
         getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
         webView = new WebView(this);
@@ -112,7 +113,11 @@ public class MainActivity extends Activity {
                                 }
                             }
                         };
-                        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                        if (android.os.Build.VERSION.SDK_INT >= 33) {
+                            registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
+                        } else {
+                            registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                        }
                     } catch (Exception e) {
                         try {
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));

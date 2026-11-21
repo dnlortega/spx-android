@@ -111,7 +111,7 @@
 
         /* Controles e marcadores estilo Google Maps */
         .gm-ctl, .gm-btn { background:#fff; color:#3c4043; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .15s; }
-        .gm-ctl { width:56px; height:56px; flex-direction:column; gap:2px; font-size:11px; font-weight:500; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+        .gm-ctl { width:44px; height:44px; flex-direction:column; gap:2px; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.3); }
         .gm-grp { background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.3); overflow:hidden; display:flex; flex-direction:column; }
         .gm-btn { width:40px; height:40px; }
         .gm-grp .gm-btn + .gm-btn { border-top:1px solid #e8eaed; }
@@ -245,29 +245,34 @@
             #headerActions { gap: 5px; }
             #headerActions .mobile-header-extra { display:none !important; }
             #headerActions.mobile-options-open .mobile-header-extra { display:inline-flex !important; }
-            #headerActions .mobile-header-extra { height:34px; min-width:34px; padding-left:8px; padding-right:8px; }
+            #headerActions .mobile-header-extra { height:36px; width:36px; min-width:36px; padding:0; }
             #btnHeaderMore { display:inline-flex; }
             #sidebarPanel, #mapPanel { min-height:0; }
             #mapPanel { height:100%; }
             #map { min-height:100%; }
-            .mobile-map-toggle { display:flex; width:52px; height:44px; font-size:10px; }
+            .mobile-map-toggle { display:flex; width:44px; height:44px; }
             #mapControlsPanel { display:none !important; }
             #mapControlsRoot.mobile-controls-open #mapControlsPanel { display:flex !important; }
             #nextStopFloatingCard { bottom: max(10px, env(safe-area-inset-bottom)); width:calc(100% - 16px); padding:10px; }
             #nextStopFloatingCard h4 { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-            #nextStopFloatingCard .shadcn-btn { min-height:38px; }
+            #nextStopFloatingCard .shadcn-btn { min-height:44px; }
             .leaflet-control-attribution { font-size:9px !important; }
-            .gm-ctl { width:50px; height:48px; }
+            .gm-ctl { width:44px; height:44px; }
             .gm-btn { width:42px; height:42px; }
         }
         @media (max-width: 390px) {
             #headerActions { gap:3px; }
-            #headerActions .mobile-header-extra { min-width:30px; width:30px; padding:0; }
-            #headerActions .mobile-header-extra span { display:none !important; }
-            #btnHeaderMore { width:30px; }
-            #nextStopFloatingCard .flex.items-center.gap-2.shrink-0 { gap:6px; }
-            #nextStopFloatingCard .shadcn-btn { padding-left:8px; padding-right:8px; font-size:10px; }
+            #headerActions .mobile-header-extra, #btnHeaderMore { width:34px; min-width:34px; height:34px; }
         }
+
+        /* Filtros: exibir/ocultar com animação suave (grid 1fr -> 0fr) */
+        .filter-panel { display:grid; grid-template-rows:1fr; transition:grid-template-rows .22s ease; }
+        .filter-panel-inner { min-height:0; overflow:hidden; }
+        .filter-panel.collapsed { grid-template-rows:0fr; border-bottom-width:0; }
+        .filter-panel.collapsed .filter-panel-inner { visibility:hidden; transition:visibility 0s linear .22s; }
+        #btnToggleFilters[aria-expanded="true"] { background:#E4E4E7; }
+        .dark #btnToggleFilters[aria-expanded="true"] { background:#3F3F46; }
+        @media (prefers-reduced-motion: reduce) { .filter-panel, .filter-panel.collapsed .filter-panel-inner { transition:none; } }
     </style>
 </head>
 <body class="bg-[#FAFAFA] dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 antialiased overflow-hidden h-screen flex flex-col transition-colors duration-200">
@@ -307,51 +312,42 @@
 
             <!-- Direita: Grupo de Ações com Botões shadcn/ui e Separadores Verticais -->
             <div class="flex items-center gap-1.5 shrink-0" id="headerActions">
-                <button id="btnHeaderMore" onclick="toggleHeaderOptions()" title="Exibir/ocultar opções" aria-expanded="false" class="shadcn-btn h-8 w-8 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 md:hidden"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                <button id="btnHeaderMore" onclick="toggleHeaderOptions()" title="Exibir/ocultar opções" aria-label="Exibir/ocultar opções" aria-expanded="false" class="shadcn-btn h-9 w-9 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 md:hidden"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
                 <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0)" />
 
-                <!-- Primary Brand Action: Importar Planilha -->
-                <label for="excelFileInput" class="shadcn-btn h-8 px-3 text-xs bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs font-semibold">
-                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-                    <span class="sm:hidden">Importar</span><span class="hidden sm:inline">Importar Planilha</span>
-                    <kbd class="hidden md:inline-flex items-center px-1.5 py-0.2 text-[11px] font-mono bg-black/20 text-white/90 rounded">I</kbd>
+                <!-- Importar planilha (somente ícone) -->
+                <label for="excelFileInput" title="Importar planilha (I)" aria-label="Importar planilha" class="shadcn-btn h-9 w-9 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
+                    <i data-lucide="upload" class="w-4 h-4"></i>
                 </label>
 
-                <!-- Secondary Action: Carregar Exemplo -->
-                <button onclick="loadSampleRoute()" title="Carregar exemplo" class="mobile-header-extra shadcn-btn h-8 px-2.5 text-xs bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
-                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                    <span class="hidden sm:inline">Carregar Exemplo</span>
-                    
+                <!-- Carregar exemplo -->
+                <button onclick="loadSampleRoute()" title="Carregar exemplo" aria-label="Carregar exemplo" class="mobile-header-extra shadcn-btn h-9 w-9 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
+                    <i data-lucide="flask-conical" class="w-4 h-4 text-[#EE4D2D]"></i>
                 </button>
 
-                <!-- Separador Vertical -->
                 <div class="h-4 w-[1px] bg-[#E4E4E7] dark:bg-zinc-800 mx-0.5 hidden md:block"></div>
 
-                <!-- Outline Action: Modelo .XLSX -->
-                <button onclick="downloadTemplateXLSX()" title="Baixar planilha Excel modelo SPX Express" class="mobile-header-extra shadcn-btn h-8 px-2.5 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs hidden md:inline-flex">
-                    <i data-lucide="download" class="w-3.5 h-3.5 text-zinc-500"></i>
-                    <span>Modelo .XLSX</span>
+                <!-- Baixar planilha modelo -->
+                <button onclick="downloadTemplateXLSX()" title="Baixar planilha modelo SPX Express (.xlsx)" aria-label="Baixar planilha modelo" class="mobile-header-extra shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs hidden md:inline-flex">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4 text-zinc-500"></i>
                 </button>
 
-                <!-- Outline Action: Exportar Relatório -->
-                <button id="btnExportReport" onclick="exportFinalReport()" disabled title="Exportar relatório atualizado em Excel" class="mobile-header-extra shadcn-btn h-8 px-2.5 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
-                    <i data-lucide="file-down" class="w-3.5 h-3.5 text-emerald-600"></i>
-                    <span class="hidden lg:inline">Exportar Relatório</span>
-                    <span class="hidden sm:inline lg:hidden">Exportar</span>
+                <!-- Exportar relatório -->
+                <button id="btnExportReport" onclick="exportFinalReport()" disabled title="Exportar relatório atualizado em Excel" aria-label="Exportar relatório" class="mobile-header-extra shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <i data-lucide="file-down" class="w-4 h-4 text-emerald-600"></i>
                 </button>
 
-                <!-- Ghost Destructive Action: Limpar -->
-                <button id="btnClearManifest" onclick="clearCurrentManifest()" disabled title="Limpar romaneio atual" class="mobile-header-extra shadcn-btn h-8 w-8 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 dark:hover:text-rose-400">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <!-- Limpar romaneio -->
+                <button id="btnClearManifest" onclick="clearCurrentManifest()" disabled title="Limpar romaneio atual" aria-label="Limpar romaneio" class="mobile-header-extra shadcn-btn h-9 w-9 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 dark:hover:text-rose-400">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
 
-                <!-- Separador Vertical -->
                 <div class="h-4 w-[1px] bg-[#E4E4E7] dark:bg-zinc-800 mx-0.5"></div>
 
-                <!-- Toggle Tema Light / Dark estilo shadcn -->
-                <button id="btnThemeToggle" onclick="toggleThemeMode()" title="Alternar tema Claro / Escuro" class="mobile-header-extra shadcn-btn h-8 w-8 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
-                    <i id="themeIconSun" data-lucide="sun" class="w-3.5 h-3.5 hidden dark:block text-amber-400"></i>
-                    <i id="themeIconMoon" data-lucide="moon" class="w-3.5 h-3.5 block dark:hidden text-zinc-700"></i>
+                <!-- Tema claro / escuro -->
+                <button id="btnThemeToggle" onclick="toggleThemeMode()" title="Alternar tema Claro / Escuro" aria-label="Alternar tema" class="mobile-header-extra shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <i id="themeIconSun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+                    <i id="themeIconMoon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-zinc-700"></i>
                 </button>
             </div>
         </div>
@@ -377,13 +373,12 @@
         <!-- Tabs Mobile (Lista vs Mapa) -->
         <div class="lg:hidden bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 px-3 py-2 shrink-0 z-20">
             <div class="grid grid-cols-2 gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                <button id="tabMobileList" onclick="switchMobileTab('list')" class="py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition">
-                    <i data-lucide="list-ordered" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                    <span>Paradas (<span id="mobileBadgeCount" class="font-mono">0</span>)</span>
+                <button id="tabMobileList" onclick="switchMobileTab('list')" title="Lista de paradas" aria-label="Lista de paradas" class="py-2.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="list-ordered" class="w-4 h-4 text-[#EE4D2D]"></i>
+                    <span id="mobileBadgeCount" class="font-mono">0</span>
                 </button>
-                <button id="tabMobileMap" onclick="switchMobileTab('map')" class="py-1.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition">
-                    <i data-lucide="map" class="w-3.5 h-3.5"></i>
-                    <span>Mapa Interativo</span>
+                <button id="tabMobileMap" onclick="switchMobileTab('map')" title="Mapa" aria-label="Mapa" class="py-2.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="map" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
@@ -443,54 +438,53 @@
                     </div>
                 </div>
 
-                <!-- Barra de Ações da Rota: Otimizar (zinc-900) + Ordem SPX (outline) + GPS (outline icon) -->
+                <!-- Barra de Ações da Rota (somente ícones) -->
                 <div class="flex items-center gap-2">
-                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled class="shadcn-btn flex-1 h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 font-semibold shadow-shadcn-xs">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                        <span>Otimizar Rota</span>
+                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota" aria-label="Otimizar rota" class="shadcn-btn flex-1 h-10 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-[#EE4D2D]"></i>
                     </button>
-
-                    <button id="btnRestoreOriginal" onclick="restoreOriginalStopOrder()" disabled title="Restaurar sequência original do Stop SPX" class="shadcn-btn h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
-                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-zinc-500"></i>
-                        <span>Ordem SPX</span>
+                    <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganizar entregas (só o que falta entregar, a partir de onde você está)" aria-label="Reorganizar entregas" class="shadcn-btn flex-1 h-10 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
+                        <i data-lucide="list-ordered" class="w-4 h-4"></i>
                     </button>
-
-                    <button onclick="useMyGPSLocation()" title="Definir minha localização GPS como ponto de partida (Hub)" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs shrink-0">
+                    <button id="btnRestoreOriginal" onclick="restoreOriginalStopOrder()" disabled title="Restaurar ordem original do SPX" aria-label="Restaurar ordem original do SPX" class="shadcn-btn flex-1 h-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 text-zinc-500"></i>
+                    </button>
+                    <button onclick="useMyGPSLocation()" title="Usar meu GPS como ponto de partida (Hub)" aria-label="Usar meu GPS como ponto de partida" class="shadcn-btn flex-1 h-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
                         <i data-lucide="locate-fixed" class="w-4 h-4 text-[#EE4D2D]"></i>
                     </button>
+                    <button id="btnToggleFilters" onclick="toggleFilterPanel()" title="Exibir/ocultar filtros (F)" aria-label="Exibir/ocultar filtros" aria-controls="filterPanel" aria-expanded="true" class="shadcn-btn relative flex-1 h-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                        <span id="filterActiveDot" class="hidden absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[#EE4D2D] ring-2 ring-white dark:ring-zinc-900"></span>
+                    </button>
                 </div>
-
-                <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganiza só o que falta entregar, a partir de onde você está" class="shadcn-btn w-full h-10 px-3 text-sm bg-[#EE4D2D] hover:bg-[#D73211] text-white font-semibold shadow-shadcn-xs">
-                    <i data-lucide="list-ordered" class="w-4 h-4"></i>
-                    <span>Reorganizar Entregas</span>
-                </button>
             </div>
 
-            <!-- Bloco de Filtros: Input Search shadcn + Segmented Tabs + Filter Pills -->
-            <div class="p-3 bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 space-y-2.5 shrink-0">
-                <!-- Input de Busca com atalho '/' -->
-                <div class="relative">
-                    <i data-lucide="search" class="w-3.5 h-3.5 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                    <input type="text" id="searchInput" oninput="renderStopsList()" placeholder="Buscar por Stop, SPX TN, endereço ou bairro..." class="w-full h-9 pl-8 pr-9 bg-white dark:bg-zinc-950 border border-[#E4E4E7] dark:border-zinc-800 focus:border-zinc-900 dark:focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-400/10 rounded-md text-xs text-[#09090B] dark:text-zinc-100 placeholder:text-[#71717A] outline-none transition" />
-                    <kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[11px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700 rounded pointer-events-none">/</kbd>
-                </div>
+            <!-- Filtros: busca + modo de visualização + status (exibir/ocultar pelo botão de filtros) -->
+            <div id="filterPanel" class="filter-panel bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
+                <div class="filter-panel-inner">
+                    <div class="p-3 space-y-2.5">
+                        <div class="relative">
+                            <i data-lucide="search" class="w-3.5 h-3.5 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            <input type="text" id="searchInput" oninput="renderStopsList()" placeholder="Buscar por Stop, SPX TN, endereço ou bairro..." aria-label="Buscar" class="w-full h-10 pl-8 pr-9 bg-white dark:bg-zinc-950 border border-[#E4E4E7] dark:border-zinc-800 focus:border-zinc-900 dark:focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-400/10 rounded-md text-xs text-[#09090B] dark:text-zinc-100 placeholder:text-[#71717A] outline-none transition" />
+                            <kbd class="hidden md:block absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[11px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700 rounded pointer-events-none">/</kbd>
+                        </div>
 
-                <!-- Segmented Control Tabs estilo shadcn Tabs -->
-                <div class="grid grid-cols-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg border border-[#E4E4E7]/60 dark:border-zinc-800">
-                    <button id="viewMode-STOP" onclick="setViewMode('STOP')" class="py-1 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer">
-                        Paradas (Stops)
-                    </button>
-                    <button id="viewMode-PACKAGE" onclick="setViewMode('PACKAGE')" class="py-1 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer">
-                        Pacotes (SPX TN)
-                    </button>
-                </div>
+                        <div class="grid grid-cols-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg border border-[#E4E4E7]/60 dark:border-zinc-800">
+                            <button id="viewMode-STOP" onclick="setViewMode('STOP')" title="Ver por paradas (Stops)" aria-label="Ver por paradas (Stops)" aria-pressed="true" class="flex items-center justify-center py-2 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                            </button>
+                            <button id="viewMode-PACKAGE" onclick="setViewMode('PACKAGE')" title="Ver por pacotes (SPX TN)" aria-label="Ver por pacotes (SPX TN)" aria-pressed="false" class="flex items-center justify-center py-2 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer">
+                                <i data-lucide="package" class="w-4 h-4"></i>
+                            </button>
+                        </div>
 
-                <!-- Filter Pills -->
-                <div class="flex items-center gap-1">
-                    <button onclick="setStatusFilter('TODOS')" id="filter-TODOS" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-semibold bg-[#18181B] dark:bg-zinc-100 text-white dark:text-zinc-950 transition cursor-pointer">Todos</button>
-                    <button onclick="setStatusFilter('Pendente')" id="filter-Pendente" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">Pendentes</button>
-                    <button onclick="setStatusFilter('Entregue')" id="filter-Entregue" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">Entregues</button>
-                    <button onclick="setStatusFilter('Insucesso')" id="filter-Insucesso" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">Insucesso</button>
+                        <div class="flex items-center gap-1">
+                            <button onclick="setStatusFilter('TODOS')" id="filter-TODOS" title="Todos" aria-label="Todos" aria-pressed="true" class="filter-chip flex-1 flex items-center justify-center py-2 px-2 rounded-md text-[11px] font-semibold bg-[#18181B] dark:bg-zinc-100 text-white dark:text-zinc-950 transition cursor-pointer"><i data-lucide="list" class="w-4 h-4"></i></button>
+                            <button onclick="setStatusFilter('Pendente')" id="filter-Pendente" title="Pendentes" aria-label="Pendentes" aria-pressed="false" class="filter-chip flex-1 flex items-center justify-center py-2 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"><i data-lucide="clock" class="w-4 h-4 text-amber-500"></i></button>
+                            <button onclick="setStatusFilter('Entregue')" id="filter-Entregue" title="Entregues" aria-label="Entregues" aria-pressed="false" class="filter-chip flex-1 flex items-center justify-center py-2 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i></button>
+                            <button onclick="setStatusFilter('Insucesso')" id="filter-Insucesso" title="Insucesso" aria-label="Insucesso" aria-pressed="false" class="filter-chip flex-1 flex items-center justify-center py-2 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"><i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -505,13 +499,12 @@
                     <p class="text-xs text-[#71717A] dark:text-zinc-400 max-w-xs mb-4 leading-relaxed">
                         Arraste a planilha da Shopee SPX Express (<span class="font-mono text-[11px]">.xlsx</span>, <span class="font-mono text-[11px]">.xls</span> ou <span class="font-mono text-[11px]">.csv</span>) para esta área ou carregue um romaneio de demonstração.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
-                        <label for="excelFileInput" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold shadow-shadcn-xs">
-                            <i data-lucide="upload" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                            <span>Selecionar Arquivo</span>
+                    <div class="flex items-center justify-center gap-3">
+                        <label for="excelFileInput" title="Selecionar arquivo" aria-label="Selecionar arquivo" class="shadcn-btn h-11 w-11 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shadow-shadcn-xs">
+                            <i data-lucide="upload" class="w-5 h-5 text-[#EE4D2D]"></i>
                         </label>
-                        <button onclick="loadSampleRoute()" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 font-medium shadow-shadcn-xs">
-                            <span>Carregar Exemplo</span>
+                        <button onclick="loadSampleRoute()" title="Carregar exemplo" aria-label="Carregar exemplo" class="shadcn-btn h-11 w-11 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                            <i data-lucide="flask-conical" class="w-5 h-5 text-[#EE4D2D]"></i>
                         </button>
                     </div>
                 </div>
@@ -526,14 +519,14 @@
 
             <!-- Controles do mapa estilo Google Maps -->
             <div class="absolute top-3.5 right-3.5 z-20 flex flex-col items-end gap-2.5" id="mapControlsRoot">
-                <button id="btnMapControlsToggle" onclick="toggleMapControls()" class="gm-ctl mobile-map-toggle" aria-expanded="false" title="Exibir/ocultar controles do mapa"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i><span>Controles</span></button>
+                <button id="btnMapControlsToggle" onclick="toggleMapControls()" class="gm-ctl mobile-map-toggle" aria-label="Exibir/ocultar controles do mapa" aria-expanded="false" title="Exibir/ocultar controles do mapa"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i></button>
                 <div id="mapControlsPanel" class="flex flex-col items-end gap-2.5">
                 <button onclick="cycleMapTileLayer()" title="Alternar camada: Mapa / Escuro / Satélite" class="gm-ctl">
                     <i data-lucide="layers" class="w-5 h-5"></i>
-                    <span id="currentMapLayerLabel">Mapa</span>
+                    <span id="currentMapLayerLabel" class="hidden">Mapa</span>
                 </button>
                 <div class="gm-grp">
-                    <button id="btnTogglePolyline" onclick="toggleRoutePolyline()" title="Mostrar / ocultar trajeto" class="gm-btn">
+                    <button id="btnTogglePolyline" onclick="toggleRoutePolyline()" title="Mostrar / ocultar trajeto" aria-pressed="true" class="gm-btn">
                         <i data-lucide="route" class="w-[18px] h-[18px]"></i>
                         <span id="labelTogglePolyline" class="hidden">Linha: On</span>
                     </button>
@@ -598,13 +591,11 @@
                     </div>
 
                     <div class="flex items-center gap-2 shrink-0">
-                        <a id="nextStopGmapsBtn" href="#" target="_blank" rel="noopener noreferrer" class="shadcn-btn flex-1 sm:flex-initial h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold shadow-shadcn-xs">
-                            <i data-lucide="navigation" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                            <span>Google Maps</span>
+                        <a id="nextStopGmapsBtn" href="#" target="_blank" rel="noopener noreferrer" title="Navegar com Google Maps" aria-label="Navegar com Google Maps" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shadow-shadcn-xs">
+                            <i data-lucide="navigation" class="w-5 h-5 text-[#EE4D2D]"></i>
                         </a>
-                        <a id="nextStopWazeBtn" href="#" target="_blank" rel="noopener noreferrer" class="shadcn-btn flex-1 sm:flex-initial h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 font-semibold shadow-shadcn-xs">
-                            <i data-lucide="compass" class="w-3.5 h-3.5 text-sky-500"></i>
-                            <span>Waze</span>
+                        <a id="nextStopWazeBtn" href="#" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                            <i data-lucide="compass" class="w-5 h-5 text-cyan-500"></i>
                         </a>
                     </div>
                 </div>
@@ -710,13 +701,11 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2">
-                    <button onclick="downloadTemplateFromError()" class="shadcn-btn h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700">
-                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                        <span>Baixar Modelo</span>
+                    <button onclick="downloadTemplateFromError()" title="Baixar modelo" aria-label="Baixar modelo" class="shadcn-btn h-10 w-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                     </button>
-                    <button onclick="retryFileUpload()" class="shadcn-btn h-9 px-3.5 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                        <span>Tentar Novamente</span>
+                    <button onclick="retryFileUpload()" title="Tentar novamente" aria-label="Tentar novamente" class="shadcn-btn h-10 w-10 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
@@ -920,7 +909,9 @@
             initMap();
             setupFileInputListener();
             setupKeyboardShortcuts();
+            setupLongPressHints();
             restoreSavedState();
+            restoreFilterPanelState();
             window.addEventListener('resize', () => { if (map) map.invalidateSize({ debounceMoveend: true }); });
         });
 
@@ -1131,7 +1122,11 @@
                 }
                 if (e.key === '/') {
                     e.preventDefault();
+                    if (!isFilterPanelVisible()) setFilterPanelVisible(true);
                     document.getElementById('searchInput')?.focus();
+                } else if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    e.preventDefault();
+                    toggleFilterPanel();
                 } else if (e.key.toLowerCase() === 'i') {
                     e.preventDefault();
                     document.getElementById('excelFileInput')?.click();
@@ -1169,6 +1164,8 @@
             markersLayerGroup = L.layerGroup().addTo(map);
 
             renderHubMarker();
+            // Os botões do popup só têm ícone: desenha-os quando o popup abre
+            map.on('popupopen', () => { try { lucide.createIcons(); } catch (e) {} });
         }
 
         let currentOverlayLayers = [];
@@ -1208,6 +1205,8 @@
             isPolylineVisible = !isPolylineVisible;
             const label = document.getElementById('labelTogglePolyline');
             if (label) label.textContent = isPolylineVisible ? "Linha: On" : "Linha: Off";
+            const polyBtn = document.getElementById('btnTogglePolyline');
+            if (polyBtn) { polyBtn.setAttribute('aria-pressed', String(isPolylineVisible)); polyBtn.style.opacity = isPolylineVisible ? '' : '0.45'; }
             renderMapMarkersAndPolyline(false);
         }
 
@@ -2001,13 +2000,12 @@
                     <p class="text-xs text-[#71717A] dark:text-zinc-400 max-w-xs mb-4 leading-relaxed">
                         Arraste a planilha da Shopee SPX Express (<span class="font-mono text-[11px]">.xlsx</span>, <span class="font-mono text-[11px]">.xls</span> ou <span class="font-mono text-[11px]">.csv</span>) para esta área ou carregue um romaneio de demonstração.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
-                        <label for="excelFileInput" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold shadow-shadcn-xs">
-                            <i data-lucide="upload" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                            <span>Selecionar Arquivo</span>
+                    <div class="flex items-center justify-center gap-3">
+                        <label for="excelFileInput" title="Selecionar arquivo" aria-label="Selecionar arquivo" class="shadcn-btn h-11 w-11 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shadow-shadcn-xs">
+                            <i data-lucide="upload" class="w-5 h-5 text-[#EE4D2D]"></i>
                         </label>
-                        <button onclick="loadSampleRoute()" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 font-medium shadow-shadcn-xs">
-                            <span>Carregar Exemplo</span>
+                        <button onclick="loadSampleRoute()" title="Carregar exemplo" aria-label="Carregar exemplo" class="shadcn-btn h-11 w-11 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                            <i data-lucide="flask-conical" class="w-5 h-5 text-[#EE4D2D]"></i>
                         </button>
                     </div>
                 </div>
@@ -2205,20 +2203,18 @@
                             <div class="max-h-24 overflow-y-auto bg-zinc-50 rounded-md px-2.5 py-1 border border-zinc-200/80 mb-2.5">
                                 ${packagesListHtml}
                             </div>
-                            <div class="grid grid-cols-2 gap-1.5 mb-1.5">
-                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" class="shadcn-btn h-7 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
-                                    Entregar Tudo
+                            <div class="grid grid-cols-4 gap-1.5">
+                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Entregar tudo" aria-label="Entregar tudo" class="shadcn-btn h-9 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                    <i data-lucide="check-check" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" class="shadcn-btn h-7 text-[11px] bg-rose-600 hover:bg-rose-700 text-white font-medium">
-                                    Insucesso
+                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Insucesso" aria-label="Insucesso" class="shadcn-btn h-9 bg-rose-600 hover:bg-rose-700 text-white">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
                                 </button>
-                            </div>
-                            <div class="grid grid-cols-2 gap-1.5">
-                                <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" class="shadcn-btn h-7 text-[11px] bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 font-medium">
-                                    Google Maps
+                                <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                    <i data-lucide="navigation" class="w-4 h-4 text-[#4285F4]"></i>
                                 </a>
-                                <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" class="shadcn-btn h-7 text-[11px] bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 font-medium">
-                                    Waze
+                                <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                    <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
                                 </a>
                             </div>
                         </div>
@@ -2292,30 +2288,106 @@
             currentViewMode = mode;
             const btnStop = document.getElementById('viewMode-STOP');
             const btnPkg = document.getElementById('viewMode-PACKAGE');
+            const isStop = mode === 'STOP';
 
-            if (mode === 'STOP') {
-                btnStop.className = "py-1 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer";
-                btnPkg.className = "py-1 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer";
-            } else {
-                btnPkg.className = "py-1 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer";
-                btnStop.className = "py-1 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer";
-            }
+            btnStop.className = isStop ? "flex items-center justify-center py-2 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer" : "flex items-center justify-center py-2 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer";
+            btnPkg.className = isStop ? "flex items-center justify-center py-2 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer" : "flex items-center justify-center py-2 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer";
+            btnStop.setAttribute('aria-pressed', String(isStop));
+            btnPkg.setAttribute('aria-pressed', String(!isStop));
             renderStopsList();
         }
 
         function setStatusFilter(status) {
             currentStatusFilter = status;
             document.querySelectorAll('.filter-chip').forEach(btn => {
-                btn.className = "filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer";
+                btn.className = "filter-chip flex-1 flex items-center justify-center py-2 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer";
+                btn.setAttribute('aria-pressed', 'false');
             });
             const activeBtn = document.getElementById(`filter-${status}`);
             if (activeBtn) {
-                activeBtn.className = "filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-semibold bg-[#18181B] dark:bg-zinc-100 text-white dark:text-zinc-950 transition cursor-pointer";
+                activeBtn.className = "filter-chip flex-1 flex items-center justify-center py-2 px-2 rounded-md text-[11px] font-semibold bg-[#18181B] dark:bg-zinc-100 text-white dark:text-zinc-950 transition cursor-pointer";
+                activeBtn.setAttribute('aria-pressed', 'true');
             }
             renderStopsList();
         }
 
+        // ============================================================================
+        // FILTROS: EXIBIR / OCULTAR (estado lembrado entre aberturas do app)
+        // ============================================================================
+        const FILTER_PANEL_KEY = 'spx_filters_visible';
+
+        function isFilterPanelVisible() {
+            const panel = document.getElementById('filterPanel');
+            return !!panel && !panel.classList.contains('collapsed');
+        }
+
+        function hasActiveFilters() {
+            const q = (document.getElementById('searchInput')?.value || '').trim();
+            return q !== '' || currentStatusFilter !== 'TODOS';
+        }
+
+        // Com o painel oculto, um ponto laranja no botão avisa que a lista continua filtrada
+        function updateFilterIndicator() {
+            const dot = document.getElementById('filterActiveDot');
+            if (dot) dot.classList.toggle('hidden', isFilterPanelVisible() || !hasActiveFilters());
+        }
+
+        function setFilterPanelVisible(visible, persist = true, animate = true) {
+            const panel = document.getElementById('filterPanel');
+            const btn = document.getElementById('btnToggleFilters');
+            if (!panel) return;
+            if (!animate) panel.style.transition = 'none';
+            panel.classList.toggle('collapsed', !visible);
+            if (!animate) { void panel.offsetHeight; panel.style.transition = ''; }
+            if (btn) btn.setAttribute('aria-expanded', String(visible));
+            if (persist) { try { localStorage.setItem(FILTER_PANEL_KEY, visible ? '1' : '0'); } catch (e) {} }
+            updateFilterIndicator();
+        }
+
+        function toggleFilterPanel() {
+            setFilterPanelVisible(!isFilterPanelVisible());
+        }
+
+        function restoreFilterPanelState() {
+            let visible = true;
+            try { visible = localStorage.getItem(FILTER_PANEL_KEY) !== '0'; } catch (e) {}
+            setFilterPanelVisible(visible, false, false);
+        }
+
+        // Em tela de toque não existe "hover": segurar o dedo num botão só com ícone mostra o nome dele
+        function setupLongPressHints() {
+            const SEL = '.shadcn-btn[title], .shadcn-btn[aria-label], .gm-btn[title], .gm-ctl[title], .filter-chip[title], button[title]';
+            let timer = null, fired = false, blockUntil = 0, sx = 0, sy = 0;
+            const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+
+            document.addEventListener('pointerdown', (e) => {
+                if (e.pointerType === 'mouse') return;
+                const el = e.target.closest ? e.target.closest(SEL) : null;
+                if (!el) return;
+                cancel(); fired = false; sx = e.clientX; sy = e.clientY;
+                timer = setTimeout(() => {
+                    timer = null; fired = true;
+                    const label = el.getAttribute('aria-label') || el.getAttribute('title');
+                    if (label) showToast(label, 'info');
+                }, 450);
+            }, true);
+
+            document.addEventListener('pointermove', (e) => {
+                if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel();
+            }, true);
+
+            const end = () => { cancel(); if (fired) { blockUntil = Date.now() + 400; fired = false; } };
+            document.addEventListener('pointerup', end, true);
+            document.addEventListener('pointercancel', end, true);
+
+            // Evita que o toque longo também execute a ação do botão
+            document.addEventListener('click', (e) => {
+                if (Date.now() < blockUntil) { e.preventDefault(); e.stopPropagation(); blockUntil = 0; }
+            }, true);
+        }
+
         function renderStopsList() {
+            updateFilterIndicator();
             const container = document.getElementById('stopsListContainer');
             if (groupedStops.length === 0) return;
 
@@ -2392,17 +2464,17 @@
                                     <div class="flex items-center justify-between gap-2 bg-[#FAFAFA] dark:bg-zinc-950 px-2.5 py-1.5 rounded-md border border-[#E4E4E7] dark:border-zinc-800">
                                         <div class="min-w-0 flex items-center gap-2">
                                             <span class="font-mono text-[11px] font-semibold text-[#09090B] dark:text-zinc-100 truncate">${escapeHtml(pkg.spxTn)}</span>
-                                            <button onclick="copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código SPX TN" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer shrink-0">
+                                            <button onclick="copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código SPX TN" aria-label="Copiar código SPX TN" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer shrink-0">
                                                 <i data-lucide="copy" class="w-3 h-3"></i>
                                             </button>
                                             <span class="font-mono text-[11px] text-[#71717A] hidden sm:inline">Seq #${pkg.sequence}</span>
                                         </div>
                                         <div class="flex items-center gap-1 shrink-0">
-                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" title="Entregue" class="shadcn-btn h-6 w-6 ${isDel ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                                <i data-lucide="check" class="w-3 h-3"></i>
+                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" title="Entregue" class="shadcn-btn h-8 w-8 ${isDel ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                                <i data-lucide="check" class="w-4 h-4"></i>
                                             </button>
-                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" title="Insucesso" class="shadcn-btn h-6 w-6 ${isFail ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" title="Insucesso" class="shadcn-btn h-8 w-8 ${isFail ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -2420,10 +2492,10 @@
                                         ${orderNum}
                                     </button>
                                     <div class="flex items-center gap-0.5">
-                                        <button onclick="moveStopOrder(${realIndex}, -1)" ${realIndex === 0 ? 'disabled' : ''} title="Subir parada" class="p-0.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-25 cursor-pointer">
+                                        <button onclick="moveStopOrder(${realIndex}, -1)" ${realIndex === 0 ? 'disabled' : ''} title="Subir parada" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-25 cursor-pointer">
                                             <i data-lucide="chevron-up" class="w-3 h-3"></i>
                                         </button>
-                                        <button onclick="moveStopOrder(${realIndex}, 1)" ${realIndex === groupedStops.length - 1 ? 'disabled' : ''} title="Descer parada" class="p-0.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-25 cursor-pointer">
+                                        <button onclick="moveStopOrder(${realIndex}, 1)" ${realIndex === groupedStops.length - 1 ? 'disabled' : ''} title="Descer parada" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-25 cursor-pointer">
                                             <i data-lucide="chevron-down" class="w-3 h-3"></i>
                                         </button>
                                     </div>
@@ -2450,26 +2522,19 @@
                                 </div>
 
                                 <!-- Ações Rápidas no Card -->
-                                <div class="flex flex-col items-end gap-1.5 shrink-0">
-                                    <div class="flex items-center gap-1">
-                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Marcar parada como Entregue" class="shadcn-btn h-7 w-7 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Marcar parada como Insucesso" class="shadcn-btn h-7 w-7 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                    </div>
-
-                                    <div class="flex items-center gap-1">
-                                        <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" class="shadcn-btn h-6 px-1.5 text-[11px] bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700">
-                                            <i data-lucide="external-link" class="w-2.5 h-2.5 text-zinc-500"></i>
-                                            <span>Maps</span>
-                                        </a>
-                                        <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" class="shadcn-btn h-6 px-1.5 text-[11px] bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700">
-                                            <i data-lucide="navigation" class="w-2.5 h-2.5 text-sky-500"></i>
-                                            <span>Waze</span>
-                                        </a>
-                                    </div>
+                                <div class="grid grid-cols-2 gap-1.5 shrink-0">
+                                    <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Marcar parada como Entregue" aria-label="Marcar parada como Entregue" class="shadcn-btn h-9 w-9 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                        <i data-lucide="check" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Marcar parada como Insucesso" aria-label="Marcar parada como Insucesso" class="shadcn-btn h-9 w-9 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                    <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
+                                        <i data-lucide="navigation" class="w-4 h-4 text-[#4285F4]"></i>
+                                    </a>
+                                    <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
+                                        <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
+                                    </a>
                                 </div>
                             </div>
 
@@ -2524,19 +2589,19 @@
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950">#${orderNum} • Stop ${escapeHtml(stop.stopLabel)}</span>
                                     <span class="font-mono text-xs font-bold text-[#EE4D2D]">${escapeHtml(pkg.spxTn)}</span>
-                                    <button onclick="event.stopPropagation(); copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+                                    <button onclick="event.stopPropagation(); copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código" aria-label="Copiar código" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
                                         <i data-lucide="copy" class="w-3 h-3"></i>
                                     </button>
                                 </div>
                                 <div class="text-xs font-semibold text-[#09090B] dark:text-zinc-50 truncate mt-1">${escapeHtml(pkg.address)}</div>
                                 <div class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate">${escapeHtml(pkg.bairro)} • Seq #${pkg.sequence}</div>
                             </div>
-                            <div class="flex items-center gap-1 shrink-0">
-                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" class="shadcn-btn h-7 px-2.5 text-[11px] font-medium ${isDelivered ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                    Entregue
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" title="Marcar como Entregue" aria-label="Marcar como Entregue" class="shadcn-btn h-9 w-9 ${isDelivered ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" class="shadcn-btn h-7 px-2.5 text-[11px] font-medium ${isFailed ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                    Insucesso
+                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" title="Marcar como Insucesso" aria-label="Marcar como Insucesso" class="shadcn-btn h-9 w-9 ${isFailed ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
                                 </button>
                             </div>
                         </div>
@@ -2726,13 +2791,13 @@
             if (tab === 'list') {
                 sidebar.classList.remove('hidden');
                 mapPanel.classList.add('hidden');
-                btnList.className = "py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition";
-                btnMap.className = "py-1.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition";
+                btnList.className = "py-2.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition";
+                btnMap.className = "py-2.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition";
             } else {
                 sidebar.classList.add('hidden');
                 mapPanel.classList.remove('hidden');
-                btnMap.className = "py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition";
-                btnList.className = "py-1.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition";
+                btnMap.className = "py-2.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition";
+                btnList.className = "py-2.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition";
                 requestAnimationFrame(() => {
                     if (map) {
                         map.invalidateSize();

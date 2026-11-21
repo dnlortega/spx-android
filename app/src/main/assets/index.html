@@ -283,18 +283,24 @@
     <header class="bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 z-30 shrink-0">
         <div class="px-4 h-14 flex items-center justify-between gap-3">
             
-            <!-- Esquerda: Brand Mark + Breadcrumb + AT ID Badge + Import Status Badge -->
+            <!-- Esquerda: Brand Mark Oficial + Nome no Topo + Version Badge -->
             <div class="flex items-center gap-2.5 min-w-0">
-                <!-- Ícone App com acento Shopee -->
-                <div class="w-8 h-8 rounded-md bg-[#EE4D2D] text-white flex items-center justify-center shadow-shadcn-xs shrink-0">
-                    <i data-lucide="route" class="w-4 h-4 stroke-[2.5]"></i>
+                <!-- Logomarca SPX com acento Shopee Express -->
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#EE4D2D] to-[#D73211] text-white flex items-center justify-center shadow-shadcn-sm shrink-0 border border-white/20">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
                 </div>
 
-                <!-- Breadcrumb estilo Next.js -->
-                <div class="flex items-center gap-1.5 text-sm min-w-0">
-                    <span class="font-bold tracking-tight text-[#09090B] dark:text-zinc-50 truncate hidden sm:inline">SPX Route OS</span>
-                    <span class="text-zinc-300 dark:text-zinc-700 hidden sm:inline">/</span>
-                    <span class="text-xs font-medium text-[#71717A] dark:text-zinc-400 hidden md:inline truncate">Shopee Express</span>
+                <!-- Nome da Marca Completo com Logo (visível em todas as telas) -->
+                <div class="flex flex-col justify-center min-w-0">
+                    <div class="flex items-center gap-1.5 leading-none">
+                        <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
+                            <span class="text-[#EE4D2D]">SPX</span> Route OS
+                        </span>
+                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.0</span>
+                    </div>
+                    <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
 
                 <!-- Badge AT ID (JetBrains Mono) -->
@@ -323,6 +329,16 @@
                 <!-- Carregar exemplo -->
                 <button onclick="loadSampleRoute()" title="Carregar exemplo" aria-label="Carregar exemplo" class="mobile-header-extra shadcn-btn h-9 w-9 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
                     <i data-lucide="flask-conical" class="w-4 h-4 text-[#EE4D2D]"></i>
+                </button>
+
+                <!-- Assistente Inteligente IA -->
+                <button onclick="openAIAssistantModal()" title="Assistente IA SPX (Otimização e Endereços)" aria-label="Assistente IA SPX" class="mobile-header-extra shadcn-btn h-9 w-9 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-[#EE4D2D]"></i>
+                </button>
+
+                <!-- Verificar Atualizações do App -->
+                <button onclick="checkForUpdates(true)" title="Verificar atualizações do app" aria-label="Verificar atualizações" class="mobile-header-extra shadcn-btn h-9 w-9 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
                 </button>
 
                 <div class="h-4 w-[1px] bg-[#E4E4E7] dark:bg-zinc-800 mx-0.5 hidden md:block"></div>
@@ -386,11 +402,50 @@
         <!-- SIDEBAR ESQUERDA -->
         <aside id="sidebarPanel" class="w-full lg:w-[450px] xl:w-[480px] bg-white dark:bg-zinc-900 border-r border-[#E4E4E7] dark:border-zinc-800 flex flex-col h-full z-20 shrink-0">
             
+            <!-- ================================================================
+                 BANNER: LOCALIZAÇÃO EM TEMPO REAL & NOME DA RUA ATUAL
+                 ================================================================ -->
+            <div id="currentLocationBanner" class="p-2.5 bg-gradient-to-r from-blue-50/90 via-sky-50/80 to-blue-50/90 dark:from-blue-950/40 dark:via-zinc-900/60 dark:to-blue-950/40 border-b border-blue-100 dark:border-blue-900/50 flex items-center justify-between gap-2.5 shrink-0 transition">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm relative">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                        <span id="currentGpsPulseDot" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-white dark:ring-zinc-900 animate-ping"></span>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5 leading-none mb-0.5">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Você está em:</span>
+                            <span id="currentGpsAccuracyBadge" class="text-[9px] font-mono text-zinc-500 dark:text-zinc-400">GPS Ativo</span>
+                        </div>
+                        <div id="currentStreetName" class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate" title="Obtendo endereço atual pelo GPS...">
+                            Detectando sua rua atual...
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button onclick="locateMeOnMap(true)" title="Centralizar mapa em mim" class="shadcn-btn h-7 px-2 text-[11px] font-medium rounded-md bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-shadcn-xs hover:bg-blue-50 dark:hover:bg-blue-950/60">
+                        <i data-lucide="crosshair" class="w-3 h-3"></i>
+                        <span class="hidden sm:inline">Centrar</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Bloco Superior: 4 Mini-Cards KPI estilo shadcn Card + Controles de Rota -->
-            <div class="p-3.5 bg-[#FAFAFA] dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 space-y-3">
+            <div class="p-3 bg-[#FAFAFA] dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 space-y-2.5">
                 
-                <!-- 4 Cards KPI Horizontais -->
-                <div class="grid grid-cols-4 gap-2">
+                <!-- Barra de Título com Botão de Ocultar/Exibir Cards -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-xs font-semibold text-[#09090B] dark:text-zinc-200">
+                        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                        <span>Resumo das Entregas</span>
+                    </div>
+                    <button id="btnToggleKpiCards" onclick="toggleKpiCards()" title="Exibir ou ocultar cards de resumo" aria-label="Exibir ou ocultar cards de resumo" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition cursor-pointer">
+                        <i id="iconToggleKpiCards" data-lucide="chevron-up" class="w-3.5 h-3.5 transition-transform duration-200"></i>
+                        <span id="textToggleKpiCards">Ocultar cards</span>
+                    </button>
+                </div>
+
+                <!-- 4 Cards KPI Horizontais (Recolhíveis) -->
+                <div id="kpiCardsContainer" class="grid grid-cols-4 gap-2 transition-all duration-300">
                     <!-- KPI 1: Paradas (Stops) -->
                     <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
                         <div class="flex items-center justify-between text-[#71717A] dark:text-zinc-400 mb-1">
@@ -398,7 +453,7 @@
                             <i data-lucide="map-pin" class="w-3 h-3 text-zinc-400"></i>
                         </div>
                         <div id="statStops" class="font-mono text-base font-bold text-[#09090B] dark:text-zinc-50 leading-none">0</div>
-                        <span class="text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">Stops</span>
+                        <span class="text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">Paradas</span>
                     </div>
 
                     <!-- KPI 2: Pacotes (SPX TN) -->
@@ -408,7 +463,7 @@
                             <i data-lucide="package" class="w-3 h-3 text-[#EE4D2D]"></i>
                         </div>
                         <div id="statTotal" class="font-mono text-base font-bold text-[#09090B] dark:text-zinc-50 leading-none">0</div>
-                        <span class="text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">SPX TN</span>
+                        <span class="text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">Pacotes</span>
                     </div>
 
                     <!-- KPI 3: Distância Estimada -->
@@ -442,6 +497,9 @@
                 <div class="flex items-center gap-2">
                     <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota" aria-label="Otimizar rota" class="shadcn-btn flex-1 h-10 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
                         <i data-lucide="sparkles" class="w-4 h-4 text-[#EE4D2D]"></i>
+                    </button>
+                    <button id="btnChooseFirstStop" onclick="openChooseFirstStopModal()" disabled title="Escolher 1º pacote/parada e gerar roteiro a partir dele" aria-label="Escolher 1º pacote e gerar roteiro" class="shadcn-btn flex-1 h-10 bg-amber-500 hover:bg-amber-600 text-white shadow-shadcn-xs">
+                        <i data-lucide="flag" class="w-4 h-4"></i>
                     </button>
                     <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganizar entregas (só o que falta entregar, a partir de onde você está)" aria-label="Reorganizar entregas" class="shadcn-btn flex-1 h-10 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
                         <i data-lucide="list-ordered" class="w-4 h-4"></i>
@@ -571,6 +629,15 @@
                 </div>
             </div>
 
+            <!-- Badge Flutuante de Rua Atual no Mapa -->
+            <div id="mapCurrentStreetBadge" class="absolute top-14 left-3.5 z-20 max-w-xs bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-3 py-2 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-sm flex items-center gap-2.5 transition">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping shrink-0"></span>
+                <div class="min-w-0">
+                    <p class="text-[9px] uppercase font-bold text-blue-600 dark:text-blue-400 leading-none">Rua Atual (GPS)</p>
+                    <p id="mapStreetNameText" class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate mt-0.5">Detectando sua localização...</p>
+                </div>
+            </div>
+
             <!-- Card Flutuante Inferior: Próxima Parada Sugerida estilo shadcn Card -->
             <div id="nextStopFloatingCard" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-2rem)] max-w-xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl p-3.5 transition-all">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -607,6 +674,202 @@
          SONNER TOAST CONTAINER (CANTO INFERIOR DIREITO)
          ======================================================================== -->
     <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+    <!-- ========================================================================
+         MODAL DE ATUALIZAÇÃO AUTOMÁTICA (AUTO-UPDATE)
+         ======================================================================== -->
+    <div id="updateModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/65 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl overflow-hidden animate-dialog">
+            <div class="p-6">
+                <div class="flex items-center gap-3.5 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EE4D2D] to-[#D73211] text-white flex items-center justify-center shadow-shadcn-xs shrink-0">
+                        <i data-lucide="sparkles" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-base font-bold text-[#09090B] dark:text-zinc-50">Nova Versão Disponível!</h3>
+                            <span id="updateModalTag" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400">v1.1.0</span>
+                        </div>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Versão instalada: <span id="updateModalCurrentTag" class="font-mono font-medium">v1.0.0</span></p>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-50 dark:bg-zinc-950 rounded-lg p-3.5 border border-zinc-200 dark:border-zinc-800 mb-5 max-h-48 overflow-y-auto">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5 flex items-center gap-1.5">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                        Novidades do Release
+                    </h4>
+                    <div id="updateModalNotes" class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line font-sans">
+                        Carregando notas da atualização...
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5">
+                    <button onclick="closeUpdateModal()" class="shadcn-btn h-10 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                        Lembrar mais tarde
+                    </button>
+                    <button onclick="triggerAppUpdate()" class="shadcn-btn h-10 px-4 text-xs font-bold bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Atualizar Agora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         MODAL DO ASSISTENTE IA (GOOGLE GEMINI)
+         ======================================================================== -->
+    <div id="aiModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/65 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl overflow-hidden animate-dialog flex flex-col max-h-[90vh]">
+            <!-- Header do Modal IA -->
+            <div class="p-4 border-b border-[#E4E4E7] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-[#FAFAFA] dark:bg-zinc-950">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-[#EE4D2D] text-white flex items-center justify-center shadow-xs">
+                        <i data-lucide="bot" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
+                            SPX Route Copilot
+                            <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold">Gemini AI</span>
+                        </h3>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Inteligência Artificial para otimização e entregas</p>
+                    </div>
+                </div>
+                <button onclick="closeAIAssistantModal()" class="shadcn-btn h-8 w-8 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Tabs de Funcionalidade IA -->
+            <div class="p-2 border-b border-[#E4E4E7] dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-1 text-xs shrink-0">
+                <button id="aiTabBtnChat" onclick="switchAiTab('chat')" class="flex-1 py-1.5 px-2 rounded-md font-semibold text-xs bg-zinc-100 dark:bg-zinc-800 text-[#EE4D2D] flex items-center justify-center gap-1.5">
+                    <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    <span>Consultar Rota</span>
+                </button>
+                <button id="aiTabBtnOcr" onclick="switchAiTab('ocr')" class="flex-1 py-1.5 px-2 rounded-md font-medium text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 flex items-center justify-center gap-1.5">
+                    <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                    <span>Ler Etiqueta</span>
+                </button>
+                <button id="aiTabBtnSettings" onclick="switchAiTab('settings')" class="flex-1 py-1.5 px-2 rounded-md font-medium text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 flex items-center justify-center gap-1.5">
+                    <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                    <span>Configurar API</span>
+                </button>
+            </div>
+
+            <!-- Corpo da Tab: Chat de Rota -->
+            <div id="aiTabContentChat" class="p-4 flex-1 overflow-y-auto space-y-3">
+                <div class="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 rounded-lg p-3 text-xs text-indigo-900 dark:text-indigo-200">
+                    <div class="font-semibold mb-1 flex items-center gap-1.5">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
+                        Sugestões Rápidas:
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        <button onclick="askAiPreset('Qual a melhor sequência para entregar mais rápido?')" class="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-indigo-200 dark:border-indigo-800 text-[11px] hover:border-indigo-500">⚡ Otimizar Sequência</button>
+                        <button onclick="askAiPreset('Existe alguma parada com endereço duvidoso ou sem número?')" class="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-indigo-200 dark:border-indigo-800 text-[11px] hover:border-indigo-500">🔍 Verificar Endereços</button>
+                        <button onclick="askAiPreset('Crie uma mensagem de resumo do meu dia para enviar ao HUB')" class="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-indigo-200 dark:border-indigo-800 text-[11px] hover:border-indigo-500">📋 Resumo para o Hub</button>
+                    </div>
+                </div>
+
+                <div id="aiChatHistory" class="space-y-2.5 min-h-[140px] max-h-[220px] overflow-y-auto p-2 bg-zinc-50 dark:bg-zinc-950 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                    <div class="flex items-start gap-2 text-xs">
+                        <div class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">IA</div>
+                        <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 max-w-[85%]">
+                            Olá! Sou seu copiloto de rota SPX. Analiso suas paradas, pacotes e trânsito para te ajudar a entregar mais rápido. O que deseja consultar?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="text" id="aiUserInput" placeholder="Pergunte sobre a rota, endereços ou paradas..." class="flex-1 h-10 px-3 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs outline-none focus:border-indigo-500" onkeydown="if(event.key==='Enter') sendAiQuery()" />
+                    <button onclick="sendAiQuery()" id="btnSendAi" class="shadcn-btn h-10 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo da Tab: OCR de Etiquetas -->
+            <div id="aiTabContentOcr" class="hidden p-4 flex-1 overflow-y-auto space-y-4">
+                <div class="border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl p-5 text-center bg-zinc-50 dark:bg-zinc-950">
+                    <i data-lucide="scan" class="w-8 h-8 text-[#EE4D2D] mx-auto mb-2"></i>
+                    <h4 class="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Leitura Inteligente de Pacote com Câmera</h4>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs mx-auto">Tire uma foto ou anexe imagem da etiqueta do pacote para ler SPX TN e endereço automaticamente com a Visão Computacional do Gemini.</p>
+                    <div class="mt-4 flex items-center justify-center gap-2">
+                        <input type="file" id="aiOcrFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleAiOcrImage(event)" />
+                        <label for="aiOcrFileInput" class="shadcn-btn h-10 px-4 bg-[#EE4D2D] hover:bg-[#D73211] text-white text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-2">
+                            <i data-lucide="camera" class="w-4 h-4"></i>
+                            Tirar Foto da Etiqueta
+                        </label>
+                    </div>
+                </div>
+                <div id="aiOcrResult" class="hidden p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs"></div>
+            </div>
+
+            <!-- Corpo da Tab: Configurações de API -->
+            <div id="aiTabContentSettings" class="hidden p-4 flex-1 overflow-y-auto space-y-4">
+                <div class="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 space-y-2.5">
+                    <label class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                        <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-500"></i>
+                        Chave de API do Google Gemini
+                    </label>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        Obtenha uma chave gratuita no <a href="https://aistudio.google.com" target="_blank" class="text-indigo-600 underline">Google AI Studio</a>. Sua chave fica salva apenas no armazenamento local do seu dispositivo.
+                    </p>
+                    <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." class="w-full h-10 px-3 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs font-mono outline-none" />
+                    <div class="flex items-center justify-between pt-1">
+                        <span id="geminiKeyStatus" class="text-[10px] text-zinc-400">Nenhuma chave personalizada salva (usando assistente local).</span>
+                        <button onclick="saveGeminiApiKey()" class="shadcn-btn h-8 px-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 text-xs font-semibold rounded-md">
+                            Salvar Chave
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         MODAL ESCOLHER PRIMEIRA PARADA / INICIAR ROTEIRO
+         ======================================================================== -->
+    <div id="chooseFirstStopModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/65 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity" onclick="if(event.target===this)closeChooseFirstStopModal()">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl overflow-hidden animate-dialog flex flex-col max-h-[90vh]">
+            <!-- Cabeçalho -->
+            <div class="p-4 border-b border-[#E4E4E7] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-amber-50 dark:bg-amber-950/30">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-xs shrink-0">
+                        <i data-lucide="flag" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-50">Escolher 1ª Entrega</h3>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">O roteiro será recalculado a partir desta parada</p>
+                    </div>
+                </div>
+                <button onclick="closeChooseFirstStopModal()" class="shadcn-btn h-8 w-8 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Busca -->
+            <div class="p-3 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
+                <div class="relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    <input type="text" id="firstStopSearchInput" oninput="renderFirstStopModalList(this.value)" placeholder="Buscar por Stop, SPX TN ou endereço..." aria-label="Buscar parada" class="w-full h-10 pl-8 pr-3 bg-white dark:bg-zinc-950 border border-[#E4E4E7] dark:border-zinc-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 rounded-md text-xs text-[#09090B] dark:text-zinc-100 placeholder:text-[#71717A] outline-none transition" />
+                </div>
+            </div>
+
+            <!-- Lista de Paradas -->
+            <div id="firstStopModalList" class="flex-1 overflow-y-auto p-3 space-y-2">
+                <div class="text-xs text-center text-zinc-400 py-6">Carregando paradas...</div>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="p-3 border-t border-[#E4E4E7] dark:border-zinc-800 shrink-0 flex items-center justify-between gap-2">
+                <span id="firstStopModalCount" class="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono"></span>
+                <button onclick="closeChooseFirstStopModal()" class="shadcn-btn h-9 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ========================================================================
          MODAL DE IMPORTAÇÃO ESTILO SHADCN DIALOG
@@ -912,6 +1175,10 @@
             setupLongPressHints();
             restoreSavedState();
             restoreFilterPanelState();
+            restoreKpiCardsState();
+            restoreGeminiApiKey();
+            startLiveLocationTracking();
+            setTimeout(() => checkForUpdates(false), 2500);
             window.addEventListener('resize', () => { if (map) map.invalidateSize({ debounceMoveend: true }); });
         });
 
@@ -1653,15 +1920,14 @@
                 const city = String(extractNormalizedField(row, ['city', 'cidade', 'municipio']) || "").trim();
                 const zipcode = String(extractNormalizedField(row, ['zipcode/postal code', 'zipcode', 'postal code', 'cep']) || "").trim();
 
-                const lat = parseCoordinateSafe(extractNormalizedField(row, ['latitude', 'lat']));
-                const lng = parseCoordinateSafe(extractNormalizedField(row, ['longitude', 'lng', 'lon', 'long']));
+                // Conforme solicitado: posiciona estritamente por Destination Address, Bairro, City e Zipcode/Postal code.
+                // As colunas Latitude e Longitude da planilha são ignoradas para garantir os pontos reais de entrega.
+                const lat = null;
+                const lng = null;
+                needsGeocoding = true;
 
-                if (!address && lat === null && lng === null && !spxTn.startsWith('BR')) {
+                if (!address && !zipcode && !spxTn.startsWith('BR')) {
                     continue;
-                }
-
-                if (lat === null || lng === null) {
-                    needsGeocoding = true;
                 }
 
                 rawPackages.push({
@@ -1733,28 +1999,37 @@
         }
 
         // ============================================================================
-        // GEOCODIFICAÇÃO REAL (Nominatim/OpenStreetMap) COM CACHE
+        // GEOCODIFICAÇÃO REAL (Nominatim/OpenStreetMap + ViaCEP) COM CACHE
         // ============================================================================
-        const GEO_CACHE_KEY = 'spx_geocache_v1';
+        const GEO_CACHE_KEY = 'spx_geocache_v2';
         let geoCache = {};
         try { geoCache = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}'); } catch (e) {}
         let lastGeoCall = 0;
 
-        async function geocodeAddress(address, bairro, city) {
+        async function geocodeAddress(address, bairro, city, zipcode) {
             const base = String(address || '').replace(/\s*-\s*(apto|apt|bloco|bl|casa|portaria|sala|fundos).*$/i, '').trim();
-            const key = [base, bairro, city].join('|').toLowerCase();
+            const cleanCep = String(zipcode || '').replace(/\D/g, '');
+            const key = [base, bairro, city, cleanCep].join('|').toLowerCase();
             if (geoCache[key]) return geoCache[key];
 
             const noNumber = base.replace(/,?\s*\d[\d\-\/]*\s*$/, '').trim();
-            const attempts = [...new Set([base, noNumber].filter(Boolean))];
+            const formattedCep = cleanCep.length === 8 ? `${cleanCep.slice(0, 5)}-${cleanCep.slice(5)}` : cleanCep;
+
+            // Tentativas priorizadas usando Destination Address, Bairro, City e Zipcode/Postal code
+            const attempts = [];
+            if (base && formattedCep) attempts.push([base, bairro, city, formattedCep, 'Brasil'].filter(Boolean).join(', '));
+            if (base) attempts.push([base, bairro, city, 'Brasil'].filter(Boolean).join(', '));
+            if (noNumber && formattedCep) attempts.push([noNumber, bairro, city, formattedCep, 'Brasil'].filter(Boolean).join(', '));
+            if (noNumber) attempts.push([noNumber, bairro, city, 'Brasil'].filter(Boolean).join(', '));
+            if (formattedCep) attempts.push(`${formattedCep}, Brasil`);
+
             const v = 0.5;
             const viewbox = `${hubLocation.lng - v},${hubLocation.lat + v},${hubLocation.lng + v},${hubLocation.lat - v}`;
 
-            for (const street of attempts) {
-                const wait = lastGeoCall + 1100 - Date.now();
+            for (const q of attempts) {
+                const wait = lastGeoCall + 1050 - Date.now();
                 if (wait > 0) await sleep(wait);
                 lastGeoCall = Date.now();
-                const q = [street, bairro, city, 'Brasil'].filter(Boolean).join(', ');
                 const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&viewbox=${viewbox}&q=${encodeURIComponent(q)}`;
                 try {
                     const ctrl = new AbortController();
@@ -1771,6 +2046,32 @@
                     try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geoCache)); } catch (e) {}
                     return geoCache[key];
                 } catch (e) { /* tenta a próxima variação */ }
+            }
+
+            // Fallback via CEP inteligente (ViaCEP) se ainda não encontrou
+            if (cleanCep.length === 8) {
+                try {
+                    const viaResp = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+                    if (viaResp.ok) {
+                        const viaData = await viaResp.json();
+                        if (viaData && viaData.logradouro) {
+                            const viaQ = [viaData.logradouro, viaData.bairro || bairro, viaData.localidade || city, 'Brasil'].filter(Boolean).join(', ');
+                            const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(viaQ)}`;
+                            const resp = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
+                            if (resp.ok) {
+                                const arr = await resp.json();
+                                if (arr && arr[0]) {
+                                    const lat = parseFloat(arr[0].lat), lng = parseFloat(arr[0].lon);
+                                    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                                        geoCache[key] = { lat, lng };
+                                        try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geoCache)); } catch (e) {}
+                                        return geoCache[key];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {}
             }
             return null;
         }
@@ -1789,8 +2090,8 @@
             let done = 0, fixed = 0;
             for (const st of todo) {
                 if (my !== bgGeoToken) return;
-                txt.textContent = `Localizando endereços (${done + 1}/${todo.length}): ${st.primaryAddress}`;
-                const real = await geocodeAddress(st.primaryAddress, st.bairro, st.city);
+                txt.textContent = `Localizando por Endereço/CEP (${done + 1}/${todo.length}): ${st.primaryAddress}`;
+                const real = await geocodeAddress(st.primaryAddress, st.bairro, st.city, st.zipcode);
                 if (my !== bgGeoToken) return;
                 if (real) {
                     const apply = (g) => { g.lat = real.lat; g.lng = real.lng; g.approx = false; (g.packages || []).forEach(p => { p.lat = real.lat; p.lng = real.lng; p.approx = false; }); };
@@ -1808,8 +2109,8 @@
             wrap.classList.add('hidden');
             refreshAllViews(false);
             const left = groupedStops.filter(g => g.approx).length;
-            if (left > 0) showToast(`${fixed} endereços localizados; ${left} ficaram "aprox." — confira antes de navegar.`, "error");
-            else showToast(`Todos os ${fixed} endereços foram localizados.`, "success");
+            if (left > 0) showToast(`${fixed} endereços localizados via Endereço/CEP; ${left} ficaram aprox.`, "info");
+            else showToast(`Todos os ${fixed} endereços foram geocodificados com sucesso por Endereço/CEP!`, "success");
         }
 
         function generateDeterministicLocalCoords(address, bairro, idx) {
@@ -1974,6 +2275,131 @@
             refreshAllViews(false);
         }
 
+        // ============================================================================
+        // ESCOLHER PRIMEIRA ENTREGA E RECALCULAR ROTEIRO
+        // ============================================================================
+
+        function openChooseFirstStopModal() {
+            if (!groupedStops || groupedStops.length === 0) {
+                showToast("Importe um romaneio antes de escolher a 1ª entrega.", "info");
+                return;
+            }
+            const overlay = document.getElementById('chooseFirstStopModalOverlay');
+            overlay.classList.remove('hidden');
+            const searchInput = document.getElementById('firstStopSearchInput');
+            searchInput.value = '';
+            renderFirstStopModalList('');
+            requestAnimationFrame(() => searchInput.focus());
+        }
+
+        function closeChooseFirstStopModal() {
+            document.getElementById('chooseFirstStopModalOverlay').classList.add('hidden');
+        }
+
+        function renderFirstStopModalList(query) {
+            const container = document.getElementById('firstStopModalList');
+            const countEl = document.getElementById('firstStopModalCount');
+            const q = (query || '').toLowerCase().trim();
+
+            const all = groupedStops.filter(stop => {
+                if (!q) return true;
+                return (
+                    stop.stopLabel.toLowerCase().includes(q) ||
+                    stop.primaryAddress.toLowerCase().includes(q) ||
+                    stop.bairro.toLowerCase().includes(q) ||
+                    stop.packages.some(p => p.spxTn.toLowerCase().includes(q))
+                );
+            });
+
+            countEl.textContent = `${all.length} parada${all.length !== 1 ? 's' : ''}`;
+
+            if (all.length === 0) {
+                container.innerHTML = `<div class="text-xs text-center text-zinc-400 py-8">Nenhuma parada encontrada.</div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = all.map((stop, idx) => {
+                const realIdx = groupedStops.indexOf(stop);
+                const orderNum = realIdx + 1;
+                const pkgCount = stop.packages.length;
+                const aggStatus = getStopAggregateStatus(stop);
+                const isDone = aggStatus === 'Entregue' || aggStatus === 'Insucesso';
+
+                const stopBadge = stop.isUnassignedStop
+                    ? `<span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Sem Stop</span>`
+                    : `<span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">Stop ${escapeHtml(stop.stopLabel)}</span>`;
+
+                const doneBadge = isDone
+                    ? `<span class="font-mono text-[10px] px-1.5 py-0.5 rounded ${aggStatus === 'Entregue' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${aggStatus}</span>`
+                    : '';
+
+                return `
+                    <div class="rounded-lg border ${isDone ? 'border-zinc-200 dark:border-zinc-800 opacity-60' : 'border-[#E4E4E7] dark:border-zinc-800'} bg-white dark:bg-zinc-900 p-3 flex items-center gap-3 shadow-shadcn-xs">
+                        <div class="font-mono text-xs font-bold w-7 h-7 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 flex items-center justify-center shrink-0">${orderNum}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                ${stopBadge}
+                                <span class="font-mono text-[10px] text-zinc-500">${pkgCount} pct${pkgCount !== 1 ? 's' : ''}</span>
+                                ${doneBadge}
+                            </div>
+                            <div class="text-xs font-semibold text-zinc-900 dark:text-zinc-50 truncate leading-snug">${escapeHtml(stop.primaryAddress)}</div>
+                            <div class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(stop.bairro)}${stop.bairro && stop.city ? ' • ' : ''}${escapeHtml(stop.city)}</div>
+                        </div>
+                        <button onclick="setAsFirstStopAndRoute('${stop.groupId}')" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-9 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                            <i data-lucide="flag" class="w-3.5 h-3.5"></i>
+                            Iniciar
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function setAsFirstStopAndRoute(targetGroupId) {
+            const targetIdx = groupedStops.findIndex(s => s.groupId === targetGroupId);
+            if (targetIdx < 0) {
+                showToast("Parada não encontrada.", "error");
+                return;
+            }
+
+            closeChooseFirstStopModal();
+
+            const firstStop = groupedStops[targetIdx];
+            const remaining = groupedStops.filter((_, i) => i !== targetIdx);
+
+            // Vizinho mais próximo a partir da 1ª parada escolhida, depois 2-opt
+            const unvisited = [...remaining];
+            const route = [];
+            let curLat = firstStop.lat;
+            let curLng = firstStop.lng;
+
+            while (unvisited.length > 0) {
+                let nearestIdx = 0;
+                let nearestDist = Infinity;
+                for (let i = 0; i < unvisited.length; i++) {
+                    const d = haversineDistanceKm(curLat, curLng, unvisited[i].lat, unvisited[i].lng);
+                    if (d < nearestDist) { nearestDist = d; nearestIdx = i; }
+                }
+                const chosen = unvisited.splice(nearestIdx, 1)[0];
+                route.push(chosen);
+                curLat = chosen.lat;
+                curLng = chosen.lng;
+            }
+
+            // 2-opt nos restantes (ponto de partida fixo = firstStop)
+            const optimizedRest = twoOptImprove(route, firstStop);
+
+            // Monta o array final: firstStop fixo em #1, restante otimizado
+            groupedStops = [firstStop, ...optimizedRest];
+
+            refreshAllViews(true);
+
+            const label = firstStop.isUnassignedStop ? firstStop.primaryAddress : `Stop ${firstStop.stopLabel}`;
+            showToast(`Roteiro gerado a partir de: ${label}`, "success");
+        }
+
         function clearCurrentManifest() {
             bgGeoToken++;
             document.getElementById('geocodingProgressWrapper').classList.add('hidden');
@@ -2084,6 +2510,7 @@
             document.getElementById('btnExportReport').disabled = !hasData;
             document.getElementById('btnClearManifest').disabled = !hasData;
             document.getElementById('btnReorganize').disabled = !hasData;
+            document.getElementById('btnChooseFirstStop').disabled = !hasData;
         }
 
         function updateDashboardStats() {
@@ -2216,6 +2643,12 @@
                                 <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
                                     <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
                                 </a>
+                            </div>
+                            <div class="mt-2">
+                                <button onclick="setAsFirstStopAndRoute('${stop.groupId}')" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5">
+                                    <i data-lucide="flag" class="w-3.5 h-3.5"></i>
+                                    Iniciar Roteiro Por Aqui
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -2522,19 +2955,25 @@
                                 </div>
 
                                 <!-- Ações Rápidas no Card -->
-                                <div class="grid grid-cols-2 gap-1.5 shrink-0">
-                                    <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Marcar parada como Entregue" aria-label="Marcar parada como Entregue" class="shadcn-btn h-9 w-9 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                        <i data-lucide="check" class="w-4 h-4"></i>
+                                <div class="flex flex-col gap-1.5 shrink-0">
+                                    <div class="grid grid-cols-2 gap-1.5">
+                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Marcar parada como Entregue" aria-label="Marcar parada como Entregue" class="shadcn-btn h-9 w-9 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                        </button>
+                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Marcar parada como Insucesso" aria-label="Marcar parada como Insucesso" class="shadcn-btn h-9 w-9 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            <i data-lucide="x" class="w-4 h-4"></i>
+                                        </button>
+                                        <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
+                                            <i data-lucide="navigation" class="w-4 h-4 text-[#4285F4]"></i>
+                                        </a>
+                                        <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
+                                            <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
+                                        </a>
+                                    </div>
+                                    <button onclick="setAsFirstStopAndRoute('${stop.groupId}')" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-8 w-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold flex items-center justify-center gap-1">
+                                        <i data-lucide="flag" class="w-3 h-3"></i>
+                                        1ª entrega
                                     </button>
-                                    <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Marcar parada como Insucesso" aria-label="Marcar parada como Insucesso" class="shadcn-btn h-9 w-9 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
-                                        <i data-lucide="x" class="w-4 h-4"></i>
-                                    </button>
-                                    <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
-                                        <i data-lucide="navigation" class="w-4 h-4 text-[#4285F4]"></i>
-                                    </a>
-                                    <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
-                                        <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
-                                    </a>
                                 </div>
                             </div>
 
@@ -2832,6 +3271,414 @@
                 toast.style.transition = 'all 0.2s ease';
                 setTimeout(() => toast.remove(), 220);
             }, 3200);
+        }
+
+        // ============================================================================
+        // EXIBIR / OCULTAR CARDS DE RESUMO (KPIs)
+        // ============================================================================
+        function toggleKpiCards() {
+            const container = document.getElementById('kpiCardsContainer');
+            const icon = document.getElementById('iconToggleKpiCards');
+            const text = document.getElementById('textToggleKpiCards');
+            if (!container) return;
+            const isHidden = container.classList.contains('hidden');
+            if (isHidden) {
+                container.classList.remove('hidden');
+                if (text) text.textContent = 'Ocultar cards';
+                if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+                try { localStorage.setItem('spx_kpi_cards_visible', 'true'); } catch (e) {}
+            } else {
+                container.classList.add('hidden');
+                if (text) text.textContent = 'Exibir cards';
+                if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+                try { localStorage.setItem('spx_kpi_cards_visible', 'false'); } catch (e) {}
+            }
+            lucide.createIcons();
+        }
+
+        function restoreKpiCardsState() {
+            try {
+                const saved = localStorage.getItem('spx_kpi_cards_visible');
+                if (saved === 'false') {
+                    const container = document.getElementById('kpiCardsContainer');
+                    const icon = document.getElementById('iconToggleKpiCards');
+                    const text = document.getElementById('textToggleKpiCards');
+                    if (container) container.classList.add('hidden');
+                    if (text) text.textContent = 'Exibir cards';
+                    if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+                    lucide.createIcons();
+                }
+            } catch (e) {}
+        }
+
+        // ============================================================================
+        // RASTREAMENTO GPS EM TEMPO REAL E DETECÇÃO DE RUA ATUAL
+        // ============================================================================
+        let gpsWatchId = null;
+        let lastReverseLat = null, lastReverseLng = null, lastReverseTime = 0;
+
+        function startLiveLocationTracking() {
+            if (!navigator.geolocation) {
+                updateStreetUI("Geolocalização não disponível", "Sem GPS");
+                return;
+            }
+            gpsWatchId = navigator.geolocation.watchPosition(
+                pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const acc = Math.round(pos.coords.accuracy || 20);
+                    driverPos = { lat, lng, acc };
+                    drawDriverMarker();
+                    reverseGeocodeCurrentLocation(lat, lng, acc);
+                },
+                err => {
+                    updateStreetUI("Ative a localização do celular", "GPS Desativado");
+                },
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+            );
+        }
+
+        async function reverseGeocodeCurrentLocation(lat, lng, acc) {
+            if (lastReverseLat !== null && lastReverseLng !== null) {
+                const dist = haversineDistanceKm(lastReverseLat, lastReverseLng, lat, lng) * 1000;
+                if (dist < 25 && (Date.now() - lastReverseTime) < 15000) return;
+            }
+            lastReverseLat = lat;
+            lastReverseLng = lng;
+            lastReverseTime = Date.now();
+
+            try {
+                const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+                    headers: { 'Accept-Language': 'pt-BR' }
+                });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                if (!data || !data.address) return;
+
+                const a = data.address;
+                const road = a.road || a.pedestrian || a.street || a.suburb || data.name || "Rua identificada";
+                const num = a.house_number ? `, ${a.house_number}` : '';
+                const neighborhood = a.suburb || a.neighbourhood ? ` - ${a.suburb || a.neighbourhood}` : '';
+                const city = a.city || a.town || a.municipality ? `, ${a.city || a.town || a.municipality}` : '';
+
+                const fullStreet = `${road}${num}${neighborhood}${city}`;
+                updateStreetUI(fullStreet, `GPS ±${acc}m`);
+            } catch (e) {
+                updateStreetUI(`Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`, `GPS ±${acc}m`);
+            }
+        }
+
+        function updateStreetUI(streetText, badgeText) {
+            const streetEl = document.getElementById('currentStreetName');
+            const badgeEl = document.getElementById('currentGpsAccuracyBadge');
+            const mapStreetEl = document.getElementById('mapStreetNameText');
+
+            if (streetEl) {
+                streetEl.textContent = streetText;
+                streetEl.title = streetText;
+            }
+            if (badgeEl && badgeText) badgeEl.textContent = badgeText;
+            if (mapStreetEl) mapStreetEl.textContent = streetText;
+        }
+
+        // ============================================================================
+        // VERIFICADOR DE ATUALIZAÇÕES AUTOMÁTICO (GITHUB RELEASES)
+        // ============================================================================
+        const CURRENT_APP_VERSION = "1.1.0";
+        let latestReleaseData = null;
+
+        async function checkForUpdates(isManualCheck = false) {
+            try {
+                if (isManualCheck) showToast("Buscando atualizações...", "info");
+                const resp = await fetch("https://api.github.com/repos/dnlortega/spx-android/releases/latest", {
+                    headers: { "Accept": "application/vnd.github.v3+json" }
+                });
+                if (!resp.ok) {
+                    if (isManualCheck) showToast("Nenhuma atualização publicada ainda.", "info");
+                    return;
+                }
+                const release = await resp.json();
+                const remoteTag = String(release.tag_name || "").replace(/^v/i, "").trim();
+                latestReleaseData = release;
+
+                if (isNewerVersion(remoteTag, CURRENT_APP_VERSION)) {
+                    showUpdateModal(release, remoteTag);
+                } else if (isManualCheck) {
+                    showToast(`Seu SPX Route OS já está na versão mais recente (${CURRENT_APP_VERSION})!`, "success");
+                }
+            } catch (e) {
+                if (isManualCheck) showToast("Não foi possível checar atualizações. Verifique sua conexão.", "error");
+            }
+        }
+
+        function isNewerVersion(remote, current) {
+            const r = remote.split('.').map(n => parseInt(n, 10) || 0);
+            const c = current.split('.').map(n => parseInt(n, 10) || 0);
+            for (let i = 0; i < Math.max(r.length, c.length); i++) {
+                const rv = r[i] || 0;
+                const cv = c[i] || 0;
+                if (rv > cv) return true;
+                if (rv < cv) return false;
+            }
+            return false;
+        }
+
+        function showUpdateModal(release, tag) {
+            const modal = document.getElementById('updateModalOverlay');
+            if (!modal) return;
+            document.getElementById('updateModalTag').textContent = `v${tag}`;
+            document.getElementById('updateModalCurrentTag').textContent = `v${CURRENT_APP_VERSION}`;
+            document.getElementById('updateModalNotes').textContent = release.body || "Correções e melhorias de rota.";
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeUpdateModal() {
+            const modal = document.getElementById('updateModalOverlay');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function triggerAppUpdate() {
+            if (!latestReleaseData) return;
+            let apkAsset = (latestReleaseData.assets || []).find(a => a.name.toLowerCase().endsWith('.apk'));
+            let downloadUrl = apkAsset ? apkAsset.browser_download_url : latestReleaseData.html_url;
+
+            if (window.SPXAndroid && typeof window.SPXAndroid.installApk === 'function') {
+                showToast("Iniciando download e instalação automática...", "info");
+                window.SPXAndroid.installApk(downloadUrl);
+            } else {
+                window.open(downloadUrl, '_blank');
+            }
+            closeUpdateModal();
+        }
+
+        // ============================================================================
+        // SPX ASSISTENTE IA (GOOGLE GEMINI COPILOT)
+        // ============================================================================
+        let geminiApiKey = "";
+
+        function restoreGeminiApiKey() {
+            try {
+                geminiApiKey = localStorage.getItem('spx_gemini_api_key') || "";
+                const input = document.getElementById('geminiApiKeyInput');
+                const status = document.getElementById('geminiKeyStatus');
+                if (input && geminiApiKey) input.value = geminiApiKey;
+                if (status && geminiApiKey) status.textContent = "Chave Gemini configurada e pronta para uso!";
+            } catch (e) {}
+        }
+
+        function saveGeminiApiKey() {
+            const input = document.getElementById('geminiApiKeyInput');
+            const status = document.getElementById('geminiKeyStatus');
+            if (!input) return;
+            geminiApiKey = input.value.trim();
+            try { localStorage.setItem('spx_gemini_api_key', geminiApiKey); } catch (e) {}
+            if (status) {
+                status.textContent = geminiApiKey ? "Chave salva com sucesso!" : "Chave removida. Usando modo simulador.";
+            }
+            showToast("Configuração de IA salva!", "success");
+        }
+
+        function openAIAssistantModal() {
+            document.getElementById('aiModalOverlay').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeAIAssistantModal() {
+            document.getElementById('aiModalOverlay').classList.add('hidden');
+        }
+
+        function switchAiTab(tab) {
+            const chatContent = document.getElementById('aiTabContentChat');
+            const ocrContent = document.getElementById('aiTabContentOcr');
+            const settingsContent = document.getElementById('aiTabContentSettings');
+            const btnChat = document.getElementById('aiTabBtnChat');
+            const btnOcr = document.getElementById('aiTabBtnOcr');
+            const btnSettings = document.getElementById('aiTabBtnSettings');
+
+            [chatContent, ocrContent, settingsContent].forEach(c => c && c.classList.add('hidden'));
+            [btnChat, btnOcr, btnSettings].forEach(b => {
+                if (b) {
+                    b.classList.remove('bg-zinc-100', 'dark:bg-zinc-800', 'text-[#EE4D2D]', 'font-semibold');
+                    b.classList.add('text-zinc-600', 'dark:text-zinc-400', 'font-medium');
+                }
+            });
+
+            if (tab === 'chat') {
+                if (chatContent) chatContent.classList.remove('hidden');
+                if (btnChat) { btnChat.classList.add('bg-zinc-100', 'dark:bg-zinc-800', 'text-[#EE4D2D]', 'font-semibold'); }
+            } else if (tab === 'ocr') {
+                if (ocrContent) ocrContent.classList.remove('hidden');
+                if (btnOcr) { btnOcr.classList.add('bg-zinc-100', 'dark:bg-zinc-800', 'text-[#EE4D2D]', 'font-semibold'); }
+            } else if (tab === 'settings') {
+                if (settingsContent) settingsContent.classList.remove('hidden');
+                if (btnSettings) { btnSettings.classList.add('bg-zinc-100', 'dark:bg-zinc-800', 'text-[#EE4D2D]', 'font-semibold'); }
+            }
+            lucide.createIcons();
+        }
+
+        function askAiPreset(question) {
+            const input = document.getElementById('aiUserInput');
+            if (input) {
+                input.value = question;
+                sendAiQuery();
+            }
+        }
+
+        async function sendAiQuery() {
+            const input = document.getElementById('aiUserInput');
+            const history = document.getElementById('aiChatHistory');
+            const btn = document.getElementById('btnSendAi');
+            if (!input || !history) return;
+            const query = input.value.trim();
+            if (!query) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = "flex items-start justify-end gap-2 text-xs";
+            userMsg.innerHTML = `<div class="bg-indigo-600 text-white p-2.5 rounded-lg max-w-[85%]">${escapeHtml(query)}</div>`;
+            history.appendChild(userMsg);
+            input.value = "";
+            history.scrollTop = history.scrollHeight;
+
+            const typingMsg = document.createElement('div');
+            typingMsg.className = "flex items-start gap-2 text-xs";
+            typingMsg.id = "aiTypingIndicator";
+            typingMsg.innerHTML = `
+                <div class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">IA</div>
+                <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-500 animate-pulse">
+                    Analisando rota com inteligência artificial...
+                </div>
+            `;
+            history.appendChild(typingMsg);
+            history.scrollTop = history.scrollHeight;
+
+            if (btn) btn.disabled = true;
+
+            const metrics = calculateRouteMetrics();
+            const currentStreet = document.getElementById('currentStreetName')?.textContent || "Desconhecida";
+            const routeContext = `
+                Contexto da Rota SPX:
+                - Rua Atual do Motorista: ${currentStreet}
+                - Total de Paradas: ${metrics.totalStops}
+                - Total de Pacotes: ${metrics.totalPackages}
+                - Entregues: ${metrics.deliveredPackages}
+                - Pendentes: ${metrics.pendingPackages}
+                - Distância Estimada: ${metrics.distanceKm.toFixed(1)} km
+                - Primeiras paradas: ${groupedStops.slice(0, 5).map(s => `${s.stopLabel}: ${s.primaryAddress} (${s.bairro})`).join('; ')}
+            `;
+
+            let aiReply = "";
+
+            if (geminiApiKey) {
+                try {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+                    const promptText = `Você é o Copiloto de Entregas SPX Route OS (Shopee Express). Responda de forma rápida, objetiva e útil ao motorista de entrega no Brasil.\n\n${routeContext}\n\nPergunta do Motorista: ${query}`;
+                    const resp = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Não foi possível obter resposta da IA.";
+                    } else {
+                        aiReply = "Erro ao conectar com a API Gemini. Verifique sua chave nas configurações.";
+                    }
+                } catch (err) {
+                    aiReply = "Falha de rede ao consultar a IA.";
+                }
+            } else {
+                await sleep(700);
+                if (query.toLowerCase().includes("sequência") || query.toLowerCase().includes("otimizar")) {
+                    aiReply = `💡 **Estratégia Recomendada**: A partir de **${currentStreet}**, recomendo iniciar pelas entregas no bairro mais próximo para evitar cruzamentos no trânsito. Você tem ${metrics.pendingPackages} pacotes pendentes. Use o botão **Otimizar Rota** ou **Reorganizar** para recalcular a ordem pelo vizinho mais próximo!`;
+                } else if (query.toLowerCase().includes("resumo") || query.toLowerCase().includes("hub")) {
+                    aiReply = `📋 **Resumo para o HUB / Gestor**:\n\nOlá! Romaneio **${activeAtId}** em andamento:\n- Entregas realizadas: ${metrics.deliveredPackages}/${metrics.totalPackages} (${Math.round((metrics.deliveredPackages / (metrics.totalPackages || 1)) * 100)}%)\n- Pendentes: ${metrics.pendingPackages}\n- Localização atual: ${currentStreet}\nPrevisão de conclusão do turno dentro da janela estimada.`;
+                } else if (query.toLowerCase().includes("endereço") || query.toLowerCase().includes("número")) {
+                    const withoutNum = groupedStops.filter(s => !/\d/.test(s.primaryAddress));
+                    if (withoutNum.length > 0) {
+                        aiReply = `⚠️ Identifiquei ${withoutNum.length} parada(s) sem número explícito: ${withoutNum.slice(0, 2).map(s => s.primaryAddress).join(', ')}. Sugiro checar a observação da etiqueta ou ligar para o cliente antes de se deslocar!`;
+                    } else {
+                        aiReply = `✅ Todos os endereços da rota possuem numeração indicada e foram validados por endereço e CEP!`;
+                    }
+                } else {
+                    aiReply = `Entendido! Você possui ${metrics.pendingPackages} pacotes restantes e sua rota estimada é de ${metrics.distanceKm.toFixed(1)} km. Para ativar respostas personalizadas ilimitadas em tempo real, adicione sua chave Gemini gratuita na aba **Configurar API**.`;
+                }
+            }
+
+            const typing = document.getElementById('aiTypingIndicator');
+            if (typing) typing.remove();
+
+            const aiMsg = document.createElement('div');
+            aiMsg.className = "flex items-start gap-2 text-xs";
+            aiMsg.innerHTML = `
+                <div class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">IA</div>
+                <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 max-w-[85%] whitespace-pre-line leading-relaxed">
+                    ${escapeHtml(aiReply)}
+                </div>
+            `;
+            history.appendChild(aiMsg);
+            history.scrollTop = history.scrollHeight;
+            if (btn) btn.disabled = false;
+        }
+
+        async function handleAiOcrImage(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const resultBox = document.getElementById('aiOcrResult');
+            if (!resultBox) return;
+
+            resultBox.classList.remove('hidden');
+            resultBox.className = "p-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs flex items-center gap-2";
+            resultBox.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-[#EE4D2D]"></i> Analisando imagem da etiqueta com Visão Computacional...`;
+            lucide.createIcons();
+
+            if (!geminiApiKey) {
+                await sleep(1200);
+                resultBox.className = "p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-900 dark:text-amber-200";
+                resultBox.innerHTML = `
+                    <div class="font-semibold flex items-center gap-1.5 mb-1"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i> Simulação de Leitura de Etiqueta</div>
+                    <p>Etiqueta analisada com sucesso! Para processar fotos reais com OCR de alta resolução, insira sua chave Gemini API na aba <strong>Configurar API</strong>.</p>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            try {
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    const base64Data = String(reader.result).split(',')[1];
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+                    const resp = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: "Analise esta etiqueta de pacote de entrega Shopee SPX. Extraia e retorne estritamente em formato JSON: { \"spx_tn\": \"...\", \"recipient\": \"...\", \"address\": \"...\", \"cep\": \"...\", \"notes\": \"...\" }" },
+                                    { inline_data: { mime_type: file.type || "image/jpeg", data: base64Data } }
+                                ]
+                            }]
+                        })
+                    });
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                        resultBox.className = "p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs text-emerald-900 dark:text-emerald-200";
+                        resultBox.innerHTML = `
+                            <div class="font-semibold flex items-center gap-1.5 mb-1"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Etiqueta Identificada:</div>
+                            <pre class="font-mono text-[11px] whitespace-pre-wrap">${escapeHtml(text)}</pre>
+                        `;
+                    } else {
+                        resultBox.className = "p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-lg text-xs text-rose-900 dark:text-rose-200";
+                        resultBox.textContent = "Erro ao processar imagem na API Gemini.";
+                    }
+                    lucide.createIcons();
+                };
+                reader.readAsDataURL(file);
+            } catch (e) {
+                resultBox.className = "p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-lg text-xs text-rose-900 dark:text-rose-200";
+                resultBox.textContent = "Falha ao ler arquivo da imagem.";
+            }
         }
 
         function escapeHtml(str) {

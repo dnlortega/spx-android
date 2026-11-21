@@ -4,7 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,7 +25,6 @@ import android.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import android.widget.Toast;
-import android.content.Context;
 import android.database.Cursor;
 import android.provider.OpenableColumns;
 import java.io.OutputStream;
@@ -66,7 +68,72 @@ public class MainActivity extends Activity {
                     try { startActivityForResult(create, 1003); } catch (Exception e) { Toast.makeText(MainActivity.this, "Não foi possível salvar o arquivo", Toast.LENGTH_SHORT).show(); }
                 });
             }
+
+            @JavascriptInterface public String getAppVersion() {
+                try {
+                    return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                } catch (Exception e) {
+                    return "1.1.0";
+                }
+            }
+
+            @JavascriptInterface public void installApk(String downloadUrl) {
+                runOnUiThread(() -> {
+                    try {
+                        Toast.makeText(MainActivity.this, "Baixando atualização do SPX...", Toast.LENGTH_LONG).show();
+                        DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                        Uri uri = Uri.parse(downloadUrl);
+                        DownloadManager.Request request = new DownloadManager.Request(uri);
+                        request.setTitle("SPX Route OS - Atualização");
+                        request.setDescription("Baixando nova versão do aplicativo");
+                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "SPX-Route-OS-update.apk");
+                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                        request.setMimeType("application/vnd.android.package-archive");
+                        long enqueueId = dm.enqueue(request);
+
+                        BroadcastReceiver onComplete = new BroadcastReceiver() {
+                            @Override public void onReceive(Context ctxt, Intent intent) {
+                                long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                                if (id == enqueueId) {
+                                    try {
+                                        Uri apkUri = dm.getUriForDownloadedFile(enqueueId);
+                                        Intent installIntent = new Intent(Intent.ACTION_VIEW);
+                                        installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                                        installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                        startActivity(installIntent);
+                                    } catch (Exception ex) {
+                                        try {
+                                            Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                                            fallback.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            startActivity(fallback);
+                                        } catch (Exception ignored) {}
+                                    }
+                                    try { unregisterReceiver(this); } catch (Exception ignored) {}
+                                }
+                            }
+                        };
+                        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                    } catch (Exception e) {
+                        try {
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                            startActivity(browserIntent);
+                        } catch (Exception ex) {
+                            Toast.makeText(MainActivity.this, "Erro ao iniciar download da atualização", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+
+            @JavascriptInterface public void openExternalUrl(String url) {
+                runOnUiThread(() -> {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(intent);
+                    } catch (Exception ignored) {}
+                });
+            }
         }, "SPXAndroid");
+
         webView.setWebViewClient(new WebViewClient() {
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -114,7 +181,6 @@ public class MainActivity extends Activity {
         String js = "(function(){if(window.__spxBlobBridge)return;window.__spxBlobBridge=1;document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');if(!a||!a.href||!a.href.startsWith('blob:'))return;e.preventDefault();var name=a.download||'SPX_Export.xlsx';fetch(a.href).then(r=>r.blob()).then(b=>{var fr=new FileReader();fr.onload=function(){var data=String(fr.result).split(',')[1];window.SPXAndroid.saveFile(name,b.type||'application/octet-stream',data);};fr.readAsDataURL(b);}).catch(()=>alert('Não foi possível preparar o arquivo.'));},true);})();";
         webView.evaluateJavascript(js, null);
     }
-
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

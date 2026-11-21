@@ -1,0 +1,2782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPX Route OS | Roteirização Inteligente Shopee Express</title>
+    
+    <!-- Google Fonts: Inter & JetBrains Mono (Padrão shadcn/ui) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    
+    <!-- Leaflet CSS & JS (Mapa Interativo) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- SheetJS (xlsx) para Leitura e Geração de Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js" onerror="var f=document.createElement('script');f.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';document.head.appendChild(f)"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" onerror="var f=document.createElement('script');f.src='https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js';document.head.appendChild(f)"></script>
+
+    <!-- Configuração Customizada do Tailwind (Tokens shadcn/ui) -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        shopee: {
+                            DEFAULT: '#EE4D2D',
+                            dark: '#D73211',
+                            light: '#FFF0ED',
+                            hover: '#E04324'
+                        }
+                    },
+                    boxShadow: {
+                        'shadcn-xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+                        'shadcn-sm': '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+                        'shadcn-md': '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+                        'shadcn-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Design Tokens e Utilitários estilo shadcn/ui */
+        :root {
+            --radius: 0.375rem; /* 6px */
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4D4D8;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #3F3F46;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A1A1AA;
+        }
+
+        /* Botões base estilo shadcn/ui */
+        .shadcn-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            border-radius: 6px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            cursor: pointer;
+        }
+        /* Garante que "hidden" / "md:inline-flex" funcionem em botões shadcn (antes o display:inline-flex vencia) */
+        .shadcn-btn.hidden { display: none !important; }
+        @media (min-width: 768px) { .shadcn-btn.md\:inline-flex { display: inline-flex !important; } }
+        @media (max-width: 639px) { #activeAtIdBadge { display: none !important; } }
+        .shadcn-btn:focus-visible {
+            outline: 2px solid #18181B;
+            outline-offset: 2px;
+        }
+        .dark .shadcn-btn:focus-visible {
+            outline-color: #E4E4E7;
+        }
+        .shadcn-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .shadcn-btn:disabled {
+            opacity: 0.45;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+
+        /* Controles e marcadores estilo Google Maps */
+        .gm-ctl, .gm-btn { background:#fff; color:#3c4043; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .15s; }
+        .gm-ctl { width:56px; height:56px; flex-direction:column; gap:2px; font-size:11px; font-weight:500; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+        .gm-grp { background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.3); overflow:hidden; display:flex; flex-direction:column; }
+        .gm-btn { width:40px; height:40px; }
+        .gm-grp .gm-btn + .gm-btn { border-top:1px solid #e8eaed; }
+        .gm-ctl:hover, .gm-btn:hover { background:#f1f3f4; }
+        .dark .gm-ctl, .dark .gm-btn, .dark .gm-grp { background:#303134; color:#e8eaed; }
+        .dark .gm-grp .gm-btn + .gm-btn { border-color:#3c4043; }
+        .dark .gm-ctl:hover, .dark .gm-btn:hover { background:#3c4043; }
+        .gm-pin { width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.45); color:#fff; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; transition:transform .15s; }
+        .gm-pin-n { transform:rotate(45deg); }
+        .gm-pin:hover { transform:rotate(-45deg) scale(1.15); }
+        .gm-pin.pin-next { box-shadow:0 0 0 3px rgba(238,77,45,.3), 0 3px 8px rgba(0,0,0,.45); }
+        .gm-me { width:18px; height:18px; border-radius:50%; background:#4285F4; border:3px solid #fff; box-shadow:0 0 0 0 rgba(66,133,244,.5), 0 1px 4px rgba(0,0,0,.4); animation:gmPulse 2s infinite; }
+        @keyframes gmPulse { 70% { box-shadow:0 0 0 14px rgba(66,133,244,0), 0 1px 4px rgba(0,0,0,.4); } 100% { box-shadow:0 0 0 0 rgba(66,133,244,0), 0 1px 4px rgba(0,0,0,.4); } }
+
+        /* Estilo dos Marcadores no Mapa */
+        .custom-pin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            color: #FFFFFF;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 3px 10px rgba(9, 9, 11, 0.32);
+            border: 2px solid #FFFFFF;
+            transition: transform 0.18s ease, background-color 0.18s ease;
+        }
+        .custom-pin:hover {
+            transform: scale(1.16);
+            z-index: 1000 !important;
+        }
+        .pin-pendente {
+            background-color: #18181B;
+        }
+        .pin-next {
+            background-color: #EE4D2D;
+            box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.28), 0 4px 12px rgba(238, 77, 45, 0.45);
+        }
+        .pin-parcial {
+            background-color: #D97706;
+        }
+        .pin-entregue {
+            background-color: #059669;
+        }
+        .pin-insucesso {
+            background-color: #E11D48;
+        }
+        .pin-hub {
+            background-color: #09090B;
+            border: 2.5px solid #EE4D2D;
+            color: #FAFAFA;
+        }
+        .pin-badge-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background-color: #EE4D2D;
+            color: #FFFFFF;
+            border: 1.5px solid #FFFFFF;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 700;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 3px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Popup estilo shadcn Card */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid #E4E4E7;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            width: 310px !important;
+        }
+        .leaflet-popup-tip {
+            background: #FFFFFF;
+        }
+
+        /* Animações shadcn Dialog & Sonner Toast */
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-6px); }
+            30%, 60%, 90% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shakeError 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes dialogEnter {
+            0% { transform: scale(0.95) translateY(6px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-dialog {
+            animation: dialogEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes sonnerSlideIn {
+            0% { transform: translateY(16px) scale(0.96); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .animate-sonner {
+            animation: sonnerSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes shimmerProgress {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .progress-shimmer {
+            background: linear-gradient(90deg, #18181B 0%, #EE4D2D 50%, #18181B 100%);
+            background-size: 200% 100%;
+            animation: shimmerProgress 1.6s linear infinite;
+        }
+
+        .spx-dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.9); }
+        /* Ajustes mobile: ações opcionais recolhidas e mapa aproveitando a tela */
+        .mobile-map-toggle { display:none; }
+        @media (max-width: 767px) {
+            body { height: 100dvh; min-height: 100dvh; }
+            #headerActions { gap: 5px; }
+            #headerActions .mobile-header-extra { display:none !important; }
+            #headerActions.mobile-options-open .mobile-header-extra { display:inline-flex !important; }
+            #headerActions .mobile-header-extra { height:34px; min-width:34px; padding-left:8px; padding-right:8px; }
+            #btnHeaderMore { display:inline-flex; }
+            #sidebarPanel, #mapPanel { min-height:0; }
+            #mapPanel { height:100%; }
+            #map { min-height:100%; }
+            .mobile-map-toggle { display:flex; width:52px; height:44px; font-size:10px; }
+            #mapControlsPanel { display:none !important; }
+            #mapControlsRoot.mobile-controls-open #mapControlsPanel { display:flex !important; }
+            #nextStopFloatingCard { bottom: max(10px, env(safe-area-inset-bottom)); width:calc(100% - 16px); padding:10px; }
+            #nextStopFloatingCard h4 { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+            #nextStopFloatingCard .shadcn-btn { min-height:38px; }
+            .leaflet-control-attribution { font-size:9px !important; }
+            .gm-ctl { width:50px; height:48px; }
+            .gm-btn { width:42px; height:42px; }
+        }
+        @media (max-width: 390px) {
+            #headerActions { gap:3px; }
+            #headerActions .mobile-header-extra { min-width:30px; width:30px; padding:0; }
+            #headerActions .mobile-header-extra span { display:none !important; }
+            #btnHeaderMore { width:30px; }
+            #nextStopFloatingCard .flex.items-center.gap-2.shrink-0 { gap:6px; }
+            #nextStopFloatingCard .shadcn-btn { padding-left:8px; padding-right:8px; font-size:10px; }
+        }
+    </style>
+</head>
+<body class="bg-[#FAFAFA] dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 antialiased overflow-hidden h-screen flex flex-col transition-colors duration-200">
+
+    <!-- ========================================================================
+         TOPBAR ESTILO NEXT.JS APP ROUTER / SHADCN HEADER
+         ======================================================================== -->
+    <header class="bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 z-30 shrink-0">
+        <div class="px-4 h-14 flex items-center justify-between gap-3">
+            
+            <!-- Esquerda: Brand Mark + Breadcrumb + AT ID Badge + Import Status Badge -->
+            <div class="flex items-center gap-2.5 min-w-0">
+                <!-- Ícone App com acento Shopee -->
+                <div class="w-8 h-8 rounded-md bg-[#EE4D2D] text-white flex items-center justify-center shadow-shadcn-xs shrink-0">
+                    <i data-lucide="route" class="w-4 h-4 stroke-[2.5]"></i>
+                </div>
+
+                <!-- Breadcrumb estilo Next.js -->
+                <div class="flex items-center gap-1.5 text-sm min-w-0">
+                    <span class="font-bold tracking-tight text-[#09090B] dark:text-zinc-50 truncate hidden sm:inline">SPX Route OS</span>
+                    <span class="text-zinc-300 dark:text-zinc-700 hidden sm:inline">/</span>
+                    <span class="text-xs font-medium text-[#71717A] dark:text-zinc-400 hidden md:inline truncate">Shopee Express</span>
+                </div>
+
+                <!-- Badge AT ID (JetBrains Mono) -->
+                <span id="activeAtIdBadge" class="hidden sm:inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700">
+                    <span class="text-[#EE4D2D] font-bold">AT</span>
+                    <span id="activeAtIdValue">---</span>
+                </span>
+
+                <!-- Badge de Status de Importação estilo shadcn Badge -->
+                <div id="headerImportStatusPill" class="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 transition-colors">
+                    <span id="headerImportStatusDot" class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                    <span id="headerImportStatusText" class="truncate max-w-[180px]">Aguardando planilha</span>
+                </div>
+            </div>
+
+            <!-- Direita: Grupo de Ações com Botões shadcn/ui e Separadores Verticais -->
+            <div class="flex items-center gap-1.5 shrink-0" id="headerActions">
+                <button id="btnHeaderMore" onclick="toggleHeaderOptions()" title="Exibir/ocultar opções" aria-expanded="false" class="shadcn-btn h-8 w-8 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 md:hidden"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0)" />
+
+                <!-- Primary Brand Action: Importar Planilha -->
+                <label for="excelFileInput" class="shadcn-btn h-8 px-3 text-xs bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs font-semibold">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span class="sm:hidden">Importar</span><span class="hidden sm:inline">Importar Planilha</span>
+                    <kbd class="hidden md:inline-flex items-center px-1.5 py-0.2 text-[11px] font-mono bg-black/20 text-white/90 rounded">I</kbd>
+                </label>
+
+                <!-- Secondary Action: Carregar Exemplo -->
+                <button onclick="loadSampleRoute()" title="Carregar exemplo" class="mobile-header-extra shadcn-btn h-8 px-2.5 text-xs bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                    <span class="hidden sm:inline">Carregar Exemplo</span>
+                    
+                </button>
+
+                <!-- Separador Vertical -->
+                <div class="h-4 w-[1px] bg-[#E4E4E7] dark:bg-zinc-800 mx-0.5 hidden md:block"></div>
+
+                <!-- Outline Action: Modelo .XLSX -->
+                <button onclick="downloadTemplateXLSX()" title="Baixar planilha Excel modelo SPX Express" class="mobile-header-extra shadcn-btn h-8 px-2.5 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs hidden md:inline-flex">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-zinc-500"></i>
+                    <span>Modelo .XLSX</span>
+                </button>
+
+                <!-- Outline Action: Exportar Relatório -->
+                <button id="btnExportReport" onclick="exportFinalReport()" disabled title="Exportar relatório atualizado em Excel" class="mobile-header-extra shadcn-btn h-8 px-2.5 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <i data-lucide="file-down" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span class="hidden lg:inline">Exportar Relatório</span>
+                    <span class="hidden sm:inline lg:hidden">Exportar</span>
+                </button>
+
+                <!-- Ghost Destructive Action: Limpar -->
+                <button id="btnClearManifest" onclick="clearCurrentManifest()" disabled title="Limpar romaneio atual" class="mobile-header-extra shadcn-btn h-8 w-8 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 dark:hover:text-rose-400">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Separador Vertical -->
+                <div class="h-4 w-[1px] bg-[#E4E4E7] dark:bg-zinc-800 mx-0.5"></div>
+
+                <!-- Toggle Tema Light / Dark estilo shadcn -->
+                <button id="btnThemeToggle" onclick="toggleThemeMode()" title="Alternar tema Claro / Escuro" class="mobile-header-extra shadcn-btn h-8 w-8 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <i id="themeIconSun" data-lucide="sun" class="w-3.5 h-3.5 hidden dark:block text-amber-400"></i>
+                    <i id="themeIconMoon" data-lucide="moon" class="w-3.5 h-3.5 block dark:hidden text-zinc-700"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de Progresso de Geocodificação (Oculta por padrão) -->
+        <div id="geocodingProgressWrapper" class="hidden bg-zinc-900 px-4 py-1.5 text-xs text-zinc-100 flex items-center justify-between gap-4 border-t border-zinc-800">
+            <div class="flex items-center gap-2 shrink-0">
+                <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin text-[#EE4D2D]"></i>
+                <span id="geocodingStatusText" class="text-[11px] font-medium">Convertendo endereços em coordenadas...</span>
+            </div>
+            <div class="w-full max-w-md bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                <div id="geocodingProgressBar" class="bg-[#EE4D2D] h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <span id="geocodingPercentText" class="font-mono text-[11px] font-semibold text-zinc-300 shrink-0">0%</span>
+        </div>
+    </header>
+
+    <!-- ========================================================================
+         CONTEÚDO PRINCIPAL: SIDEBAR SHADCN (ESQUERDA) + MAPA INTERATIVO (DIREITA)
+         ======================================================================== -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        
+        <!-- Tabs Mobile (Lista vs Mapa) -->
+        <div class="lg:hidden bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 px-3 py-2 shrink-0 z-20">
+            <div class="grid grid-cols-2 gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                <button id="tabMobileList" onclick="switchMobileTab('list')" class="py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="list-ordered" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                    <span>Paradas (<span id="mobileBadgeCount" class="font-mono">0</span>)</span>
+                </button>
+                <button id="tabMobileMap" onclick="switchMobileTab('map')" class="py-1.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="map" class="w-3.5 h-3.5"></i>
+                    <span>Mapa Interativo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SIDEBAR ESQUERDA -->
+        <aside id="sidebarPanel" class="w-full lg:w-[450px] xl:w-[480px] bg-white dark:bg-zinc-900 border-r border-[#E4E4E7] dark:border-zinc-800 flex flex-col h-full z-20 shrink-0">
+            
+            <!-- Bloco Superior: 4 Mini-Cards KPI estilo shadcn Card + Controles de Rota -->
+            <div class="p-3.5 bg-[#FAFAFA] dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 space-y-3">
+                
+                <!-- 4 Cards KPI Horizontais -->
+                <div class="grid grid-cols-4 gap-2">
+                    <!-- KPI 1: Paradas (Stops) -->
+                    <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
+                        <div class="flex items-center justify-between text-[#71717A] dark:text-zinc-400 mb-1">
+                            <span class="text-[11px] font-medium tracking-tight">Paradas</span>
+                            <i data-lucide="map-pin" class="w-3 h-3 text-zinc-400"></i>
+                        </div>
+                        <div id="statStops" class="font-mono text-base font-bold text-[#09090B] dark:text-zinc-50 leading-none">0</div>
+                        <span class="text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">Stops</span>
+                    </div>
+
+                    <!-- KPI 2: Pacotes (SPX TN) -->
+                    <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
+                        <div class="flex items-center justify-between text-[#71717A] dark:text-zinc-400 mb-1">
+                            <span class="text-[11px] font-medium tracking-tight">Pacotes</span>
+                            <i data-lucide="package" class="w-3 h-3 text-[#EE4D2D]"></i>
+                        </div>
+                        <div id="statTotal" class="font-mono text-base font-bold text-[#09090B] dark:text-zinc-50 leading-none">0</div>
+                        <span class="text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">SPX TN</span>
+                    </div>
+
+                    <!-- KPI 3: Distância Estimada -->
+                    <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
+                        <div class="flex items-center justify-between text-[#71717A] dark:text-zinc-400 mb-1">
+                            <span class="text-[11px] font-medium tracking-tight">Distância</span>
+                            <i data-lucide="navigation-2" class="w-3 h-3 text-zinc-400"></i>
+                        </div>
+                        <div id="statDistance" class="font-mono text-sm font-bold text-[#09090B] dark:text-zinc-50 leading-none mt-0.5">0.0 km</div>
+                        <span id="statDuration" class="font-mono text-[11px] text-[#71717A] dark:text-zinc-500 mt-1 block">0 min</span>
+                    </div>
+
+                    <!-- KPI 4: Progresso Linear shadcn -->
+                    <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs flex flex-col justify-between">
+                        <div class="flex items-center justify-between text-[#71717A] dark:text-zinc-400">
+                            <span class="text-[11px] font-medium tracking-tight">Progresso</span>
+                            <span id="deliveryProgressPercent" class="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">0%</span>
+                        </div>
+                        <div class="my-1.5">
+                            <div class="w-full h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <div id="deliveryProgressBar" class="bg-emerald-600 h-full transition-all duration-500 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <span class="font-mono text-[11px] text-[#71717A] dark:text-zinc-500 block">
+                            <strong id="statDelivered" class="text-emerald-600 dark:text-emerald-400 font-semibold">0</strong> entregues
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Barra de Ações da Rota: Otimizar (zinc-900) + Ordem SPX (outline) + GPS (outline icon) -->
+                <div class="flex items-center gap-2">
+                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled class="shadcn-btn flex-1 h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 font-semibold shadow-shadcn-xs">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                        <span>Otimizar Rota</span>
+                    </button>
+
+                    <button id="btnRestoreOriginal" onclick="restoreOriginalStopOrder()" disabled title="Restaurar sequência original do Stop SPX" class="shadcn-btn h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-zinc-500"></i>
+                        <span>Ordem SPX</span>
+                    </button>
+
+                    <button onclick="useMyGPSLocation()" title="Definir minha localização GPS como ponto de partida (Hub)" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs shrink-0">
+                        <i data-lucide="locate-fixed" class="w-4 h-4 text-[#EE4D2D]"></i>
+                    </button>
+                </div>
+
+                <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganiza só o que falta entregar, a partir de onde você está" class="shadcn-btn w-full h-10 px-3 text-sm bg-[#EE4D2D] hover:bg-[#D73211] text-white font-semibold shadow-shadcn-xs">
+                    <i data-lucide="list-ordered" class="w-4 h-4"></i>
+                    <span>Reorganizar Entregas</span>
+                </button>
+            </div>
+
+            <!-- Bloco de Filtros: Input Search shadcn + Segmented Tabs + Filter Pills -->
+            <div class="p-3 bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 space-y-2.5 shrink-0">
+                <!-- Input de Busca com atalho '/' -->
+                <div class="relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    <input type="text" id="searchInput" oninput="renderStopsList()" placeholder="Buscar por Stop, SPX TN, endereço ou bairro..." class="w-full h-9 pl-8 pr-9 bg-white dark:bg-zinc-950 border border-[#E4E4E7] dark:border-zinc-800 focus:border-zinc-900 dark:focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-400/10 rounded-md text-xs text-[#09090B] dark:text-zinc-100 placeholder:text-[#71717A] outline-none transition" />
+                    <kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[11px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700 rounded pointer-events-none">/</kbd>
+                </div>
+
+                <!-- Segmented Control Tabs estilo shadcn Tabs -->
+                <div class="grid grid-cols-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg border border-[#E4E4E7]/60 dark:border-zinc-800">
+                    <button id="viewMode-STOP" onclick="setViewMode('STOP')" class="py-1 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer">
+                        Paradas (Stops)
+                    </button>
+                    <button id="viewMode-PACKAGE" onclick="setViewMode('PACKAGE')" class="py-1 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer">
+                        Pacotes (SPX TN)
+                    </button>
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="flex items-center gap-1">
+                    <button onclick="setStatusFilter('TODOS')" id="filter-TODOS" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-semibold bg-[#18181B] dark:bg-zinc-100 text-white dark:text-zinc-950 transition cursor-pointer">Todos</button>
+                    <button onclick="setStatusFilter('Pendente')" id="filter-Pendente" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">Pendentes</button>
+                    <button onclick="setStatusFilter('Entregue')" id="filter-Entregue" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">Entregues</button>
+                    <button onclick="setStatusFilter('Insucesso')" id="filter-Insucesso" class="filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">Insucesso</button>
+                </div>
+            </div>
+
+            <!-- Lista de Paradas Scrollável -->
+            <div id="stopsListContainer" class="flex-1 overflow-y-auto p-3 space-y-2 bg-[#FAFAFA] dark:bg-zinc-950/40">
+                <!-- Empty State estilo shadcn Card Dashed -->
+                <div id="emptyStateDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" class="h-full min-h-[280px] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl flex flex-col items-center justify-center p-6 text-center bg-white dark:bg-zinc-900/60 transition">
+                    <div class="w-11 h-11 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700 text-[#EE4D2D] flex items-center justify-center mb-3 shadow-shadcn-xs">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-semibold text-[#09090B] dark:text-zinc-50 text-sm tracking-tight mb-1">Nenhum romaneio carregado</h3>
+                    <p class="text-xs text-[#71717A] dark:text-zinc-400 max-w-xs mb-4 leading-relaxed">
+                        Arraste a planilha da Shopee SPX Express (<span class="font-mono text-[11px]">.xlsx</span>, <span class="font-mono text-[11px]">.xls</span> ou <span class="font-mono text-[11px]">.csv</span>) para esta área ou carregue um romaneio de demonstração.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
+                        <label for="excelFileInput" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold shadow-shadcn-xs">
+                            <i data-lucide="upload" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                            <span>Selecionar Arquivo</span>
+                        </label>
+                        <button onclick="loadSampleRoute()" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 font-medium shadow-shadcn-xs">
+                            <span>Carregar Exemplo</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ====================================================================
+             ÁREA DIREITA: MAPA INTERATIVO + TOOLBAR SHADCN + CARD PRÓXIMA PARADA
+             ==================================================================== -->
+        <section id="mapPanel" class="flex-1 relative h-full w-full hidden lg:block bg-zinc-100 dark:bg-zinc-950">
+            <div id="map" class="w-full h-full z-10"></div>
+
+            <!-- Controles do mapa estilo Google Maps -->
+            <div class="absolute top-3.5 right-3.5 z-20 flex flex-col items-end gap-2.5" id="mapControlsRoot">
+                <button id="btnMapControlsToggle" onclick="toggleMapControls()" class="gm-ctl mobile-map-toggle" aria-expanded="false" title="Exibir/ocultar controles do mapa"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i><span>Controles</span></button>
+                <div id="mapControlsPanel" class="flex flex-col items-end gap-2.5">
+                <button onclick="cycleMapTileLayer()" title="Alternar camada: Mapa / Escuro / Satélite" class="gm-ctl">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <span id="currentMapLayerLabel">Mapa</span>
+                </button>
+                <div class="gm-grp">
+                    <button id="btnTogglePolyline" onclick="toggleRoutePolyline()" title="Mostrar / ocultar trajeto" class="gm-btn">
+                        <i data-lucide="route" class="w-[18px] h-[18px]"></i>
+                        <span id="labelTogglePolyline" class="hidden">Linha: On</span>
+                    </button>
+                    <button id="btnStreetNames" onclick="toggleStreetNames()" title="Mostrar / ocultar nomes das ruas" class="gm-btn" style="color:#4285F4">
+                        <i data-lucide="type" class="w-[18px] h-[18px]"></i>
+                    </button>
+                    <button onclick="fitMapToBounds()" title="Enquadrar toda a rota" class="gm-btn">
+                        <i data-lucide="maximize-2" class="w-[18px] h-[18px]"></i>
+                    </button>
+                    <button onclick="locateMeOnMap()" title="Minha localização" class="gm-btn">
+                        <i data-lucide="locate-fixed" class="w-[18px] h-[18px]" style="color:#4285F4"></i>
+                    </button>
+                </div>
+                <div class="gm-grp">
+                    <button onclick="map && map.zoomIn()" title="Aproximar" class="gm-btn"><i data-lucide="plus" class="w-[18px] h-[18px]"></i></button>
+                    <button onclick="map && map.zoomOut()" title="Afastar" class="gm-btn"><i data-lucide="minus" class="w-[18px] h-[18px]"></i></button>
+                </div>
+                </div>
+            </div>
+
+            <!-- Legenda Compacta Superior Esquerda estilo shadcn Card -->
+            <div class="hidden sm:flex absolute top-3.5 left-3.5 z-20 items-center gap-3 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-sm text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-950 border border-[#EE4D2D] inline-block"></span>
+                    <span>CD Hub</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#EE4D2D] inline-block"></span>
+                    <span>Próxima</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-900 dark:bg-zinc-400 inline-block"></span>
+                    <span>Pendente</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>
+                    <span>Entregue</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-600 inline-block"></span>
+                    <span>Insucesso</span>
+                </div>
+            </div>
+
+            <!-- Card Flutuante Inferior: Próxima Parada Sugerida estilo shadcn Card -->
+            <div id="nextStopFloatingCard" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-2rem)] max-w-xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl p-3.5 transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-start gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-lg bg-[#EE4D2D] text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 shadow-shadcn-xs" id="nextStopOrderBadge">
+                            1
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-[11px] font-semibold uppercase tracking-wider text-[#EE4D2D]">Próxima Parada Sugerida</span>
+                                <span class="text-zinc-300 dark:text-zinc-700">•</span>
+                                <span id="nextStopLabelBadge" class="font-mono text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">Stop --</span>
+                                <span id="nextStopPkgBadge" class="font-mono text-[11px] px-1.5 py-0.2 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-[#E4E4E7] dark:border-zinc-700">1 pct</span>
+                            </div>
+                            <h4 id="nextStopAddressText" class="text-xs sm:text-sm font-semibold text-[#09090B] dark:text-zinc-50 truncate mt-0.5">---</h4>
+                            <p id="nextStopBairroText" class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate">---</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <a id="nextStopGmapsBtn" href="#" target="_blank" rel="noopener noreferrer" class="shadcn-btn flex-1 sm:flex-initial h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold shadow-shadcn-xs">
+                            <i data-lucide="navigation" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                            <span>Google Maps</span>
+                        </a>
+                        <a id="nextStopWazeBtn" href="#" target="_blank" rel="noopener noreferrer" class="shadcn-btn flex-1 sm:flex-initial h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 font-semibold shadow-shadcn-xs">
+                            <i data-lucide="compass" class="w-3.5 h-3.5 text-sky-500"></i>
+                            <span>Waze</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================================================================
+         SONNER TOAST CONTAINER (CANTO INFERIOR DIREITO)
+         ======================================================================== -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+    <!-- ========================================================================
+         MODAL DE IMPORTAÇÃO ESTILO SHADCN DIALOG
+         ======================================================================== -->
+    <div id="importModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+        <div id="importModalCard" class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl overflow-hidden animate-dialog">
+            
+            <!-- Cabeçalho Dialog -->
+            <div id="importModalHeader" class="px-6 pt-6 pb-4 border-b border-[#E4E4E7] dark:border-zinc-800 relative">
+                <button id="btnCloseImportModalTop" onclick="closeImportModal()" class="hidden absolute top-4 right-4 h-7 w-7 rounded-md inline-flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer" title="Fechar">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+
+                <div class="flex items-center gap-3.5">
+                    <div id="importIconCircle" class="w-10 h-10 rounded-lg bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-800 dark:border-zinc-700 flex items-center justify-center shrink-0 shadow-shadcn-xs">
+                        <i id="importModalMainIcon" data-lucide="loader-2" class="w-5 h-5 animate-spin text-[#EE4D2D]"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h2 id="importModalTitle" class="text-base font-semibold text-[#09090B] dark:text-zinc-50 tracking-tight">
+                            Processando romaneio SPX
+                        </h2>
+                        <p id="importModalSubtitle" class="text-xs text-[#71717A] dark:text-zinc-400 mt-0.5 truncate">
+                            Validando estrutura da planilha e coordenadas
+                        </p>
+                    </div>
+                </div>
+
+                <!-- File Pill Badge -->
+                <div class="mt-4 flex items-center justify-between gap-2 bg-[#FAFAFA] dark:bg-zinc-950 px-3 py-2 rounded-md border border-[#E4E4E7] dark:border-zinc-800">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4 text-[#EE4D2D] shrink-0"></i>
+                        <span id="importModalFileName" class="font-mono text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">planilha.xlsx</span>
+                    </div>
+                    <span id="importModalFileSize" class="font-mono text-[11px] text-[#71717A] bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-[#E4E4E7] dark:border-zinc-800 shrink-0">0 KB</span>
+                </div>
+            </div>
+
+            <!-- Corpo Dialog: Barra de Progresso + Stepper Vertical -->
+            <div id="importProgressSection" class="p-6 space-y-5">
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-2">
+                        <span id="importStepLiveLabel" class="font-medium text-zinc-700 dark:text-zinc-300">Lendo arquivo...</span>
+                        <span id="importModalPercent" class="font-mono font-semibold text-[#09090B] dark:text-zinc-50">0%</span>
+                    </div>
+                    <div class="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div id="importModalProgressBar" class="h-full rounded-full progress-shimmer transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Stepper Vertical -->
+                <div class="space-y-3 border-l-2 border-zinc-200 dark:border-zinc-800 ml-3 pl-4 py-0.5">
+                    <div id="stepRow-1" class="flex items-center gap-2.5 text-xs">
+                        <div id="stepIcon-1" class="w-5 h-5 rounded-full bg-zinc-900 text-white flex items-center justify-center shrink-0">
+                            <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>
+                        </div>
+                        <span id="stepText-1" class="font-medium text-[#09090B] dark:text-zinc-100">Leitura do arquivo Excel / CSV</span>
+                    </div>
+
+                    <div id="stepRow-2" class="flex items-center gap-2.5 text-xs opacity-45">
+                        <div id="stepIcon-2" class="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 font-mono text-[11px] font-bold">2</div>
+                        <span id="stepText-2" class="font-medium text-[#71717A] dark:text-zinc-400">Validação das colunas SPX e Latitude/Longitude</span>
+                    </div>
+
+                    <div id="stepRow-3" class="flex items-center gap-2.5 text-xs opacity-45">
+                        <div id="stepIcon-3" class="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 font-mono text-[11px] font-bold">3</div>
+                        <span id="stepText-3" class="font-medium text-[#71717A] dark:text-zinc-400">Agrupamento por Stop e plotagem no mapa</span>
+                    </div>
+                </div>
+
+                <!-- Callout de Sucesso -->
+                <div id="importSuccessSummaryBox" class="hidden bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/70 rounded-lg p-3.5 flex items-center gap-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+                    <div>
+                        <p id="importSuccessSummaryText" class="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+                            Importação concluída!
+                        </p>
+                        <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">Enquadrando pontos da rota no mapa...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Erro estilo shadcn Alert Destructive -->
+            <div id="importErrorSection" class="hidden p-6 space-y-4">
+                <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/70 rounded-lg p-3.5 flex items-start gap-3">
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-xs font-semibold text-rose-900 dark:text-rose-200">Falha na validação do arquivo</h4>
+                        <p id="importErrorReasonText" class="text-xs text-rose-700 dark:text-rose-300 mt-1 leading-relaxed">
+                            O arquivo selecionado não possui colunas válidas ou está vazio.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2">
+                    <button onclick="downloadTemplateFromError()" class="shadcn-btn h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>Baixar Modelo</span>
+                    </button>
+                    <button onclick="retryFileUpload()" class="shadcn-btn h-9 px-3.5 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        <span>Tentar Novamente</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('error', (e) => { try { showToast('Erro: ' + (e.message || 'falha inesperada'), 'error'); } catch (_) {} });
+        window.addEventListener('unhandledrejection', (e) => { try { showToast('Erro: ' + ((e.reason && e.reason.message) || e.reason), 'error'); } catch (_) {} });
+
+        // ============================================================================
+        // ESTADO GLOBAL E DADOS DE EXEMPLO REAIS (ROMANEIO SPX AT20261120D7DD0)
+        // ============================================================================
+        let map = null;
+        let currentTileLayer = null;
+        let markersLayerGroup = null;
+        let polylineLayerGroup = null;
+        let hubMarker = null;
+
+        let mapLayerIndex = 0; // 0: Claro (Positron), 1: Escuro (Dark Matter), 2: Satélite (Esri)
+        let isPolylineVisible = true;
+        let expandedStopIds = new Set();
+
+        const OSM_OPTS = {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        };
+        const MAP_LAYERS = [
+            {
+                name: "Mapa",
+                url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                options: Object.assign({}, OSM_OPTS),
+                labels: []
+            },
+            {
+                name: "Escuro",
+                url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                options: Object.assign({}, OSM_OPTS, { className: 'spx-dark-tiles' }),
+                labels: []
+            },
+            {
+                name: "Satélite",
+                url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                options: { attribution: 'Tiles &copy; Esri', maxZoom: 19 },
+                labels: [
+                    { url: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", options: { maxZoom: 19 } },
+                    { url: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", options: { maxZoom: 19 } }
+                ]
+            }
+        ];
+        let showStreetNames = true;
+
+        // Ponto de partida padrão: CD Shopee Bauru - SP
+        let hubLocation = {
+            lat: -22.3396,
+            lng: -49.0928,
+            label: "CD Shopee Express - Bauru/SP"
+        };
+
+        let activeAtId = "";
+        let groupedStops = [];
+        let originalStopsSnapshot = [];
+        let currentStatusFilter = "TODOS";
+        let currentViewMode = "STOP"; // 'STOP' | 'PACKAGE'
+
+        let importWatchdogTimer = null;
+        let activeImportToken = 0;
+
+        // Romaneio de exemplo Shopee SPX Express (Bauru - SP): AT20261116CXMI1
+        const REAL_SPX_MANIFEST = [
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261194144010S", "Destination Address": "Rua Giocondo Turini, 1398", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.360542, "Longitude": -49.105644},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261787524209C", "Destination Address": "Rua Marcia Helena Amantini Maronezi, 8, Casa G", "Bairro": "Residencial Jardins do Sul", "City": "Bauru", "Zipcode/Postal code": "17053-114", "Latitude": -22.357225, "Longitude": -49.088062},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261826010313V", "Destination Address": "Rua Antônio Milagre, 261", "Bairro": "Jardim Vitória", "City": "Bauru", "Zipcode/Postal code": "17056-510", "Latitude": -22.355488, "Longitude": -49.1063},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262142177228D", "Destination Address": "Rua Giocondo Turini, 1392, R: d cima da avenida Castelo B", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.360518, "Longitude": -49.105625},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262207858353Y", "Destination Address": "Av jose Henrique Ferraz, 11-35, Supermercado Barracão", "Bairro": "Jd Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-000", "Latitude": -22.351931, "Longitude": -49.096294},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262909030067D", "Destination Address": "Rua Argentina, 2646, Horário comercial", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-674", "Latitude": -22.356842, "Longitude": -49.092541},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2643196730088", "Destination Address": "Rua Felicíssimo Antônio Pereira, 22-75, nova funilaria e pintura", "Bairro": "Jardim Eugênia", "City": "Bauru", "Zipcode/Postal code": "17054-015", "Latitude": -22.349848, "Longitude": -49.086987},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264480662920I", "Destination Address": "Rua Argentina, 2314", "Bairro": "Vila Carvalho", "City": "Bauru", "Zipcode/Postal code": "17052-110", "Latitude": -22.354891, "Longitude": -49.091923},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264527561073U", "Destination Address": "Rua Rosevaldo de Abreu Ribeiro, 956, Quadra 9", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-030", "Latitude": -22.356117, "Longitude": -49.099827},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2646427174921", "Destination Address": "Rua Alcides Concuruto, 162", "Bairro": "Águas Virtuosas", "City": "Bauru", "Zipcode/Postal code": "17053-460", "Latitude": -22.400141, "Longitude": -49.093712},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265295558024L", "Destination Address": "Rua Dirceu Baroni, 123", "Bairro": "Residencial Villa Dumont", "City": "Bauru", "Zipcode/Postal code": "17058-009", "Latitude": -22.362228, "Longitude": -49.090026},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2657983235597", "Destination Address": "Rua Alfeu Cariola, 2-54", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-678", "Latitude": -22.35264, "Longitude": -49.095249},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266167022055R", "Destination Address": "Rua Marcel Pinto de Oliveira, 560, Bar do ze mauricio", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-044", "Latitude": -22.360315, "Longitude": -49.102398},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266497237895U", "Destination Address": "Rua Rosevaldo de Abreu Ribeiro, 956, Quadra 9", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-030", "Latitude": -22.356117, "Longitude": -49.099827},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266643987974H", "Destination Address": "Rua Giocondo Turini, 940, Em frente a Congregação Cristã", "Bairro": "Jd. Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.355104, "Longitude": -49.103802},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266892024450C", "Destination Address": "Rua Giocondo Turini, 10115", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.356592, "Longitude": -49.104301},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267285968365U", "Destination Address": "Rua Cyro Wenceslau, 7-25, Bloco C Apto 4", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-010", "Latitude": -22.354746, "Longitude": -49.097965},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267585529995T", "Destination Address": "Avenida Castelo Branco, 34-06", "Bairro": "Vila Ipiranga", "City": "Bauru", "Zipcode/Postal code": "17056-000", "Latitude": -22.355425, "Longitude": -49.104874},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR268610022428F", "Destination Address": "Rua Marcel Pinto de Oliveira, 830, Adega", "Bairro": "Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-187", "Latitude": -22.359844, "Longitude": -49.104279},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2689173170171", "Destination Address": "Rua Manoel Fradique Coutinho Júnior, 758", "Bairro": "Vila São João do Ipiranga", "City": "Bauru", "Zipcode/Postal code": "17056-160", "Latitude": -22.353952, "Longitude": -49.101818},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269226743236K", "Destination Address": "Rua Doutor Hércules Mastrelli, 4 4", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-666", "Latitude": -22.354799, "Longitude": -49.092999},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269228247319O", "Destination Address": "Rua Professor Isaac Portal Roldan, 7-40", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-034", "Latitude": -22.358646, "Longitude": -49.104298},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2696827429038", "Destination Address": "Avenida Castelo Branco, 37-37, Volkstop", "Bairro": "Vila Ipiranga", "City": "Bauru", "Zipcode/Postal code": "17056-000", "Latitude": -22.362343, "Longitude": -49.107748},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2696972618922", "Destination Address": "Rua Edson Fabiano Rodrigues, 2-70", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17056-320", "Latitude": -22.363138, "Longitude": -49.104931},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2641750778247", "Destination Address": "Cyro Wenceslau, 7, 25  Apartamento A 32", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-037", "Latitude": -22.354755, "Longitude": -49.098},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267784986200M", "Destination Address": "Rua Arlindo Fidélis, 750", "Bairro": "Jd ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-040", "Latitude": -22.354414, "Longitude": -49.099949},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264625031235L", "Destination Address": "Rua México, 15, 15", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-675", "Latitude": -22.352003, "Longitude": -49.092113},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2674010291844", "Destination Address": "Rua Valentim Marchioni, 555", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-180", "Latitude": -22.3554, "Longitude": -49.1008},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264048883945H", "Destination Address": "Rua Marcel Pinto de Oliveira, 338, Oficina mecânica", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-044", "Latitude": -22.360701, "Longitude": -49.100899},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267810356443O", "Destination Address": "Rua Álvaro de Oliveira Lopes Pinto, 03066", "Bairro": "Estância Águas Virtuosas", "City": "Bauru", "Zipcode/Postal code": "17053-480", "Latitude": -22.395828, "Longitude": -49.099766},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264318475725C", "Destination Address": "Arlindo fidelis, 717, Proximo a expo", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-040", "Latitude": -22.35438, "Longitude": -49.099911},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267649784603Y", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 2140, Apt 1007 Torre Plena", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.359541, "Longitude": -49.097649},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265530290694D", "Destination Address": "Avenida Antonio Gonçalves Paula, 26", "Bairro": "Residencial Villa Dumont II", "City": "Bauru", "Zipcode/Postal code": "17058-021", "Latitude": -22.362005, "Longitude": -49.089584},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264725760263N", "Destination Address": "Rua Agenor Lopes, 132", "Bairro": "Estância B. Águas Virtuosas", "City": "Bauru", "Zipcode/Postal code": "17053-520", "Latitude": -22.402407, "Longitude": -49.099541},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2639377919517", "Destination Address": "Rua José Thomaz Ferreira, 445", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-665", "Latitude": -22.3543, "Longitude": -49.093102},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267351170172H", "Destination Address": "Rua Dois, 1 140, Ap:41 bloco:18", "Bairro": "Monte Verde 3", "City": "Bauru", "Zipcode/Postal code": "17056-265", "Latitude": -22.363501, "Longitude": -49.107693},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265724966838J", "Destination Address": "Rua Giocondo Turini, 12-91, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.358927, "Longitude": -49.105145},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263170202597X", "Destination Address": "Avenida José Henrique Ferraz, 1834, Qd 18 n 34", "Bairro": "Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17054-697", "Latitude": -22.359207, "Longitude": -49.098785},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR268146269493Z", "Destination Address": "Rua Rosevaldo de Abreu Ribeiro, 5-27", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-030", "Latitude": -22.352629, "Longitude": -49.098656},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265294619088X", "Destination Address": "Rua Milton Nascimento Bueno, 541, Casa", "Bairro": "Parque Granja Cecília A", "City": "Bauru", "Zipcode/Postal code": "17056-038", "Latitude": -22.361349, "Longitude": -49.104874},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2608818711520", "Destination Address": "Avenida Mário Ranieri 45 Quadra 4, I3, jardins do sul casa i-3", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17053-902", "Latitude": -22.357218, "Longitude": -49.088066},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266677569400U", "Destination Address": "Avenida Mário Ranieri, 4-195, Cond. Villa Dumont / Lote X08", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-646", "Latitude": -22.362202, "Longitude": -49.090034},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263576709027V", "Destination Address": "Avenida Mário Ranieri, 4-195, Lote Y06 Villa Dumont", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-646", "Latitude": -22.362226, "Longitude": -49.090012},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263526023874S", "Destination Address": "Avenida Mário Ranieri, 4-195, Lote Y06 Villa Dumont", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-646", "Latitude": -22.362226, "Longitude": -49.090012},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266202852850W", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 2-140, Apartamento 1007  Torre Plena", "Bairro": "Parque Granja Cecília B", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.359541, "Longitude": -49.097675},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263521651318A", "Destination Address": "Rua Giocondo Turini, 763", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.35428, "Longitude": -49.1022},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263297381164K", "Destination Address": "Rua Cyro Wenceslau, 725, Ap bloco C 1", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-010", "Latitude": -22.35478, "Longitude": -49.097931},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2635175898113", "Destination Address": "Rua Dirceu Baroni, 4-112, Lote Q09", "Bairro": "Residencial Villa Dumont II", "City": "Bauru", "Zipcode/Postal code": "17058-022", "Latitude": -22.362251, "Longitude": -49.09},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2676744274053", "Destination Address": "Rua Giocondo Turini, 7123, Portão branco vazado", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17052-530", "Latitude": -22.354551, "Longitude": -49.101921},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260915315422I", "Destination Address": "Travessa Marcos Antônio Gonçalves de Araújo, 1-50, Quadra 25 Felicíssimo Antônio", "Bairro": "Vila Santista", "City": "Bauru", "Zipcode/Postal code": "17054-586", "Latitude": -22.351876, "Longitude": -49.087204},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR268249086702U", "Destination Address": "Rua Dois, 1140, monte verde 3 AP 411", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-021", "Latitude": -22.363611, "Longitude": -49.107635},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265862990896C", "Destination Address": "Rua Alaska, 2221", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-673", "Latitude": -22.353455, "Longitude": -49.090275},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR268118912427M", "Destination Address": "Rua José Bueno de Camargo Sobrinho, 920, Ligar antes para realizar a en", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-042", "Latitude": -22.356985, "Longitude": -49.103924},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262816962088M", "Destination Address": "Rua Felicíssimo Antônio Pereira, 2532", "Bairro": "Jardim Eugênia", "City": "Bauru", "Zipcode/Postal code": "17054-015", "Latitude": -22.351788, "Longitude": -49.087582},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2681843690266", "Destination Address": "Rua Juzo Hirata, 01153, Bloco 2 apto 204", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17054-691", "Latitude": -22.359665, "Longitude": -49.096603},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262078763311E", "Destination Address": "Praça Virgílio José de Souza Lima Pinheiro, 7-25", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-037", "Latitude": -22.35462, "Longitude": -49.097969},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260301151375G", "Destination Address": "Rua Tomaz Bosco, 2-112", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-033", "Latitude": -22.357065, "Longitude": -49.103024},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2636457373500", "Destination Address": "Rua Ângelo Tamarozzi, 13-28", "Bairro": "Vila São Francisco", "City": "Bauru", "Zipcode/Postal code": "17054-010", "Latitude": -22.352411, "Longitude": -49.087242},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2649765616421", "Destination Address": "Rua Pedro Pagani, 5, Casa h5", "Bairro": "Residencial Jardins do Sul", "City": "Bauru", "Zipcode/Postal code": "17053-115", "Latitude": -22.357225, "Longitude": -49.088036},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2687776559827", "Destination Address": "Rua Rosevaldo de Abreu Ribeiro, 1441, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-030", "Latitude": -22.361629, "Longitude": -49.101429},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2635122920721", "Destination Address": "Rua Frederico da Silva, 195", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17056-277", "Latitude": -22.362133, "Longitude": -49.106743},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260149123724S", "Destination Address": "Rua Antônio Valderramas DAro, 332, Casa 3-32", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-664", "Latitude": -22.354204, "Longitude": -49.091064},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2647877558561", "Destination Address": "Rua Dois, 1_96, Apartamento 34bloco11", "Bairro": "Monte Verde", "City": "Bauru", "Zipcode/Postal code": "17056-265", "Latitude": -22.3631, "Longitude": -49.107899},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2660142213118", "Destination Address": "Avenida Antonio Gonçalves Paula, 1184", "Bairro": "Residencial Villa Dumont II", "City": "Bauru", "Zipcode/Postal code": "17058-021", "Latitude": -22.362181, "Longitude": -49.09005},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262912277457Q", "Destination Address": "Rua José Castilho, 157", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-045", "Latitude": -22.360968, "Longitude": -49.102577},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266741124731N", "Destination Address": "Rua Antônio Valderramas Daro, 634, Casa do fundo", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-664", "Latitude": -22.353418, "Longitude": -49.094025},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261269792720S", "Destination Address": "Rua Dois, 1140, Cond Monte verde 3 apto 1832", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-021", "Latitude": -22.363604, "Longitude": -49.107613},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266162176938G", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 154", "Bairro": "Residencial Pq.Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.360733, "Longitude": -49.096485},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269340317449N", "Destination Address": "Rua Cyro Wenceslau, 3 38", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-010", "Latitude": -22.352791, "Longitude": -49.097466},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264455315701S", "Destination Address": "Rua Gomes Berriel, 3-87", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-662", "Latitude": -22.352875, "Longitude": -49.091155},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261081809361X", "Destination Address": "Rua Nelson Mortari, 1051", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-020", "Latitude": -22.35717, "Longitude": -49.099419},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267068726384P", "Destination Address": "Rua Dois, 1-22, Bloco 01 ap 23", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-021", "Latitude": -22.362551, "Longitude": -49.107994},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269501536417S", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 2140, Apt 1007 Torre Plena", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.359541, "Longitude": -49.097649},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266937159798Z", "Destination Address": "Rua Rosevaldo de Abreu Ribeiro, 1146f", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-030", "Latitude": -22.35849, "Longitude": -49.100544},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265561571411Y", "Destination Address": "Rua Seiju Ishikawa, 5-80", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-031", "Latitude": -22.354456, "Longitude": -49.100811},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2678371697605", "Destination Address": "Rua Mamud Alle, 1100", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-633", "Latitude": -22.365795, "Longitude": -49.097965},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264633411603K", "Destination Address": "Rua Dirceu Baroni, 555, Lote S-21", "Bairro": "Residencial Villa Dumont", "City": "Bauru", "Zipcode/Postal code": "17058-009", "Latitude": -22.362215, "Longitude": -49.090015},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261272307542Z", "Destination Address": "Rua Argentina, 21.38", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-674", "Latitude": -22.353725, "Longitude": -49.091599},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265358527093L", "Destination Address": "Rua Argentina, 21.38", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-674", "Latitude": -22.353725, "Longitude": -49.091599},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2613609993305", "Destination Address": "Rua Ezequiel Bagnol, 153, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-049", "Latitude": -22.360527, "Longitude": -49.103731},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269563155809Q", "Destination Address": "Rua Seiju Ishikawa, 8-26", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-031", "Latitude": -22.356447, "Longitude": -49.101357},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260634430723P", "Destination Address": "Rua Marcel Pinto de Oliveira, 8-30", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-044", "Latitude": -22.35985, "Longitude": -49.104294},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR268165141537X", "Destination Address": "Rua Giocondo Turini, 13-67, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.360233, "Longitude": -49.105507},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266557542024V", "Destination Address": "Rua Tomaz Bosco, 248, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-033", "Latitude": -22.356415, "Longitude": -49.102783},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260154754009Y", "Destination Address": "Rua Argentina, 1919", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-674", "Latitude": -22.352278, "Longitude": -49.091122},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261578373307L", "Destination Address": "Rua Armínio Cândido do Carmo, 3-33", "Bairro": "Jardim Ferraz", "City": "Bauru", "Zipcode/Postal code": "17056-041", "Latitude": -22.356701, "Longitude": -49.099602},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262944676063C", "Destination Address": "Rua Dois, 38100, Residencial Monte Verde Mais+", "Bairro": "Residencial Monte Verde Mais+", "City": "Bauru", "Zipcode/Postal code": "17056-265", "Latitude": -22.3627, "Longitude": -49.1077},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR261256567167O", "Destination Address": "Avenida Mário Ranieri, 445, Casa b15", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-646", "Latitude": -22.357222, "Longitude": -49.08807},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267475506713P", "Destination Address": "Rua Nelson Mortari, 975", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-020", "Latitude": -22.356503, "Longitude": -49.09922},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263276963762R", "Destination Address": "Rua Gomes Berriel, 2-15", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-662", "Latitude": -22.353237, "Longitude": -49.089439},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2662704627090", "Destination Address": "Rua José Castilho, 126, Do lado  escola Durval Guedes", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-045", "Latitude": -22.360676, "Longitude": -49.102539},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2610544791002", "Destination Address": "Estrada Municipal Plinio Homem De Gois  Filho, 38, POSTE 25 Avenida Adutora", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-639", "Latitude": -22.376595, "Longitude": -49.111428},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262545963478O", "Destination Address": "Rua Giocondo Turini, 17-27", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-035", "Latitude": -22.363682, "Longitude": -49.10656},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267629844887Y", "Destination Address": "Rua Ezequiel Bagnol, 186", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-049", "Latitude": -22.360768, "Longitude": -49.10381},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2618848141255", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 2140, Apt 1007 Torre Plena", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.359541, "Longitude": -49.097649},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260611040785Z", "Destination Address": "Rua Zenzo Kikuti, 3-101, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-032", "Latitude": -22.358335, "Longitude": -49.102654},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2609650505302", "Destination Address": "Rua Dois, 2, Bloco 1 APTO 44", "Bairro": "Monte Verde", "City": "Bauru", "Zipcode/Postal code": "17056-265", "Latitude": -22.363297, "Longitude": -49.107788},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262951791537T", "Destination Address": "Rua Juzo Hirata, 1153, Bloco 1 apartamento 204", "Bairro": "Edificio Bela França", "City": "Bauru", "Zipcode/Postal code": "17054-691", "Latitude": -22.359673, "Longitude": -49.096546},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269345327790K", "Destination Address": "Rua Marcel Pinto de Oliveira, 830, Casa", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-044", "Latitude": -22.359844, "Longitude": -49.104279},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263822250004P", "Destination Address": "Rua Edson Fabiano Rodrigues, 115", "Bairro": "Granja Cecília A", "City": "Bauru", "Zipcode/Postal code": "17056-320", "Latitude": -22.361563, "Longitude": -49.10445},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2617296158150", "Destination Address": "R Maj Pedro J de Oliveira - jardim Solange, 1-99, Casa", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-661", "Latitude": -22.352676, "Longitude": -49.088806},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR269599560747V", "Destination Address": "Rua Agenor Lopes, 132", "Bairro": "Estância B. Águas Virtuosas", "City": "Bauru", "Zipcode/Postal code": "17053-520", "Latitude": -22.402407, "Longitude": -49.099541},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265123084675N", "Destination Address": "Rua Antônio Valderramas DAro, 279, Cada de esquina portão preto", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-664", "Latitude": -22.354372, "Longitude": -49.090549},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2622361591970", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 1-54, Bela Grécia", "Bairro": "Parque Granja Cecília B", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.360706, "Longitude": -49.09647},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2644948096527", "Destination Address": "Rua Alfeu Cariola, 3 58, Obs  nao entregar p vizinho", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-678", "Latitude": -22.353368, "Longitude": -49.095359},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264252420920M", "Destination Address": "Rua Agenor Lopes, 132", "Bairro": "Estância B. Águas Virtuosas", "City": "Bauru", "Zipcode/Postal code": "17053-520", "Latitude": -22.402407, "Longitude": -49.099541},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR263205256400V", "Destination Address": "Rua Dirceu Baroni, 555, Lote S-21", "Bairro": "Residencial Villa Dumont", "City": "Bauru", "Zipcode/Postal code": "17058-009", "Latitude": -22.362215, "Longitude": -49.090015},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2687802946305", "Destination Address": "Rua Alfeu Cariola, 266", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-678", "Latitude": -22.352812, "Longitude": -49.095322},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2656239615144", "Destination Address": "Rua Felicíssimo Antônio Pereira, 23-61", "Bairro": "Jardim Eugênia", "City": "Bauru", "Zipcode/Postal code": "17054-015", "Latitude": -22.35076, "Longitude": -49.087219},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264062347674P", "Destination Address": "Rua Romilda Fachetti Gonçalves, 1-68", "Bairro": "Residencial Villa Dumont", "City": "Bauru", "Zipcode/Postal code": "17058-001", "Latitude": -22.362239, "Longitude": -49.090022},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2652978279108", "Destination Address": "Rua Sueli Gomes Franca, 2-28, Casa", "Bairro": "Vila São João do Ipiranga", "City": "Bauru", "Zipcode/Postal code": "17056-170", "Latitude": -22.354752, "Longitude": -49.102406},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2667986960962", "Destination Address": "Rua Tomaz Bosco, 4-39, Portão branco fechado", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-033", "Latitude": -22.358973, "Longitude": -49.103584},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264648156739R", "Destination Address": "Rua Vereador Domingos Medina, 1-61", "Bairro": "Parque Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17056-310", "Latitude": -22.361912, "Longitude": -49.10384},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR267533405854X", "Destination Address": "Rua Nelson Mortari, 11-97, Próximo a Record", "Bairro": "Jardim Ouro Verde", "City": "Bauru", "Zipcode/Postal code": "17056-020", "Latitude": -22.359016, "Longitude": -49.099926},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR260462670416N", "Destination Address": "R Professor Isaac Portal Roldan, 0935", "Bairro": "Bairro Granja Cecília", "City": "Bauru", "Zipcode/Postal code": "17056-325", "Latitude": -22.361675, "Longitude": -49.105167},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR265289720830O", "Destination Address": "Rua Dois, 1-104, Apartamento", "Bairro": "Monte Verde", "City": "Bauru", "Zipcode/Postal code": "17056-265", "Latitude": -22.362566, "Longitude": -49.107979},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR262926134785K", "Destination Address": "Rua Tenente José Leite Sampaio Netto, 1140, Condominio Avalon 101 torre A", "Bairro": "Parque Granja Cecília B", "City": "Bauru", "Zipcode/Postal code": "17054-692", "Latitude": -22.359539, "Longitude": -49.097668},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR2630401815501", "Destination Address": "Avenida Mário Ranieri, 4195, Lote W9 - villa dumont", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17054-646", "Latitude": -22.362219, "Longitude": -49.090034},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266409137672A", "Destination Address": "Avenida Castelo Branco, 38120, Monte verde 1 bl 2 ap41", "Bairro": "Vila Ipiranga", "City": "Bauru", "Zipcode/Postal code": "17056-000", "Latitude": -22.362576, "Longitude": -49.107944},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR268952978680Q", "Destination Address": "Avenida Castelo Branco, 38120, Monte verde 1 bloco 2 ap 23", "Bairro": "Vila Ipiranga", "City": "Bauru", "Zipcode/Postal code": "17056-000", "Latitude": -22.362566, "Longitude": -49.107994},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264383038238R", "Destination Address": "Rua Gomes Berriel, 2-15", "Bairro": "Jardim Solange", "City": "Bauru", "Zipcode/Postal code": "17054-662", "Latitude": -22.353237, "Longitude": -49.089439},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR264748575567V", "Destination Address": "Rua Dois, 1140, Monte Verde 3 ap34 bloco 3", "Bairro": "Monte Verde", "City": "Bauru", "Zipcode/Postal code": "17056-265", "Latitude": -22.363626, "Longitude": -49.107647},
+            {"AT ID": "AT20261116CXMI1", "Sequence": "-", "Stop": "-", "SPX TN": "BR266633516179B", "Destination Address": "Avenida Mário Ranieri 45 Quadra 4, I3, jardins do sul casa i-3", "Bairro": "Jardim Shangri-Lá", "City": "Bauru", "Zipcode/Postal code": "17053-902", "Latitude": -22.357218, "Longitude": -49.088066}
+        ];
+
+        // ============================================================================
+        // INICIALIZAÇÃO E ATALHOS DE TECLADO (ESTILO NEXT.JS / SHADCN)
+        // ============================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initMap();
+            setupFileInputListener();
+            setupKeyboardShortcuts();
+            restoreSavedState();
+            window.addEventListener('resize', () => { if (map) map.invalidateSize({ debounceMoveend: true }); });
+        });
+
+        // ============================================================================
+        // PERSISTÊNCIA: o progresso sobrevive a recarregar a página
+        // ============================================================================
+        const STATE_KEY = 'spx_route_state_v1';
+
+        function saveState() {
+            try {
+                if (!groupedStops.length) { localStorage.removeItem(STATE_KEY); return; }
+                const payload = { activeAtId, hubLocation, groupedStops, originalStopsSnapshot };
+                localStorage.setItem(STATE_KEY, JSON.stringify(payload, (k, v) => (k.startsWith('_') || k === 'originalRow') ? undefined : v));
+            } catch (e) { /* cota cheia ou modo privado */ }
+        }
+
+        function restoreSavedState() {
+            let wantDark = false;
+            try {
+                const th = localStorage.getItem('spx_theme');
+                wantDark = th ? th === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } catch (e) {}
+            if (wantDark && !document.documentElement.classList.contains('dark')) toggleThemeMode();
+
+            try {
+                const raw = localStorage.getItem(STATE_KEY);
+                if (!raw) return;
+                const st = JSON.parse(raw);
+                if (!st || !Array.isArray(st.groupedStops) || !st.groupedStops.length) return;
+                groupedStops = st.groupedStops;
+                originalStopsSnapshot = st.originalStopsSnapshot || JSON.parse(JSON.stringify(st.groupedStops));
+                if (st.hubLocation) { hubLocation = st.hubLocation; renderHubMarker(); }
+                activeAtId = st.activeAtId || "ROMANEIO SPX";
+                document.getElementById('activeAtIdValue').textContent = activeAtId;
+                document.getElementById('activeAtIdBadge').classList.remove('hidden');
+                refreshAllViews(true);
+                updateHeaderImportPill('success', `${groupedStops.length} paradas • restaurado`);
+                showToast("Rota anterior restaurada.", "info");
+                backgroundGeocode();
+            } catch (e) { console.warn("Falha ao restaurar estado", e); }
+        }
+
+        // ============================================================================
+        // ROTA REAL POR RUAS (OSRM) PARA DISTÂNCIA, TEMPO E TRAÇADO
+        // ============================================================================
+        let roadRoute = null, roadRouteSig = '', roadReqId = 0, roadTimer = null;
+
+        function currentRouteSig() {
+            return [hubLocation, ...groupedStops].map(p => p.lat.toFixed(5) + ',' + p.lng.toFixed(5)).join(';');
+        }
+        function getValidRoadRoute() {
+            return (roadRoute && roadRouteSig === currentRouteSig()) ? roadRoute : null;
+        }
+        function scheduleRoadRoute() {
+            clearTimeout(roadTimer);
+            roadTimer = setTimeout(fetchRoadRoute, 700);
+        }
+        async function fetchRoadRoute() {
+            if (groupedStops.length < 1 || groupedStops.length > 90) { roadRoute = null; return; }
+            const sig = currentRouteSig();
+            if (sig === roadRouteSig && roadRoute) return;
+            const id = ++roadReqId;
+            try {
+                const pts = [hubLocation, ...groupedStops];
+                const url = `https://router.project-osrm.org/route/v1/driving/${pts.map(p => p.lng + ',' + p.lat).join(';')}?overview=full&geometries=geojson`;
+                const ctrl = new AbortController();
+                const t = setTimeout(() => ctrl.abort(), 12000);
+                const resp = await fetch(url, { signal: ctrl.signal });
+                clearTimeout(t);
+                const j = await resp.json();
+                if (id !== roadReqId || j.code !== 'Ok' || !j.routes || !j.routes[0]) return;
+                const r = j.routes[0];
+                roadRoute = { km: r.distance / 1000, min: r.duration / 60, coords: r.geometry.coordinates.map(c => [c[1], c[0]]) };
+                roadRouteSig = sig;
+                updateDashboardStats();
+                renderMapMarkersAndPolyline(false);
+            } catch (e) { /* offline: mantém estimativa em linha reta */ }
+        }
+
+        // 2-opt: remove cruzamentos da rota (CD fixo no início)
+        function twoOptImprove(route, start) {
+            const st0 = start || hubLocation;
+            const pts = [{ lat: st0.lat, lng: st0.lng }, ...route];
+            const d = (a, b) => haversineDistanceKm(pts[a].lat, pts[a].lng, pts[b].lat, pts[b].lng);
+            let improved = true, guard = 0;
+            while (improved && guard++ < 60) {
+                improved = false;
+                for (let i = 1; i < pts.length - 1; i++) {
+                    for (let k = i + 1; k < pts.length; k++) {
+                        const hasNext = k + 1 < pts.length;
+                        const before = d(i - 1, i) + (hasNext ? d(k, k + 1) : 0);
+                        const after = d(i - 1, k) + (hasNext ? d(i, k + 1) : 0);
+                        if (after < before - 1e-9) {
+                            const seg = pts.slice(i, k + 1).reverse();
+                            pts.splice(i, seg.length, ...seg);
+                            improved = true;
+                        }
+                    }
+                }
+            }
+            return pts.slice(1);
+        }
+
+        // ============================================================================
+        // MINHA LOCALIZAÇÃO (ponto azul) E REORGANIZAR ENTREGAS
+        // ============================================================================
+        let driverPos = null, driverLayer = null;
+
+        function drawDriverMarker() {
+            if (!map || !driverPos) return;
+            if (driverLayer) map.removeLayer(driverLayer);
+            driverLayer = L.layerGroup([
+                L.circle([driverPos.lat, driverPos.lng], { radius: driverPos.acc || 30, stroke: false, fillColor: '#4285F4', fillOpacity: 0.15, interactive: false }),
+                L.marker([driverPos.lat, driverPos.lng], {
+                    icon: L.divIcon({ className: 'custom-div-icon', html: '<div class="gm-me"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
+                    interactive: false, zIndexOffset: 1000
+                })
+            ]).addTo(map);
+        }
+
+        function getQuickPosition(timeoutMs) {
+            return new Promise(resolve => {
+                if (!navigator.geolocation) return resolve(null);
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        driverPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy };
+                        drawDriverMarker();
+                        resolve(driverPos);
+                    },
+                    () => resolve(null),
+                    { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 15000 }
+                );
+            });
+        }
+
+        async function locateMeOnMap() {
+            showToast("Obtendo sua localização...", "info");
+            const pos = await getQuickPosition(8000);
+            if (!pos) { showToast("Não foi possível obter sua localização. Verifique a permissão do navegador.", "error"); return; }
+            map.flyTo([pos.lat, pos.lng], Math.max(map.getZoom(), 16));
+        }
+
+        async function reorganizeDeliveries() {
+            if (!groupedStops.length) return;
+            const btn = document.getElementById('btnReorganize');
+            btn.disabled = true;
+
+            // 1) Une paradas "sem Stop" que estão exatamente no mesmo ponto (mesma entrega, um só desembarque)
+            const seen = new Map(), merged = [];
+            let mergedCount = 0;
+            groupedStops.forEach(st => {
+                if (st.isUnassignedStop) {
+                    const key = st.lat.toFixed(5) + ',' + st.lng.toFixed(5);
+                    const base = seen.get(key);
+                    if (base) {
+                        base.packages.push(...st.packages);
+                        base.minSequence = Math.min(base.minSequence, st.minSequence);
+                        mergedCount++;
+                        return;
+                    }
+                    seen.set(key, st);
+                }
+                merged.push(st);
+            });
+
+            // 2) Concluídas ficam no topo; só o que falta é reorganizado
+            const isDone = st => { const a = getStopAggregateStatus(st); return a === 'Entregue' || a === 'Insucesso'; };
+            const done = merged.filter(isDone);
+            const pending = merged.filter(st => !isDone(st));
+            if (!pending.length) {
+                showToast("Todas as entregas já foram concluídas.", "info");
+                btn.disabled = false;
+                return;
+            }
+
+            // 3) Ponto de partida: GPS > última entrega concluída > CD
+            let start, origem;
+            const gps = await getQuickPosition(4000);
+            if (gps) { start = gps; origem = "da sua localização atual"; }
+            else if (done.length) { start = done[done.length - 1]; origem = "da última entrega concluída"; }
+            else { start = hubLocation; origem = "do CD"; }
+
+            // 4) Vizinho mais próximo + 2-opt
+            const left = [...pending], route = [];
+            let cur = start;
+            while (left.length) {
+                let bi = 0, bd = Infinity;
+                for (let i = 0; i < left.length; i++) {
+                    const d = haversineDistanceKm(cur.lat, cur.lng, left[i].lat, left[i].lng);
+                    if (d < bd) { bd = d; bi = i; }
+                }
+                cur = left.splice(bi, 1)[0];
+                route.push(cur);
+            }
+            const ordered = twoOptImprove(route, start);
+
+            groupedStops = [...done, ...ordered];
+            refreshAllViews(true);
+            showToast(`${ordered.length} entregas reorganizadas a partir ${origem}.${mergedCount ? ' ' + mergedCount + ' parada(s) no mesmo ponto foram unidas.' : ''}`, "success");
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                const tag = document.activeElement?.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA') {
+                    if (e.key === 'Escape') document.activeElement.blur();
+                    return;
+                }
+                if (e.key === '/') {
+                    e.preventDefault();
+                    document.getElementById('searchInput')?.focus();
+                } else if (e.key.toLowerCase() === 'i') {
+                    e.preventDefault();
+                    document.getElementById('excelFileInput')?.click();
+                } else if (e.key === 'Escape') {
+                    closeImportModal();
+                }
+            });
+        }
+
+        function toggleThemeMode() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            try { localStorage.setItem('spx_theme', isDark ? 'dark' : 'light'); } catch (e) {}
+            // Sincroniza camada do mapa (Claro <-> Escuro) automaticamente se não estiver em Satélite
+            if (mapLayerIndex !== 2) {
+                mapLayerIndex = isDark ? 1 : 0;
+                applyMapTileLayer();
+            }
+            lucide.createIcons();
+        }
+
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: false, // Controles customizados na toolbar shadcn
+                preferCanvas: true,
+                zoomSnap: 0.5,
+                zoomDelta: 0.5,
+                wheelPxPerZoomLevel: 90
+            }).setView([hubLocation.lat, hubLocation.lng], 13);
+
+            applyMapTileLayer();
+            L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
+
+            polylineLayerGroup = L.layerGroup().addTo(map);
+            markersLayerGroup = L.layerGroup().addTo(map);
+
+            renderHubMarker();
+        }
+
+        let currentOverlayLayers = [];
+        function applyMapTileLayer() {
+            if (!map) return;
+            const cfg = MAP_LAYERS[mapLayerIndex];
+            if (!map.getPane('labelsPane')) {
+                // Nomes das ruas ficam ACIMA do trajeto azul e abaixo dos pinos
+                map.createPane('labelsPane');
+                const lp = map.getPane('labelsPane');
+                lp.style.zIndex = 450;
+                lp.style.pointerEvents = 'none';
+            }
+            if (currentTileLayer) map.removeLayer(currentTileLayer);
+            currentOverlayLayers.forEach(l => map.removeLayer(l));
+            currentTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(map);
+            currentOverlayLayers = showStreetNames
+                ? (cfg.labels || []).map(c => L.tileLayer(c.url, Object.assign({ pane: 'labelsPane' }, c.options)).addTo(map))
+                : [];
+            const label = document.getElementById('currentMapLayerLabel');
+            if (label) label.textContent = cfg.name;
+            const btn = document.getElementById('btnStreetNames');
+            if (btn) btn.style.color = showStreetNames ? '#4285F4' : '';
+        }
+
+        function toggleStreetNames() {
+            showToast("Os nomes das ruas já vêm integrados ao mapa OpenStreetMap e não podem ser ocultados nesta camada.", "info");
+        }
+
+        function cycleMapTileLayer() {
+            mapLayerIndex = (mapLayerIndex + 1) % MAP_LAYERS.length;
+            applyMapTileLayer();
+            showToast(`Camada do mapa: ${MAP_LAYERS[mapLayerIndex].name}`, "info");
+        }
+
+        function toggleRoutePolyline() {
+            isPolylineVisible = !isPolylineVisible;
+            const label = document.getElementById('labelTogglePolyline');
+            if (label) label.textContent = isPolylineVisible ? "Linha: On" : "Linha: Off";
+            renderMapMarkersAndPolyline(false);
+        }
+
+        function renderHubMarker() {
+            if (hubMarker) {
+                map.removeLayer(hubMarker);
+            }
+            const hubIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="custom-pin pin-hub w-8 h-8 text-[11px]">CD</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+
+            hubMarker = L.marker([hubLocation.lat, hubLocation.lng], { icon: hubIcon, zIndexOffset: 900 })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-3.5 bg-white text-zinc-950">
+                        <div class="inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-[#EE4D2D] bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                            Ponto de Partida
+                        </div>
+                        <div class="font-semibold text-xs mt-1.5">${escapeHtml(hubLocation.label)}</div>
+                        <div class="font-mono text-[11px] text-zinc-500 mt-1">${hubLocation.lat.toFixed(5)}, ${hubLocation.lng.toFixed(5)}</div>
+                    </div>
+                `);
+        }
+
+        // ============================================================================
+        // LEITURA ASSÍNCRONA DE EXCEL (SheetJS) + MODAL SHADCN DIALOG
+        // ============================================================================
+        let fileListenerBound = false;
+        function setupFileInputListener() {
+            if (fileListenerBound) return;
+            const fileInput = document.getElementById('excelFileInput');
+            fileInput.addEventListener('change', (e) => {
+                const input = e.target;
+                const file = input.files && input.files[0];
+                if (file) {
+                    Promise.resolve(processUploadedExcel(file)).finally(() => { try { input.value = ''; } catch (_) {} });
+                }
+            });
+            fileListenerBound = true;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '0 KB';
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function clearImportWatchdog() {
+            if (importWatchdogTimer) {
+                clearTimeout(importWatchdogTimer);
+                importWatchdogTimer = null;
+            }
+        }
+
+        function startImportWatchdog(token, fileName) {
+            clearImportWatchdog();
+            importWatchdogTimer = setTimeout(() => {
+                if (activeImportToken === token) {
+                    activeImportToken++;
+                    showImportModalError(
+                        fileName,
+                        "Tempo limite excedido (8s) ao processar o arquivo. Verifique se a planilha não está corrompida e tente novamente."
+                    );
+                }
+            }, 8000);
+        }
+
+        function updateHeaderImportPill(state, labelText) {
+            const pill = document.getElementById('headerImportStatusPill');
+            const dot = document.getElementById('headerImportStatusDot');
+            const text = document.getElementById('headerImportStatusText');
+            if (!pill || !dot || !text) return;
+
+            text.textContent = labelText;
+
+            if (state === 'idle') {
+                pill.className = "hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 transition-colors";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-zinc-400";
+            } else if (state === 'importing') {
+                pill.className = "hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping";
+            } else if (state === 'success') {
+                pill.className = "hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
+            } else if (state === 'error') {
+                pill.className = "hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-colors";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse";
+            }
+        }
+
+        function setImportModalProgress(percent, liveLabel) {
+            const bar = document.getElementById('importModalProgressBar');
+            const pctText = document.getElementById('importModalPercent');
+            const labelEl = document.getElementById('importStepLiveLabel');
+            bar.style.width = `${percent}%`;
+            pctText.textContent = `${percent}%`;
+            if (liveLabel) labelEl.textContent = liveLabel;
+        }
+
+        function setImportStepState(stepNum, state) {
+            const row = document.getElementById(`stepRow-${stepNum}`);
+            const iconBox = document.getElementById(`stepIcon-${stepNum}`);
+            const textEl = document.getElementById(`stepText-${stepNum}`);
+
+            if (state === 'pending') {
+                row.className = "flex items-center gap-2.5 text-xs opacity-45";
+                iconBox.className = "w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0 font-mono text-[11px] font-bold";
+                iconBox.innerHTML = `${stepNum}`;
+                textEl.className = "font-medium text-[#71717A] dark:text-zinc-400";
+            } else if (state === 'active') {
+                row.className = "flex items-center gap-2.5 text-xs opacity-100";
+                iconBox.className = "w-5 h-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 flex items-center justify-center shrink-0";
+                iconBox.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>`;
+                textEl.className = "font-semibold text-[#09090B] dark:text-zinc-50";
+            } else if (state === 'done') {
+                row.className = "flex items-center gap-2.5 text-xs opacity-100";
+                iconBox.className = "w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0";
+                iconBox.innerHTML = `<i data-lucide="check" class="w-3 h-3 stroke-[2.5]"></i>`;
+                textEl.className = "font-medium text-emerald-700 dark:text-emerald-400";
+            }
+            lucide.createIcons();
+        }
+
+        function openImportModal(fileName, fileSizeBytes) {
+            const overlay = document.getElementById('importModalOverlay');
+            const card = document.getElementById('importModalCard');
+            const iconCircle = document.getElementById('importIconCircle');
+            const mainIcon = document.getElementById('importModalMainIcon');
+
+            card.classList.remove('animate-shake');
+            card.classList.add('animate-dialog');
+
+            iconCircle.className = "w-10 h-10 rounded-lg bg-zinc-900 dark:bg-zinc-800 text-white border border-zinc-800 dark:border-zinc-700 flex items-center justify-center shrink-0 shadow-shadcn-xs";
+            mainIcon.setAttribute('data-lucide', 'loader-2');
+            mainIcon.className = "w-5 h-5 animate-spin text-[#EE4D2D]";
+
+            document.getElementById('btnCloseImportModalTop').classList.add('hidden');
+            document.getElementById('importModalTitle').textContent = "Processando romaneio SPX";
+            document.getElementById('importModalSubtitle').textContent = "Validando estrutura da planilha e coordenadas";
+            document.getElementById('importModalFileName').textContent = fileName;
+            document.getElementById('importModalFileSize').textContent = formatFileSize(fileSizeBytes);
+
+            document.getElementById('importProgressSection').classList.remove('hidden');
+            document.getElementById('importSuccessSummaryBox').classList.add('hidden');
+            document.getElementById('importErrorSection').classList.add('hidden');
+
+            const bar = document.getElementById('importModalProgressBar');
+            bar.className = "h-full rounded-full progress-shimmer transition-all duration-300";
+            setImportModalProgress(15, "Lendo estrutura da planilha...");
+
+            setImportStepState(1, 'active');
+            setImportStepState(2, 'pending');
+            setImportStepState(3, 'pending');
+
+            overlay.classList.remove('hidden');
+            updateHeaderImportPill('importing', 'Importando...');
+            lucide.createIcons();
+        }
+
+        function showImportModalSuccess(fileName, totalPackages, totalStops) {
+            clearImportWatchdog();
+            const iconCircle = document.getElementById('importIconCircle');
+            const mainIcon = document.getElementById('importModalMainIcon');
+            const bar = document.getElementById('importModalProgressBar');
+
+            iconCircle.className = "w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-shadcn-xs";
+            mainIcon.setAttribute('data-lucide', 'check');
+            mainIcon.className = "w-5 h-5 text-white stroke-[2.5]";
+
+            document.getElementById('importModalTitle').textContent = "Romaneio importado";
+            document.getElementById('importModalSubtitle').textContent = "Todos os pontos foram carregados com sucesso";
+
+            bar.className = "h-full rounded-full bg-emerald-600 transition-all duration-300";
+            setImportModalProgress(100, "Concluído");
+
+            setImportStepState(1, 'done');
+            setImportStepState(2, 'done');
+            setImportStepState(3, 'done');
+
+            document.getElementById('importSuccessSummaryText').textContent = `${totalPackages} pacotes agrupados em ${totalStops} paradas.`;
+            document.getElementById('importSuccessSummaryBox').classList.remove('hidden');
+
+            updateHeaderImportPill('success', `${totalStops} paradas • ${fileName}`);
+            lucide.createIcons();
+        }
+
+        function showImportModalError(fileName, reasonMessage) {
+            clearImportWatchdog();
+            const card = document.getElementById('importModalCard');
+            const iconCircle = document.getElementById('importIconCircle');
+            const mainIcon = document.getElementById('importModalMainIcon');
+
+            card.classList.remove('animate-dialog');
+            void card.offsetWidth;
+            card.classList.add('animate-shake');
+
+            iconCircle.className = "w-10 h-10 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-shadcn-xs";
+            mainIcon.setAttribute('data-lucide', 'alert-triangle');
+            mainIcon.className = "w-5 h-5 text-white";
+
+            document.getElementById('btnCloseImportModalTop').classList.remove('hidden');
+            document.getElementById('importModalTitle').textContent = "Erro na importação";
+            document.getElementById('importModalSubtitle').textContent = "Não foi possível processar o arquivo selecionado";
+
+            document.getElementById('importProgressSection').classList.add('hidden');
+            document.getElementById('importErrorReasonText').textContent = reasonMessage;
+            document.getElementById('importErrorSection').classList.remove('hidden');
+
+            updateHeaderImportPill('error', 'Falha na importação');
+            lucide.createIcons();
+        }
+
+        function closeImportModal() {
+            clearImportWatchdog();
+            document.getElementById('importModalOverlay').classList.add('hidden');
+        }
+
+        function retryFileUpload() {
+            closeImportModal();
+            document.getElementById('excelFileInput').click();
+        }
+
+        function downloadTemplateFromError() {
+            closeImportModal();
+            downloadTemplateXLSX();
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dz = document.getElementById('emptyStateDropzone');
+            if (dz) {
+                dz.classList.add('border-[#EE4D2D]', 'bg-orange-50/40', 'dark:bg-zinc-800/70');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dz = document.getElementById('emptyStateDropzone');
+            if (dz) {
+                dz.classList.remove('border-[#EE4D2D]', 'bg-orange-50/40', 'dark:bg-zinc-800/70');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDragLeave(e);
+            const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) {
+                processUploadedExcel(file);
+            }
+        }
+
+        function parseWorkbookSafely(arrayBuffer) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        if (typeof XLSX === 'undefined') {
+                            throw new Error("Biblioteca de leitura Excel (SheetJS) indisponível.");
+                        }
+                        const workbook = XLSX.read(arrayBuffer, {
+                            type: 'array',
+                            cellStyles: false,
+                            cellHTML: false,
+                            cellFormula: false,
+                            sheetStubs: false
+                        });
+                        if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+                            throw new Error("Nenhuma aba encontrada na planilha.");
+                        }
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: true });
+                        resolve(rawRows);
+                    } catch (err) {
+                        reject(err);
+                    }
+                }, 60);
+            });
+        }
+
+        async function processUploadedExcel(file) {
+            const myToken = ++activeImportToken;
+            openImportModal(file.name, file.size);
+            startImportWatchdog(myToken, file.name);
+
+            try {
+                await sleep(80);
+                if (activeImportToken !== myToken) return;
+
+                const validExtensions = ['.xlsx', '.xls', '.csv'];
+                const fileNameLower = file.name.toLowerCase();
+                if (!validExtensions.some(ext => fileNameLower.endsWith(ext))) {
+                    showImportModalError(
+                        file.name,
+                        `Formato não suportado ("${file.name}"). Utilize um arquivo .xlsx, .xls ou .csv exportado da Shopee.`
+                    );
+                    return;
+                }
+
+                setImportModalProgress(30, "Lendo registros da planilha...");
+                const data = file.arrayBuffer ? await file.arrayBuffer() : await new Promise((res, rej) => {
+                    const fr = new FileReader();
+                    fr.onload = () => res(fr.result);
+                    fr.onerror = () => rej(new Error("Não foi possível ler o arquivo."));
+                    fr.readAsArrayBuffer(file);
+                });
+                if (activeImportToken !== myToken) return;
+
+                const rawRows = await parseWorkbookSafely(data);
+                if (activeImportToken !== myToken) return;
+
+                if (!rawRows || rawRows.length === 0) {
+                    showImportModalError(
+                        file.name,
+                        "A planilha selecionada está vazia ou não possui linhas de dados na primeira aba."
+                    );
+                    return;
+                }
+
+                setImportStepState(1, 'done');
+                setImportStepState(2, 'active');
+                setImportModalProgress(62, "Validando colunas SPX e coordenadas...");
+                await sleep(90);
+                if (activeImportToken !== myToken) return;
+
+                const sampleHeaders = Object.keys(rawRows[0]).map(k =>
+                    String(k).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                );
+                const hasAddressCol = sampleHeaders.some(h =>
+                    ['destination address', 'endereco', 'rua', 'logradouro', 'address'].includes(h)
+                );
+                const hasCoordsCol = sampleHeaders.some(h => ['latitude', 'lat'].includes(h)) &&
+                                     sampleHeaders.some(h => ['longitude', 'lng', 'lon', 'long'].includes(h));
+
+                if (!hasAddressCol && !hasCoordsCol) {
+                    showImportModalError(
+                        file.name,
+                        "Colunas obrigatórias ausentes. A planilha deve conter 'Destination Address' ou 'Latitude' e 'Longitude'."
+                    );
+                    return;
+                }
+
+                setImportStepState(2, 'done');
+                setImportStepState(3, 'active');
+                setImportModalProgress(86, "Agrupando paradas (Stops) e plotando no mapa...");
+                await sleep(60);
+                if (activeImportToken !== myToken) return;
+
+                const summary = await normalizeAndGroupSPXRows(rawRows, file.name);
+                if (activeImportToken !== myToken) return;
+
+                if (!summary || summary.totalPackages === 0) {
+                    showImportModalError(
+                        file.name,
+                        "Nenhuma entrega válida encontrada nas linhas da planilha."
+                    );
+                    return;
+                }
+
+                showImportModalSuccess(file.name, summary.totalPackages, summary.totalStops);
+                await sleep(950);
+                if (activeImportToken !== myToken) return;
+
+                closeImportModal();
+                requestAnimationFrame(() => {
+                    if (map) {
+                        map.invalidateSize();
+                        fitMapToBounds();
+                    }
+                });
+
+            } catch (error) {
+                if (activeImportToken !== myToken) return;
+                console.error("Erro ao ler planilha:", error);
+                showImportModalError(
+                    file.name,
+                    `Falha ao processar o arquivo: ${error && error.message ? error.message : "Formato incompatível."}`
+                );
+            }
+        }
+
+        // ============================================================================
+        // NORMALIZAÇÃO E AGRUPAMENTO POR STOP (SHOPEE SPX EXPRESS)
+        // ============================================================================
+        function extractNormalizedField(row, candidateKeys) {
+            const keys = Object.keys(row);
+            for (const cand of candidateKeys) {
+                const target = cand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                for (const k of keys) {
+                    const normK = String(k).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    if (normK === target) {
+                        return row[k];
+                    }
+                }
+            }
+            return "";
+        }
+
+        function parseCoordinateSafe(val) {
+            if (val === null || val === undefined || val === "") return null;
+            if (typeof val === 'number') {
+                return Number.isFinite(val) && val !== 0 ? val : null;
+            }
+            const cleaned = String(val).trim().replace(',', '.');
+            if (!cleaned || cleaned === '-') return null;
+            const num = parseFloat(cleaned);
+            return Number.isFinite(num) && num !== 0 ? num : null;
+        }
+
+        async function normalizeAndGroupSPXRows(rows, sourceLabel = "Exemplo_AT20261120D7DD0.xlsx") {
+            const rawPackages = [];
+            let needsGeocoding = false;
+            let detectedAtId = "";
+
+            for (let index = 0; index < rows.length; index++) {
+                const row = rows[index];
+
+                const atIdRaw = String(extractNormalizedField(row, ['at id', 'atid', 'romaneio']) || "").trim();
+                if (atIdRaw && !detectedAtId) detectedAtId = atIdRaw;
+
+                const seqRaw = extractNormalizedField(row, ['sequence', 'seq', 'sequencia']);
+                const seqNum = parseInt(String(seqRaw).trim(), 10);
+                const sequence = Number.isFinite(seqNum) ? seqNum : (index + 1);
+
+                const stopRawVal = extractNormalizedField(row, ['stop', 'parada']);
+                const stopStr = String(stopRawVal === null || stopRawVal === undefined ? "" : stopRawVal).trim();
+                const hasValidStopNumber = stopStr !== "" && stopStr !== "-" && stopStr.toLowerCase() !== "null" && stopStr.toLowerCase() !== "nan";
+                const stopNumeric = hasValidStopNumber ? parseInt(stopStr, 10) : null;
+
+                const spxTn = String(extractNormalizedField(row, ['spx tn', 'spxtn', 'tracking', 'codigo', 'rastreio', 'pacote']) || `SPX-${index + 1}`).trim();
+                const address = String(extractNormalizedField(row, ['destination address', 'endereco', 'rua', 'logradouro', 'address']) || "").trim();
+                const bairro = String(extractNormalizedField(row, ['bairro', 'neighborhood', 'distrito']) || "").trim();
+                const city = String(extractNormalizedField(row, ['city', 'cidade', 'municipio']) || "").trim();
+                const zipcode = String(extractNormalizedField(row, ['zipcode/postal code', 'zipcode', 'postal code', 'cep']) || "").trim();
+
+                const lat = parseCoordinateSafe(extractNormalizedField(row, ['latitude', 'lat']));
+                const lng = parseCoordinateSafe(extractNormalizedField(row, ['longitude', 'lng', 'lon', 'long']));
+
+                if (!address && lat === null && lng === null && !spxTn.startsWith('BR')) {
+                    continue;
+                }
+
+                if (lat === null || lng === null) {
+                    needsGeocoding = true;
+                }
+
+                rawPackages.push({
+                    id: `pkg-${index}-${Date.now()}`,
+                    atId: atIdRaw || detectedAtId || "ROMANEIO SPX",
+                    sequence: sequence,
+                    stopRaw: hasValidStopNumber ? stopStr : "-",
+                    stopNumeric: Number.isFinite(stopNumeric) ? stopNumeric : null,
+                    spxTn: spxTn,
+                    address: address || `Ponto #${index + 1}`,
+                    bairro: bairro,
+                    city: city,
+                    zipcode: zipcode,
+                    lat: lat,
+                    lng: lng,
+                    status: "Pendente",
+                    deliveredAt: "",
+                    originalRow: row
+                });
+            }
+
+            if (needsGeocoding && rawPackages.length > 0) {
+                const progressWrapper = document.getElementById('geocodingProgressWrapper');
+                const statusText = document.getElementById('geocodingStatusText');
+                const progressBar = document.getElementById('geocodingProgressBar');
+                const percentText = document.getElementById('geocodingPercentText');
+
+                progressWrapper.classList.remove('hidden');
+
+                for (let i = 0; i < rawPackages.length; i++) {
+                    const item = rawPackages[i];
+                    if (item.lat === null || item.lng === null) {
+                        statusText.textContent = `Geocodificando (${i + 1}/${rawPackages.length}): ${item.address}`;
+                        // Posição provisória (aprox.) para importar na hora; a localização real chega em segundo plano
+                        const coords = generateDeterministicLocalCoords(item.address, item.bairro, i);
+                        item.lat = coords.lat;
+                        item.lng = coords.lng;
+                        item.approx = true;
+                    }
+                    const pct = Math.round(((i + 1) / rawPackages.length) * 100);
+                    progressBar.style.width = `${pct}%`;
+                    percentText.textContent = `${pct}%`;
+                }
+
+                
+            }
+
+            activeAtId = detectedAtId || "ROMANEIO SPX";
+            const atBadge = document.getElementById('activeAtIdBadge');
+            const atVal = document.getElementById('activeAtIdValue');
+            if (atBadge && atVal) {
+                atVal.textContent = activeAtId;
+                atBadge.classList.remove('hidden');
+            }
+
+            groupedStops = buildGroupedStopsFromPackages(rawPackages);
+            originalStopsSnapshot = JSON.parse(JSON.stringify(groupedStops));
+            expandedStopIds.clear();
+
+            refreshAllViews(false);
+            updateHeaderImportPill('success', `${groupedStops.length} paradas • ${sourceLabel}`);
+            showToast(`${rawPackages.length} pacotes agrupados em ${groupedStops.length} paradas.`, "success");
+            backgroundGeocode();
+
+            return {
+                totalPackages: rawPackages.length,
+                totalStops: groupedStops.length
+            };
+        }
+
+        // ============================================================================
+        // GEOCODIFICAÇÃO REAL (Nominatim/OpenStreetMap) COM CACHE
+        // ============================================================================
+        const GEO_CACHE_KEY = 'spx_geocache_v1';
+        let geoCache = {};
+        try { geoCache = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}'); } catch (e) {}
+        let lastGeoCall = 0;
+
+        async function geocodeAddress(address, bairro, city) {
+            const base = String(address || '').replace(/\s*-\s*(apto|apt|bloco|bl|casa|portaria|sala|fundos).*$/i, '').trim();
+            const key = [base, bairro, city].join('|').toLowerCase();
+            if (geoCache[key]) return geoCache[key];
+
+            const noNumber = base.replace(/,?\s*\d[\d\-\/]*\s*$/, '').trim();
+            const attempts = [...new Set([base, noNumber].filter(Boolean))];
+            const v = 0.5;
+            const viewbox = `${hubLocation.lng - v},${hubLocation.lat + v},${hubLocation.lng + v},${hubLocation.lat - v}`;
+
+            for (const street of attempts) {
+                const wait = lastGeoCall + 1100 - Date.now();
+                if (wait > 0) await sleep(wait);
+                lastGeoCall = Date.now();
+                const q = [street, bairro, city, 'Brasil'].filter(Boolean).join(', ');
+                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&viewbox=${viewbox}&q=${encodeURIComponent(q)}`;
+                try {
+                    const ctrl = new AbortController();
+                    const t = setTimeout(() => ctrl.abort(), 8000);
+                    const resp = await fetch(url, { signal: ctrl.signal, headers: { 'Accept-Language': 'pt-BR' } });
+                    clearTimeout(t);
+                    if (!resp.ok) continue;
+                    const arr = await resp.json();
+                    if (!arr || !arr[0]) continue;
+                    const lat = parseFloat(arr[0].lat), lng = parseFloat(arr[0].lon);
+                    // Sanidade: descarta resultados a mais de 80 km do CD
+                    if (!Number.isFinite(lat) || !Number.isFinite(lng) || haversineDistanceKm(hubLocation.lat, hubLocation.lng, lat, lng) > 80) continue;
+                    geoCache[key] = { lat, lng };
+                    try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geoCache)); } catch (e) {}
+                    return geoCache[key];
+                } catch (e) { /* tenta a próxima variação */ }
+            }
+            return null;
+        }
+
+        // Geocodificação em segundo plano (não trava a importação)
+        let bgGeoToken = 0;
+        async function backgroundGeocode() {
+            const my = ++bgGeoToken;
+            const todo = groupedStops.filter(st => st.approx);
+            if (!todo.length) return;
+            const wrap = document.getElementById('geocodingProgressWrapper');
+            const txt = document.getElementById('geocodingStatusText');
+            const bar = document.getElementById('geocodingProgressBar');
+            const pct = document.getElementById('geocodingPercentText');
+            wrap.classList.remove('hidden');
+            let done = 0, fixed = 0;
+            for (const st of todo) {
+                if (my !== bgGeoToken) return;
+                txt.textContent = `Localizando endereços (${done + 1}/${todo.length}): ${st.primaryAddress}`;
+                const real = await geocodeAddress(st.primaryAddress, st.bairro, st.city);
+                if (my !== bgGeoToken) return;
+                if (real) {
+                    const apply = (g) => { g.lat = real.lat; g.lng = real.lng; g.approx = false; (g.packages || []).forEach(p => { p.lat = real.lat; p.lng = real.lng; p.approx = false; }); };
+                    apply(st);
+                    const snap = originalStopsSnapshot.find(g => g.groupId === st.groupId);
+                    if (snap) apply(snap);
+                    fixed++;
+                    if (fixed % 5 === 0) refreshAllViews(false);
+                }
+                done++;
+                const p = Math.round((done / todo.length) * 100);
+                bar.style.width = p + '%';
+                pct.textContent = p + '%';
+            }
+            wrap.classList.add('hidden');
+            refreshAllViews(false);
+            const left = groupedStops.filter(g => g.approx).length;
+            if (left > 0) showToast(`${fixed} endereços localizados; ${left} ficaram "aprox." — confira antes de navegar.`, "error");
+            else showToast(`Todos os ${fixed} endereços foram localizados.`, "success");
+        }
+
+        function generateDeterministicLocalCoords(address, bairro, idx) {
+            const seedStr = `${address}|${bairro}|${idx}`;
+            let hash = 0;
+            for (let i = 0; i < seedStr.length; i++) {
+                hash = ((hash << 5) - hash) + seedStr.charCodeAt(i);
+                hash |= 0;
+            }
+            const angle = (Math.abs(hash) % 360) * (Math.PI / 180);
+            const radius = 0.008 + ((Math.abs(hash >> 4) % 35) / 1000);
+            return {
+                lat: Number((hubLocation.lat + Math.cos(angle) * radius).toFixed(6)),
+                lng: Number((hubLocation.lng + Math.sin(angle) * radius).toFixed(6))
+            };
+        }
+
+        function buildGroupedStopsFromPackages(packages) {
+            const stopMap = new Map();
+            const unnumberedStops = [];
+
+            packages.forEach((pkg, idx) => {
+                if (pkg.stopRaw !== "-" && pkg.stopRaw !== "") {
+                    const key = `STOP_${pkg.stopRaw}`;
+                    if (!stopMap.has(key)) {
+                        stopMap.set(key, {
+                            groupId: key,
+                            stopLabel: pkg.stopRaw,
+                            stopNumeric: pkg.stopNumeric,
+                            isUnassignedStop: false,
+                            primaryAddress: pkg.address,
+                            bairro: pkg.bairro,
+                            city: pkg.city,
+                            zipcode: pkg.zipcode,
+                            lat: pkg.lat,
+                            lng: pkg.lng,
+                            minSequence: pkg.sequence,
+                            approx: !!pkg.approx,
+                            packages: []
+                        });
+                    }
+                    const group = stopMap.get(key);
+                    group.packages.push(pkg);
+                    if (pkg.sequence < group.minSequence) {
+                        group.minSequence = pkg.sequence;
+                    }
+                } else {
+                    unnumberedStops.push({
+                        groupId: `UNASSIGNED_${idx}_${pkg.spxTn}`,
+                        stopLabel: "-",
+                        stopNumeric: null,
+                        isUnassignedStop: true,
+                        primaryAddress: pkg.address,
+                        bairro: pkg.bairro,
+                        city: pkg.city,
+                        zipcode: pkg.zipcode,
+                        lat: pkg.lat,
+                        lng: pkg.lng,
+                        minSequence: pkg.sequence,
+                        approx: !!pkg.approx,
+                        packages: [pkg]
+                    });
+                }
+            });
+
+            const numberedList = Array.from(stopMap.values()).sort((a, b) => {
+                if (a.stopNumeric !== null && b.stopNumeric !== null && a.stopNumeric !== b.stopNumeric) {
+                    return a.stopNumeric - b.stopNumeric;
+                }
+                return String(a.stopLabel).localeCompare(String(b.stopLabel), 'pt-BR', { numeric: true });
+            });
+
+            unnumberedStops.sort((a, b) => a.minSequence - b.minSequence);
+
+            return [...numberedList, ...unnumberedStops];
+        }
+
+        // ============================================================================
+        // OTIMIZAÇÃO VIZINHO MAIS PRÓXIMO, REORDENAÇÃO MANUAL E MÉTRICAS
+        // ============================================================================
+        function haversineDistanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function optimizeRouteNearestNeighbor() {
+            if (!groupedStops || groupedStops.length < 2) {
+                showToast("Importe pelo menos 2 paradas para otimizar a rota.", "info");
+                return;
+            }
+
+            const unvisited = [...groupedStops];
+            const optimized = [];
+            let currentLat = hubLocation.lat;
+            let currentLng = hubLocation.lng;
+
+            while (unvisited.length > 0) {
+                let nearestIdx = 0;
+                let nearestDist = Infinity;
+
+                for (let i = 0; i < unvisited.length; i++) {
+                    const candidate = unvisited[i];
+                    const d = haversineDistanceKm(currentLat, currentLng, candidate.lat, candidate.lng);
+                    if (d < nearestDist) {
+                        nearestDist = d;
+                        nearestIdx = i;
+                    }
+                }
+
+                const chosen = unvisited.splice(nearestIdx, 1)[0];
+                optimized.push(chosen);
+                currentLat = chosen.lat;
+                currentLng = chosen.lng;
+            }
+
+            groupedStops = twoOptImprove(optimized);
+            refreshAllViews(true);
+            showToast("Rota otimizada (vizinho mais próximo + 2-opt) a partir do CD.", "success");
+        }
+
+        function restoreOriginalStopOrder() {
+            if (!originalStopsSnapshot || originalStopsSnapshot.length === 0) return;
+
+            const currentStatusByPkgId = new Map();
+            groupedStops.forEach(stop => {
+                stop.packages.forEach(pkg => {
+                    currentStatusByPkgId.set(pkg.id, {
+                        status: pkg.status,
+                        deliveredAt: pkg.deliveredAt
+                    });
+                });
+            });
+
+            const restored = JSON.parse(JSON.stringify(originalStopsSnapshot));
+            restored.forEach(stop => {
+                stop.packages.forEach(pkg => {
+                    const saved = currentStatusByPkgId.get(pkg.id);
+                    if (saved) {
+                        pkg.status = saved.status;
+                        pkg.deliveredAt = saved.deliveredAt;
+                    }
+                });
+            });
+
+            groupedStops = restored;
+            refreshAllViews(true);
+            showToast("Sequência original SPX restaurada.", "info");
+        }
+
+        function moveStopOrder(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= groupedStops.length) return;
+            const temp = groupedStops[index];
+            groupedStops[index] = groupedStops[targetIndex];
+            groupedStops[targetIndex] = temp;
+            refreshAllViews(false);
+        }
+
+        function clearCurrentManifest() {
+            bgGeoToken++;
+            document.getElementById('geocodingProgressWrapper').classList.add('hidden');
+            groupedStops = [];
+            originalStopsSnapshot = [];
+            activeAtId = "";
+            expandedStopIds.clear();
+
+            if (markersLayerGroup) markersLayerGroup.clearLayers();
+            if (polylineLayerGroup) polylineLayerGroup.clearLayers();
+
+            document.getElementById('activeAtIdBadge')?.classList.add('hidden');
+            document.getElementById('nextStopFloatingCard')?.classList.add('hidden');
+            updateHeaderImportPill('idle', 'Aguardando planilha');
+            refreshAllViews(false);
+
+            const container = document.getElementById('stopsListContainer');
+            container.innerHTML = `
+                <div id="emptyStateDropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" class="h-full min-h-[280px] border border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl flex flex-col items-center justify-center p-6 text-center bg-white dark:bg-zinc-900/60 transition">
+                    <div class="w-11 h-11 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700 text-[#EE4D2D] flex items-center justify-center mb-3 shadow-shadcn-xs">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-semibold text-[#09090B] dark:text-zinc-50 text-sm tracking-tight mb-1">Nenhum romaneio carregado</h3>
+                    <p class="text-xs text-[#71717A] dark:text-zinc-400 max-w-xs mb-4 leading-relaxed">
+                        Arraste a planilha da Shopee SPX Express (<span class="font-mono text-[11px]">.xlsx</span>, <span class="font-mono text-[11px]">.xls</span> ou <span class="font-mono text-[11px]">.csv</span>) para esta área ou carregue um romaneio de demonstração.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
+                        <label for="excelFileInput" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold shadow-shadcn-xs">
+                            <i data-lucide="upload" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                            <span>Selecionar Arquivo</span>
+                        </label>
+                        <button onclick="loadSampleRoute()" class="shadcn-btn flex-1 h-9 px-3 text-xs bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 font-medium shadow-shadcn-xs">
+                            <span>Carregar Exemplo</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            showToast("Romaneio limpo.", "info");
+        }
+
+        function calculateRouteMetrics() {
+            let totalPackages = 0;
+            let deliveredPackages = 0;
+            let totalDistanceKm = 0;
+
+            let prevLat = hubLocation.lat;
+            let prevLng = hubLocation.lng;
+
+            groupedStops.forEach(stop => {
+                totalDistanceKm += haversineDistanceKm(prevLat, prevLng, stop.lat, stop.lng);
+                prevLat = stop.lat;
+                prevLng = stop.lng;
+
+                stop.packages.forEach(pkg => {
+                    totalPackages++;
+                    if (pkg.status === "Entregue") {
+                        deliveredPackages++;
+                    }
+                });
+            });
+
+            const rr = getValidRoadRoute();
+            const urbanKm = rr ? rr.km : totalDistanceKm * 1.28;
+            const estimatedMinutes = Math.round((rr ? rr.min : (urbanKm / 28) * 60) + (groupedStops.length * 3.5));
+
+            return {
+                totalStops: groupedStops.length,
+                totalPackages,
+                deliveredPackages,
+                distanceKm: urbanKm,
+                estimatedMinutes
+            };
+        }
+
+        // ============================================================================
+        // RENDERIZAÇÃO DO MAPA, CARD FLUTUANTE PRÓXIMA PARADA E LISTA SHADCN
+        // ============================================================================
+        function getStopAggregateStatus(stop) {
+            const total = stop.packages.length;
+            const delivered = stop.packages.filter(p => p.status === "Entregue").length;
+            const failed = stop.packages.filter(p => p.status === "Insucesso").length;
+
+            if (delivered === total && total > 0) return "Entregue";
+            if (failed === total && total > 0) return "Insucesso";
+            if (delivered > 0 || failed > 0) return "Parcial";
+            return "Pendente";
+        }
+
+        function getFirstPendingStopIndex() {
+            return groupedStops.findIndex(s => {
+                const st = getStopAggregateStatus(s);
+                return st === "Pendente" || st === "Parcial";
+            });
+        }
+
+        function refreshAllViews(shouldFitBounds = false) {
+            updateDashboardStats();
+            updateNextStopFloatingCard();
+            renderStopsList();
+            renderMapMarkersAndPolyline(shouldFitBounds);
+            saveState();
+            scheduleRoadRoute();
+            document.querySelectorAll('button[title]:not([aria-label]), a[title]:not([aria-label])').forEach(el => el.setAttribute('aria-label', el.title));
+
+            const hasData = groupedStops.length > 0;
+            document.getElementById('btnOptimizeRoute').disabled = !hasData;
+            document.getElementById('btnRestoreOriginal').disabled = !hasData;
+            document.getElementById('btnExportReport').disabled = !hasData;
+            document.getElementById('btnClearManifest').disabled = !hasData;
+            document.getElementById('btnReorganize').disabled = !hasData;
+        }
+
+        function updateDashboardStats() {
+            const metrics = calculateRouteMetrics();
+            document.getElementById('statStops').textContent = metrics.totalStops;
+            document.getElementById('statTotal').textContent = metrics.totalPackages;
+            document.getElementById('statDelivered').textContent = metrics.deliveredPackages;
+            document.getElementById('statDistance').textContent = `${metrics.distanceKm.toFixed(1)} km`;
+            document.getElementById('mobileBadgeCount').textContent = metrics.totalStops;
+
+            const hrs = Math.floor(metrics.estimatedMinutes / 60);
+            const mins = metrics.estimatedMinutes % 60;
+            document.getElementById('statDuration').textContent = hrs > 0 ? `~${hrs}h ${mins}m` : `~${mins} min`;
+
+            const pct = metrics.totalPackages > 0
+                ? Math.round((metrics.deliveredPackages / metrics.totalPackages) * 100)
+                : 0;
+            document.getElementById('deliveryProgressPercent').textContent = `${pct}%`;
+            document.getElementById('deliveryProgressBar').style.width = `${pct}%`;
+        }
+
+        function updateNextStopFloatingCard() {
+            const card = document.getElementById('nextStopFloatingCard');
+            if (!card) return;
+
+            const nextIdx = getFirstPendingStopIndex();
+            if (nextIdx === -1 || groupedStops.length === 0) {
+                card.classList.add('hidden');
+                return;
+            }
+
+            const stop = groupedStops[nextIdx];
+            const pkgCount = stop.packages.length;
+
+            document.getElementById('nextStopOrderBadge').textContent = nextIdx + 1;
+            document.getElementById('nextStopLabelBadge').textContent = stop.isUnassignedStop ? "Sem Stop (-)" : `Stop ${stop.stopLabel}`;
+            document.getElementById('nextStopPkgBadge').textContent = `${pkgCount} ${pkgCount === 1 ? 'pct' : 'pcts'}`;
+            document.getElementById('nextStopAddressText').textContent = stop.primaryAddress;
+            document.getElementById('nextStopBairroText').textContent = `${stop.bairro}${stop.bairro && stop.city ? ' • ' : ''}${stop.city}${stop.zipcode ? ' • CEP ' + stop.zipcode : ''}`;
+
+            document.getElementById('nextStopGmapsBtn').href = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
+            document.getElementById('nextStopWazeBtn').href = `https://waze.com/ul?ll=${stop.lat},${stop.lng}&navigate=yes`;
+
+            card.classList.remove('hidden');
+        }
+
+        function renderMapMarkersAndPolyline(shouldFitBounds = false) {
+            if (!map || !markersLayerGroup || !polylineLayerGroup) return;
+
+            markersLayerGroup.clearLayers();
+            polylineLayerGroup.clearLayers();
+
+            if (groupedStops.length === 0) return;
+
+            const nextPendingIdx = getFirstPendingStopIndex();
+            const routeCoordinates = [[hubLocation.lat, hubLocation.lng]];
+
+            groupedStops.forEach((stop, index) => {
+                const routeOrder = index + 1;
+                const aggStatus = getStopAggregateStatus(stop);
+                const pkgCount = stop.packages.length;
+                const isNextStop = index === nextPendingIdx;
+
+                let pinColorClass = isNextStop ? "pin-next" : "pin-pendente";
+                if (aggStatus === "Entregue") pinColorClass = "pin-entregue";
+                else if (aggStatus === "Parcial") pinColorClass = "pin-parcial";
+                else if (aggStatus === "Insucesso") pinColorClass = "pin-insucesso";
+
+                const badgeHtml = pkgCount > 1
+                    ? `<span class="pin-badge-count">${pkgCount}</span>`
+                    : "";
+
+                const markerIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="position:relative;width:30px;height:30px"><div class="gm-pin ${pinColorClass}"><span class="gm-pin-n">${routeOrder}</span></div>${badgeHtml}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 36],
+                    popupAnchor: [0, -36]
+                });
+
+                const packagesListHtml = stop.packages.map(pkg => {
+                    const statusBadge = pkg.status === 'Entregue'
+                        ? '<span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Entregue</span>'
+                        : pkg.status === 'Insucesso'
+                            ? '<span class="text-[11px] font-medium text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">Insucesso</span>'
+                            : '<span class="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Pendente</span>';
+
+                    return `
+                        <div class="flex items-center justify-between gap-2 py-1 border-b border-zinc-100 last:border-0">
+                            <span class="font-mono text-[11px] font-semibold text-zinc-800">${escapeHtml(pkg.spxTn)}</span>
+                            ${statusBadge}
+                        </div>
+                    `;
+                }).join('');
+
+                const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
+                const wazeUrl = `https://waze.com/ul?ll=${stop.lat},${stop.lng}&navigate=yes`;
+
+                const popupHtml = `
+                    <div class="bg-white text-zinc-950">
+                        <div class="px-3.5 py-2.5 border-b border-zinc-200 flex items-start justify-between gap-2 bg-zinc-50">
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-zinc-900 text-white">#${routeOrder}</span>
+                                    <span class="font-mono text-[11px] font-semibold text-zinc-600">Stop ${escapeHtml(stop.stopLabel)}</span>
+                                </div>
+                                <div class="text-xs font-semibold leading-snug mt-1 text-zinc-950">${escapeHtml(stop.primaryAddress)}</div>
+                            </div>
+                            <span class="font-mono text-[11px] font-semibold px-2 py-0.5 rounded-full bg-white border border-zinc-200 text-zinc-700 shrink-0">
+                                ${pkgCount} pct
+                            </span>
+                        </div>
+                        <div class="p-3">
+                            <div class="text-[11px] text-zinc-500 mb-2">
+                                ${escapeHtml(stop.bairro)}${stop.bairro && stop.city ? ' • ' : ''}${escapeHtml(stop.city)}
+                            </div>
+                            <div class="max-h-24 overflow-y-auto bg-zinc-50 rounded-md px-2.5 py-1 border border-zinc-200/80 mb-2.5">
+                                ${packagesListHtml}
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5 mb-1.5">
+                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" class="shadcn-btn h-7 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
+                                    Entregar Tudo
+                                </button>
+                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" class="shadcn-btn h-7 text-[11px] bg-rose-600 hover:bg-rose-700 text-white font-medium">
+                                    Insucesso
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" class="shadcn-btn h-7 text-[11px] bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 font-medium">
+                                    Google Maps
+                                </a>
+                                <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" class="shadcn-btn h-7 text-[11px] bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 font-medium">
+                                    Waze
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const marker = L.marker([stop.lat, stop.lng], {
+                    icon: markerIcon,
+                    zIndexOffset: isNextStop ? 800 : 100
+                }).bindPopup(popupHtml);
+
+                stop._leafletMarker = marker;
+                markersLayerGroup.addLayer(marker);
+                routeCoordinates.push([stop.lat, stop.lng]);
+            });
+
+            if (isPolylineVisible) {
+                const rrLine = getValidRoadRoute();
+                const linePts = rrLine ? rrLine.coords : routeCoordinates;
+                polylineLayerGroup.addLayer(L.polyline(linePts, { color: '#174EA6', weight: 9, opacity: rrLine ? 0.9 : 0.35, lineCap: 'round', lineJoin: 'round', interactive: false }));
+                polylineLayerGroup.addLayer(L.polyline(linePts, { color: '#4285F4', weight: 6, opacity: 1, lineCap: 'round', lineJoin: 'round', dashArray: rrLine ? null : '1, 11', interactive: false }));
+            }
+
+            if (shouldFitBounds) {
+                fitMapToBounds();
+            }
+        }
+
+        function fitMapToBounds() {
+            if (!map) return;
+            const points = [[hubLocation.lat, hubLocation.lng]];
+            groupedStops.forEach(s => points.push([s.lat, s.lng]));
+            if (points.length === 1) {
+                map.setView(points[0], 14);
+            } else {
+                const bounds = L.latLngBounds(points);
+                map.fitBounds(bounds, { padding: [55, 75], maxZoom: 16 });
+            }
+        }
+
+        function focusStopOnMap(groupId) {
+            const stop = groupedStops.find(s => s.groupId === groupId);
+            if (!stop || !map) return;
+
+            if (window.innerWidth < 1024) {
+                switchMobileTab('map');
+            }
+
+            requestAnimationFrame(() => {
+                map.invalidateSize();
+                map.setView([stop.lat, stop.lng], 17, { animate: true });
+                if (stop._leafletMarker) {
+                    stop._leafletMarker.openPopup();
+                }
+            });
+        }
+
+        function toggleStopExpand(groupId) {
+            if (expandedStopIds.has(groupId)) {
+                expandedStopIds.delete(groupId);
+            } else {
+                expandedStopIds.add(groupId);
+            }
+            renderStopsList();
+        }
+
+        // ============================================================================
+        // RENDERIZAÇÃO DA LISTA DE PARADAS E PACOTES (ESTILO SHADCN CARDS)
+        // ============================================================================
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const btnStop = document.getElementById('viewMode-STOP');
+            const btnPkg = document.getElementById('viewMode-PACKAGE');
+
+            if (mode === 'STOP') {
+                btnStop.className = "py-1 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer";
+                btnPkg.className = "py-1 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer";
+            } else {
+                btnPkg.className = "py-1 px-2.5 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 shadow-shadcn-xs transition cursor-pointer";
+                btnStop.className = "py-1 px-2.5 rounded-md text-xs font-medium text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer";
+            }
+            renderStopsList();
+        }
+
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.filter-chip').forEach(btn => {
+                btn.className = "filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer";
+            });
+            const activeBtn = document.getElementById(`filter-${status}`);
+            if (activeBtn) {
+                activeBtn.className = "filter-chip flex-1 py-1 px-2 rounded-md text-[11px] font-semibold bg-[#18181B] dark:bg-zinc-100 text-white dark:text-zinc-950 transition cursor-pointer";
+            }
+            renderStopsList();
+        }
+
+        function renderStopsList() {
+            const container = document.getElementById('stopsListContainer');
+            if (groupedStops.length === 0) return;
+
+            const query = (document.getElementById('searchInput').value || "").trim().toLowerCase();
+            const nextPendingIdx = getFirstPendingStopIndex();
+
+            if (currentViewMode === 'STOP') {
+                const filteredStops = groupedStops
+                    .map((stop, idx) => ({ stop, orderNum: idx + 1, realIndex: idx }))
+                    .filter(({ stop }) => {
+                        const aggStatus = getStopAggregateStatus(stop);
+                        if (currentStatusFilter !== 'TODOS') {
+                            if (currentStatusFilter === 'Pendente' && aggStatus !== 'Pendente' && aggStatus !== 'Parcial') return false;
+                            if (currentStatusFilter === 'Entregue' && aggStatus !== 'Entregue') return false;
+                            if (currentStatusFilter === 'Insucesso' && aggStatus !== 'Insucesso') return false;
+                        }
+                        if (!query) return true;
+                        const matchAddr = stop.primaryAddress.toLowerCase().includes(query) ||
+                                          stop.bairro.toLowerCase().includes(query) ||
+                                          stop.zipcode.toLowerCase().includes(query) ||
+                                          stop.stopLabel.toLowerCase().includes(query);
+                        const matchPkg = stop.packages.some(p => p.spxTn.toLowerCase().includes(query));
+                        return matchAddr || matchPkg;
+                    });
+
+                if (filteredStops.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white dark:bg-zinc-900 rounded-xl p-6 text-center border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
+                            <p class="text-xs font-medium text-[#71717A] dark:text-zinc-400">Nenhuma parada encontrada para o filtro selecionado.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = filteredStops.map(({ stop, orderNum, realIndex }) => {
+                    const aggStatus = getStopAggregateStatus(stop);
+                    const pkgCount = stop.packages.length;
+                    const isNextStop = realIndex === nextPendingIdx;
+                    const isExpanded = expandedStopIds.has(stop.groupId) || Boolean(query);
+
+                    const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
+                    const wazeUrl = `https://waze.com/ul?ll=${stop.lat},${stop.lng}&navigate=yes`;
+
+                    // Semântica refinada shadcn/ui
+                    let cardBorder = "border-[#E4E4E7] dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40";
+                    let numBadgeClass = isNextStop
+                        ? "bg-[#EE4D2D] text-white"
+                        : "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950";
+                    let statusPillHtml = "";
+
+                    if (aggStatus === "Entregue") {
+                        cardBorder = "border-emerald-200 dark:border-emerald-900/70 bg-emerald-50/35 dark:bg-emerald-950/20";
+                        numBadgeClass = "bg-emerald-600 text-white";
+                        statusPillHtml = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">Entregue</span>`;
+                    } else if (aggStatus === "Parcial") {
+                        cardBorder = "border-amber-200 dark:border-amber-900/70 bg-amber-50/35 dark:bg-amber-950/20";
+                        numBadgeClass = "bg-amber-600 text-white";
+                        statusPillHtml = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">Parcial</span>`;
+                    } else if (aggStatus === "Insucesso") {
+                        cardBorder = "border-rose-200 dark:border-rose-900/70 bg-rose-50/35 dark:bg-rose-950/20";
+                        numBadgeClass = "bg-rose-600 text-white";
+                        statusPillHtml = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">Insucesso</span>`;
+                    } else if (isNextStop) {
+                        cardBorder = "border-[#EE4D2D]/50 bg-white dark:bg-zinc-900 ring-1 ring-[#EE4D2D]/20";
+                        statusPillHtml = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-orange-50 dark:bg-orange-950/60 text-[#EE4D2D] border border-orange-200 dark:border-orange-900">Próxima</span>`;
+                    }
+
+                    const packagesDrawerHtml = isExpanded ? `
+                        <div class="mt-2.5 pt-2.5 border-t border-[#E4E4E7] dark:border-zinc-800 space-y-1.5">
+                            ${stop.packages.map(pkg => {
+                                const isDel = pkg.status === 'Entregue';
+                                const isFail = pkg.status === 'Insucesso';
+                                return `
+                                    <div class="flex items-center justify-between gap-2 bg-[#FAFAFA] dark:bg-zinc-950 px-2.5 py-1.5 rounded-md border border-[#E4E4E7] dark:border-zinc-800">
+                                        <div class="min-w-0 flex items-center gap-2">
+                                            <span class="font-mono text-[11px] font-semibold text-[#09090B] dark:text-zinc-100 truncate">${escapeHtml(pkg.spxTn)}</span>
+                                            <button onclick="copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código SPX TN" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer shrink-0">
+                                                <i data-lucide="copy" class="w-3 h-3"></i>
+                                            </button>
+                                            <span class="font-mono text-[11px] text-[#71717A] hidden sm:inline">Seq #${pkg.sequence}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" title="Entregue" class="shadcn-btn h-6 w-6 ${isDel ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                                <i data-lucide="check" class="w-3 h-3"></i>
+                                            </button>
+                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" title="Insucesso" class="shadcn-btn h-6 w-6 ${isFail ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : '';
+
+                    return `
+                        <div class="rounded-xl p-3 border ${cardBorder} shadow-shadcn-xs transition-all">
+                            <div class="flex items-start gap-2.5">
+                                <!-- Badge Circular Numerado + Setas Discretas Reordenação -->
+                                <div class="flex flex-col items-center gap-1 shrink-0">
+                                    <button onclick="focusStopOnMap('${stop.groupId}')" title="Ver no mapa" class="${numBadgeClass} font-mono text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-shadcn-xs cursor-pointer transition hover:scale-105">
+                                        ${orderNum}
+                                    </button>
+                                    <div class="flex items-center gap-0.5">
+                                        <button onclick="moveStopOrder(${realIndex}, -1)" ${realIndex === 0 ? 'disabled' : ''} title="Subir parada" class="p-0.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-25 cursor-pointer">
+                                            <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                                        </button>
+                                        <button onclick="moveStopOrder(${realIndex}, 1)" ${realIndex === groupedStops.length - 1 ? 'disabled' : ''} title="Descer parada" class="p-0.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-25 cursor-pointer">
+                                            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Informações da Parada (Clique expande SPX TNs) -->
+                                <div onclick="toggleStopExpand('${stop.groupId}')" class="flex-1 min-w-0 cursor-pointer">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded ${stop.isUnassignedStop ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            ${stop.isUnassignedStop ? 'Sem Stop (-)' : `Stop ${escapeHtml(stop.stopLabel)}`}
+                                        </span>
+                                        <span class="font-mono text-[11px] font-medium px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                                            ${pkgCount} ${pkgCount === 1 ? 'pct' : 'pcts'}
+                                        </span>
+                                        ${statusPillHtml}
+                                    </div>
+
+                                    <h4 class="font-semibold text-xs text-[#09090B] dark:text-zinc-50 mt-1.5 leading-snug">
+                                        ${escapeHtml(stop.primaryAddress)}${stop.approx ? ' <span class="font-mono text-[11px] px-1 rounded bg-amber-100 text-amber-800 align-middle">aprox.</span>' : ''}
+                                    </h4>
+                                    <p class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate mt-0.5">
+                                        ${escapeHtml(stop.bairro)}${stop.bairro && stop.city ? ' • ' : ''}${escapeHtml(stop.city)}${stop.zipcode ? ' • ' + escapeHtml(stop.zipcode) : ''}
+                                    </p>
+                                </div>
+
+                                <!-- Ações Rápidas no Card -->
+                                <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                    <div class="flex items-center gap-1">
+                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Marcar parada como Entregue" class="shadcn-btn h-7 w-7 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Marcar parada como Insucesso" class="shadcn-btn h-7 w-7 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="flex items-center gap-1">
+                                        <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" class="shadcn-btn h-6 px-1.5 text-[11px] bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700">
+                                            <i data-lucide="external-link" class="w-2.5 h-2.5 text-zinc-500"></i>
+                                            <span>Maps</span>
+                                        </a>
+                                        <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" class="shadcn-btn h-6 px-1.5 text-[11px] bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700">
+                                            <i data-lucide="navigation" class="w-2.5 h-2.5 text-sky-500"></i>
+                                            <span>Waze</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rodapé discreto para expandir pacotes SPX TN -->
+                            <div onclick="toggleStopExpand('${stop.groupId}')" class="mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 cursor-pointer">
+                                <span class="font-mono text-[11px] truncate">
+                                    ${pkgCount === 1 ? escapeHtml(stop.packages[0].spxTn) : `${pkgCount} códigos SPX TN neste Stop`}
+                                </span>
+                                <span class="inline-flex items-center gap-1 text-[11px] font-medium shrink-0">
+                                    <span>${isExpanded ? 'Ocultar' : 'Detalhes'}</span>
+                                    <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-3 h-3"></i>
+                                </span>
+                            </div>
+
+                            ${packagesDrawerHtml}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                // Visualização individual por Pacote (SPX TN)
+                const flatPackages = [];
+                groupedStops.forEach((stop, sIdx) => {
+                    stop.packages.forEach(pkg => {
+                        flatPackages.push({ pkg, stop, orderNum: sIdx + 1 });
+                    });
+                });
+
+                const filteredPkgs = flatPackages.filter(({ pkg, stop }) => {
+                    if (currentStatusFilter !== 'TODOS' && pkg.status !== currentStatusFilter) return false;
+                    if (!query) return true;
+                    return pkg.spxTn.toLowerCase().includes(query) ||
+                           pkg.address.toLowerCase().includes(query) ||
+                           pkg.bairro.toLowerCase().includes(query) ||
+                           stop.stopLabel.toLowerCase().includes(query);
+                });
+
+                if (filteredPkgs.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-white dark:bg-zinc-900 rounded-xl p-6 text-center border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
+                            <p class="text-xs font-medium text-[#71717A] dark:text-zinc-400">Nenhum pacote encontrado para o filtro atual.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = filteredPkgs.map(({ pkg, stop, orderNum }) => {
+                    const isDelivered = pkg.status === 'Entregue';
+                    const isFailed = pkg.status === 'Insucesso';
+                    return `
+                        <div class="bg-white dark:bg-zinc-900 rounded-xl p-3 border ${isDelivered ? 'border-emerald-200 dark:border-emerald-900/70 bg-emerald-50/30' : isFailed ? 'border-rose-200 dark:border-rose-900/70 bg-rose-50/30' : 'border-[#E4E4E7] dark:border-zinc-800'} shadow-shadcn-xs flex items-center justify-between gap-2.5">
+                            <div onclick="focusStopOnMap('${stop.groupId}')" class="min-w-0 flex-1 cursor-pointer">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950">#${orderNum} • Stop ${escapeHtml(stop.stopLabel)}</span>
+                                    <span class="font-mono text-xs font-bold text-[#EE4D2D]">${escapeHtml(pkg.spxTn)}</span>
+                                    <button onclick="event.stopPropagation(); copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+                                        <i data-lucide="copy" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                                <div class="text-xs font-semibold text-[#09090B] dark:text-zinc-50 truncate mt-1">${escapeHtml(pkg.address)}</div>
+                                <div class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate">${escapeHtml(pkg.bairro)} • Seq #${pkg.sequence}</div>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" class="shadcn-btn h-7 px-2.5 text-[11px] font-medium ${isDelivered ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                    Entregue
+                                </button>
+                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" class="shadcn-btn h-7 px-2.5 text-[11px] font-medium ${isFailed ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                    Insucesso
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            lucide.createIcons();
+        }
+
+        function setPackageStatus(groupId, pkgId, newStatus) {
+            const stop = groupedStops.find(s => s.groupId === groupId);
+            if (!stop) return;
+            const pkg = stop.packages.find(p => p.id === pkgId);
+            if (!pkg) return;
+
+            pkg.status = (pkg.status === newStatus) ? "Pendente" : newStatus;
+            pkg.deliveredAt = pkg.status !== "Pendente" ? new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : "";
+            refreshAllViews(false);
+        }
+
+        function markEntireStopStatus(groupId, newStatus) {
+            const stop = groupedStops.find(s => s.groupId === groupId);
+            if (!stop) return;
+            const agg = getStopAggregateStatus(stop);
+            const targetStatus = (agg === newStatus) ? "Pendente" : newStatus;
+            const nowStr = targetStatus !== "Pendente" ? new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : "";
+
+            stop.packages.forEach(pkg => {
+                pkg.status = targetStatus;
+                pkg.deliveredAt = nowStr;
+            });
+            refreshAllViews(false);
+            if (targetStatus !== "Pendente") {
+                showToast(`Stop ${stop.stopLabel} atualizado para ${targetStatus}.`, targetStatus === 'Entregue' ? 'success' : 'error');
+            }
+        }
+
+        function copyTrackingCode(code) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Código ${code} copiado para a área de transferência.`, "success");
+            } catch (e) {
+                showToast("Não foi possível copiar o código.", "error");
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        // ============================================================================
+        // EXPORTAÇÃO MODELO & RELATÓRIO FINAL (.XLSX)
+        // ============================================================================
+        function downloadTemplateXLSX() {
+            const ws = XLSX.utils.json_to_sheet(REAL_SPX_MANIFEST.slice(0, 5));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Romaneio_SPX");
+            XLSX.writeFile(wb, "Modelo_Romaneio_Shopee_SPX.xlsx");
+            showToast("Planilha modelo SPX baixada.", "success");
+        }
+
+        function exportFinalReport() {
+            if (!groupedStops || groupedStops.length === 0) return;
+
+            const exportRows = [];
+            groupedStops.forEach((stop, stopIdx) => {
+                stop.packages.forEach(pkg => {
+                    exportRows.push({
+                        "AT ID": pkg.atId,
+                        "Ordem Otimizada": stopIdx + 1,
+                        "Sequence": pkg.sequence,
+                        "Stop": pkg.stopRaw,
+                        "SPX TN": pkg.spxTn,
+                        "Destination Address": pkg.address,
+                        "Bairro": pkg.bairro,
+                        "City": pkg.city,
+                        "Zipcode/Postal code": pkg.zipcode,
+                        "Latitude": pkg.lat,
+                        "Longitude": pkg.lng,
+                        "Status Entrega": pkg.status,
+                        "Horário Baixa": pkg.deliveredAt || "-"
+                    });
+                });
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportRows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Relatorio_Entregas");
+            const safeAtId = (activeAtId || "SPX").replace(/[^a-zA-Z0-9_-]/g, "_");
+            XLSX.writeFile(wb, `Relatorio_Rota_${safeAtId}.xlsx`);
+            showToast("Relatório Excel exportado com sucesso.", "success");
+        }
+
+        // ============================================================================
+        // EXEMPLO, GPS E TOASTS ESTILO SONNER
+        // ============================================================================
+        async function loadSampleRoute() {
+            const myToken = ++activeImportToken;
+            const sampleFileName = "16-11-2026_DANIEL_ORTEGA_PEREIRA.xlsx";
+            openImportModal(sampleFileName, 15229);
+            startImportWatchdog(myToken, sampleFileName);
+
+            try {
+                await sleep(120);
+                if (activeImportToken !== myToken) return;
+
+                setImportStepState(1, 'done');
+                setImportStepState(2, 'active');
+                setImportModalProgress(55, "Validando colunas SPX e coordenadas...");
+                await sleep(120);
+                if (activeImportToken !== myToken) return;
+
+                setImportStepState(2, 'done');
+                setImportStepState(3, 'active');
+                setImportModalProgress(85, "Agrupando paradas (Stops) e plotando no mapa...");
+
+                const summary = await normalizeAndGroupSPXRows(REAL_SPX_MANIFEST, sampleFileName);
+                if (activeImportToken !== myToken) return;
+
+                showImportModalSuccess(sampleFileName, summary.totalPackages, summary.totalStops);
+                await sleep(850);
+                if (activeImportToken !== myToken) return;
+
+                closeImportModal();
+                requestAnimationFrame(() => {
+                    if (map) {
+                        map.invalidateSize();
+                        fitMapToBounds();
+                    }
+                });
+            } catch (err) {
+                if (activeImportToken !== myToken) return;
+                showImportModalError(sampleFileName, "Não foi possível carregar o romaneio de exemplo.");
+            }
+        }
+
+        function useMyGPSLocation() {
+            if (!navigator.geolocation) {
+                showToast("Geolocalização não suportada neste navegador.", "error");
+                return;
+            }
+            showToast("Obtendo localização GPS atual...", "info");
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    hubLocation = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        label: "Minha Localização Atual (Motorista)"
+                    };
+                    renderHubMarker();
+                    if (groupedStops.length > 0) {
+                        refreshAllViews(true);
+                    } else {
+                        map.setView([hubLocation.lat, hubLocation.lng], 15);
+                    }
+                    showToast("Ponto de partida atualizado para seu GPS.", "success");
+                },
+                () => {
+                    showToast("Não foi possível acessar o GPS. Verifique as permissões.", "error");
+                },
+                { enableHighAccuracy: true, timeout: 6000 }
+            );
+        }
+
+        function toggleHeaderOptions() {
+            const root = document.getElementById('headerActions');
+            const btn = document.getElementById('btnHeaderMore');
+            const opened = root.classList.toggle('mobile-options-open');
+            if (btn) btn.setAttribute('aria-expanded', String(opened));
+        }
+
+        function toggleMapControls() {
+            const root = document.getElementById('mapControlsRoot');
+            const btn = document.getElementById('btnMapControlsToggle');
+            const opened = root.classList.toggle('mobile-controls-open');
+            if (btn) btn.setAttribute('aria-expanded', String(opened));
+        }
+
+        function switchMobileTab(tab) {
+            const sidebar = document.getElementById('sidebarPanel');
+            const mapPanel = document.getElementById('mapPanel');
+            const btnList = document.getElementById('tabMobileList');
+            const btnMap = document.getElementById('tabMobileMap');
+
+            if (tab === 'list') {
+                sidebar.classList.remove('hidden');
+                mapPanel.classList.add('hidden');
+                btnList.className = "py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition";
+                btnMap.className = "py-1.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition";
+            } else {
+                sidebar.classList.add('hidden');
+                mapPanel.classList.remove('hidden');
+                btnMap.className = "py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 shadow-shadcn-xs flex items-center justify-center gap-1.5 transition";
+                btnList.className = "py-1.5 px-3 rounded-md text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-1.5 transition";
+                requestAnimationFrame(() => {
+                    if (map) {
+                        map.invalidateSize();
+                        fitMapToBounds();
+                    }
+                });
+            }
+        }
+
+        // Sistema de Toasts estilo Sonner (Next.js / shadcn/ui)
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+
+            let iconHtml = `<i data-lucide="info" class="w-4 h-4 text-zinc-500 shrink-0"></i>`;
+            if (type === "success") {
+                iconHtml = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>`;
+            } else if (type === "error") {
+                iconHtml = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-600 shrink-0"></i>`;
+            }
+
+            toast.className = "bg-white dark:bg-zinc-900 text-[#09090B] dark:text-zinc-50 border border-[#E4E4E7] dark:border-zinc-800 px-3.5 py-3 rounded-lg shadow-shadcn-xl text-xs font-medium flex items-center gap-2.5 pointer-events-auto animate-sonner";
+            toast.innerHTML = `${iconHtml}<span class="leading-snug">${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px) scale(0.98)';
+                toast.style.transition = 'all 0.2s ease';
+                setTimeout(() => toast.remove(), 220);
+            }, 3200);
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

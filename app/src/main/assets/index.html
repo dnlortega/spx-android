@@ -281,10 +281,27 @@
          TOPBAR ESTILO NEXT.JS APP ROUTER / SHADCN HEADER
          ======================================================================== -->
     <header class="bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 z-30 shrink-0">
-        <div class="px-4 h-14 flex items-center justify-between gap-3">
+        <!-- Logo isolada no topo para Mobile (exclusivo para mobile, centralizada e limpa) -->
+        <div class="px-4 py-2 border-b border-[#E4E4E7]/70 dark:border-zinc-800/70 md:hidden flex items-center justify-center bg-white dark:bg-zinc-900">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-[#EE4D2D] to-[#D73211] text-white flex items-center justify-center shadow-shadcn-sm shrink-0 border border-white/20">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                </div>
+                <div class="flex items-center gap-1.5 leading-none">
+                    <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
+                        <span class="text-[#EE4D2D]">SPX</span> Route OS
+                    </span>
+                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.3</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 h-12 md:h-14 flex items-center justify-between gap-3">
             
-            <!-- Esquerda: Brand Mark Oficial + Nome no Topo + Version Badge -->
-            <div class="flex items-center gap-2.5 min-w-0">
+            <!-- Esquerda: Brand Mark (em telas desktop/tablet) -->
+            <div class="hidden md:flex items-center gap-2.5 min-w-0">
                 <!-- Logomarca SPX com acento Shopee Express -->
                 <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[#EE4D2D] to-[#D73211] text-white flex items-center justify-center shadow-shadcn-sm shrink-0 border border-white/20">
                     <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -292,13 +309,13 @@
                     </svg>
                 </div>
 
-                <!-- Nome da Marca Completo com Logo (visível em todas as telas) -->
+                <!-- Nome da Marca Completo com Logo -->
                 <div class="flex flex-col justify-center min-w-0">
                     <div class="flex items-center gap-1.5 leading-none">
                         <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                             <span class="text-[#EE4D2D]">SPX</span> Route OS
                         </span>
-                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.2</span>
+                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.3</span>
                     </div>
                     <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
@@ -314,6 +331,14 @@
                     <span id="headerImportStatusDot" class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
                     <span id="headerImportStatusText" class="truncate max-w-[180px]">Aguardando planilha</span>
                 </div>
+            </div>
+
+            <!-- Na linha de ações do mobile: Badge AT ID compacto -->
+            <div class="md:hidden flex items-center">
+                <span id="mobileAtIdBadge" class="inline-flex items-center gap-1 font-mono text-[11px] font-semibold px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700">
+                    <span class="text-[#EE4D2D] font-bold">AT</span>
+                    <span id="mobileAtIdValue">---</span>
+                </span>
             </div>
 
             <!-- Direita: Grupo de Ações com Botões shadcn/ui e Separadores Verticais -->
@@ -688,7 +713,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="text-base font-bold text-[#09090B] dark:text-zinc-50">Nova Versão Disponível!</h3>
-                            <span id="updateModalTag" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400">v1.1.2</span>
+                            <span id="updateModalTag" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400">v1.1.3</span>
                         </div>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Versão instalada: <span id="updateModalCurrentTag" class="font-mono font-medium">v1.0.0</span></p>
                     </div>
@@ -1021,11 +1046,11 @@
         ];
         let showStreetNames = true;
 
-        // Ponto de partida padrão: CD Shopee Bauru - SP
+        // Ponto de partida padrão: CD Shopee Express Bauru - SP (Rodovia Marechal Rondon, SP-300, km 348, Gasparini - Business Park)
         let hubLocation = {
-            lat: -22.3396,
-            lng: -49.0928,
-            label: "CD Shopee Express - Bauru/SP"
+            lat: -22.27608,
+            lng: -49.09304,
+            label: "CD Shopee Express - Bauru (SP-300 km 348, Gasparini)"
         };
 
         let activeAtId = "";
@@ -1213,6 +1238,8 @@
                 if (st.hubLocation) { hubLocation = st.hubLocation; renderHubMarker(); }
                 activeAtId = st.activeAtId || "ROMANEIO SPX";
                 document.getElementById('activeAtIdValue').textContent = activeAtId;
+                const mobAtVal = document.getElementById('mobileAtIdValue');
+                if (mobAtVal) mobAtVal.textContent = activeAtId;
                 document.getElementById('activeAtIdBadge').classList.remove('hidden');
                 refreshAllViews(true);
                 updateHeaderImportPill('success', `${groupedStops.length} paradas • restaurado`);
@@ -1920,11 +1947,23 @@
                 const city = String(extractNormalizedField(row, ['city', 'cidade', 'municipio']) || "").trim();
                 const zipcode = String(extractNormalizedField(row, ['zipcode/postal code', 'zipcode', 'postal code', 'cep']) || "").trim();
 
-                // Conforme solicitado: posiciona estritamente por Destination Address, Bairro, City e Zipcode/Postal code.
-                // As colunas Latitude e Longitude da planilha são ignoradas para garantir os pontos reais de entrega.
-                const lat = null;
-                const lng = null;
-                needsGeocoding = true;
+                const sheetLat = parseCoordinateValue(extractNormalizedField(row, ['latitude', 'lat']));
+                const sheetLng = parseCoordinateValue(extractNormalizedField(row, ['longitude', 'lng', 'lon']));
+
+                let lat = null;
+                let lng = null;
+                let approx = false;
+
+                // Se a planilha já traz coordenadas válidas da Shopee, usa direto (instantâneo e preciso!)
+                if (sheetLat !== null && sheetLng !== null && Number.isFinite(sheetLat) && Number.isFinite(sheetLng) && (sheetLat !== 0 || sheetLng !== 0)) {
+                    lat = sheetLat;
+                    lng = sheetLng;
+                    approx = false;
+                } else {
+                    // Caso falte coordenadas na planilha, busca por City -> Bairro -> Destination Address
+                    needsGeocoding = true;
+                    approx = true;
+                }
 
                 if (!address && !zipcode && !spxTn.startsWith('BR')) {
                     continue;
@@ -1980,6 +2019,8 @@
             const atVal = document.getElementById('activeAtIdValue');
             if (atBadge && atVal) {
                 atVal.textContent = activeAtId;
+                const mobAtVal = document.getElementById('mobileAtIdValue');
+                if (mobAtVal) mobAtVal.textContent = activeAtId;
                 atBadge.classList.remove('hidden');
             }
 
@@ -1999,63 +2040,107 @@
         }
 
         // ============================================================================
-        // GEOCODIFICAÇÃO REAL (Nominatim/OpenStreetMap + ViaCEP) COM CACHE
+        // GEOCODIFICAÇÃO REAL (ORDEM: CITY -> BAIRRO -> DESTINATION ADDRESS)
         // ============================================================================
-        const GEO_CACHE_KEY = 'spx_geocache_v2';
+        const GEO_CACHE_KEY = 'spx_geocache_v4_city_bairro_addr';
         let geoCache = {};
         try { geoCache = JSON.parse(localStorage.getItem(GEO_CACHE_KEY) || '{}'); } catch (e) {}
         let lastGeoCall = 0;
 
         async function geocodeAddress(address, bairro, city, zipcode) {
-            const base = String(address || '').replace(/\s*-\s*(apto|apt|bloco|bl|casa|portaria|sala|fundos).*$/i, '').trim();
+            const cleanCity = String(city || '').replace(/[\/\-].*$/, '').trim();
+            const cleanBairro = String(bairro || '').trim();
+            const cleanAddr = String(address || '')
+                .replace(/\s*-\s*(apto|apt|bloco|bl|casa|portaria|sala|fundos|condomínio|cond|qd|lt|lote|cj|conjunto).*$/i, '')
+                .replace(/,\s*(apto|apt|bloco|bl|casa|portaria|sala|fundos|condomínio|cond|qd|lt|lote|cj|conjunto).*$/i, '')
+                .trim();
+            const streetNoNum = cleanAddr.replace(/,?\s*\d[\d\-\/]*\s*$/, '').trim();
             const cleanCep = String(zipcode || '').replace(/\D/g, '');
-            const key = [base, bairro, city, cleanCep].join('|').toLowerCase();
-            if (geoCache[key]) return geoCache[key];
-
-            const noNumber = base.replace(/,?\s*\d[\d\-\/]*\s*$/, '').trim();
             const formattedCep = cleanCep.length === 8 ? `${cleanCep.slice(0, 5)}-${cleanCep.slice(5)}` : cleanCep;
 
-            // Tentativas priorizadas usando Destination Address, Bairro, City e Zipcode/Postal code
+            const key = [cleanCity, cleanBairro, cleanAddr, cleanCep].join('|').toLowerCase();
+            if (geoCache[key]) return geoCache[key];
+
+            // Ordem solicitada: City, Bairro, Destination Address
             const attempts = [];
-            if (base && formattedCep) attempts.push([base, bairro, city, formattedCep, 'Brasil'].filter(Boolean).join(', '));
-            if (base) attempts.push([base, bairro, city, 'Brasil'].filter(Boolean).join(', '));
-            if (noNumber && formattedCep) attempts.push([noNumber, bairro, city, formattedCep, 'Brasil'].filter(Boolean).join(', '));
-            if (noNumber) attempts.push([noNumber, bairro, city, 'Brasil'].filter(Boolean).join(', '));
-            if (formattedCep) attempts.push(`${formattedCep}, Brasil`);
+            if (cleanCity && cleanBairro && cleanAddr) {
+                attempts.push([cleanCity, cleanBairro, cleanAddr, 'Brasil'].join(', '));
+            }
+            if (cleanCity && cleanBairro && streetNoNum && streetNoNum !== cleanAddr) {
+                attempts.push([cleanCity, cleanBairro, streetNoNum, 'Brasil'].join(', '));
+            }
+            if (cleanCity && cleanAddr) {
+                attempts.push([cleanCity, cleanAddr, 'Brasil'].join(', '));
+            }
+            if (cleanCity && streetNoNum && streetNoNum !== cleanAddr) {
+                attempts.push([cleanCity, streetNoNum, 'Brasil'].join(', '));
+            }
+            if (cleanCity && cleanBairro) {
+                attempts.push([cleanCity, cleanBairro, 'Brasil'].join(', '));
+            }
+            if (cleanCity && formattedCep) {
+                attempts.push([cleanCity, formattedCep, 'Brasil'].join(', '));
+            }
+            if (cleanCity) {
+                attempts.push([cleanCity, 'Brasil'].join(', '));
+            }
 
-            const v = 0.5;
-            const viewbox = `${hubLocation.lng - v},${hubLocation.lat + v},${hubLocation.lng + v},${hubLocation.lat - v}`;
+            // 1ª Tentativa rápida: Photon (OpenStreetMap sem rate-limit) na ordem City, Bairro, Destination Address
+            for (const q of attempts.slice(0, 3)) {
+                try {
+                    const ctrl = new AbortController();
+                    const t = setTimeout(() => ctrl.abort(), 3500);
+                    const photonUrl = `https://photon.komoot.io/api/?lang=default&limit=1&q=${encodeURIComponent(q)}`;
+                    const pResp = await fetch(photonUrl, { signal: ctrl.signal });
+                    clearTimeout(t);
+                    if (pResp.ok) {
+                        const pJson = await pResp.json();
+                        if (pJson && pJson.features && pJson.features.length > 0) {
+                            const [lon, lat] = pJson.features[0].geometry.coordinates;
+                            if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                                geoCache[key] = { lat: parseFloat(lat), lng: parseFloat(lon) };
+                                try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geoCache)); } catch (e) {}
+                                return geoCache[key];
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
 
+            // 2ª Tentativa: Nominatim OpenStreetMap oficial na ordem City, Bairro, Destination Address
             for (const q of attempts) {
                 const wait = lastGeoCall + 1050 - Date.now();
                 if (wait > 0) await sleep(wait);
                 lastGeoCall = Date.now();
-                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&viewbox=${viewbox}&q=${encodeURIComponent(q)}`;
+
+                const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(q)}`;
                 try {
                     const ctrl = new AbortController();
-                    const t = setTimeout(() => ctrl.abort(), 8000);
+                    const t = setTimeout(() => ctrl.abort(), 7000);
                     const resp = await fetch(url, { signal: ctrl.signal, headers: { 'Accept-Language': 'pt-BR' } });
                     clearTimeout(t);
                     if (!resp.ok) continue;
                     const arr = await resp.json();
                     if (!arr || !arr[0]) continue;
                     const lat = parseFloat(arr[0].lat), lng = parseFloat(arr[0].lon);
-                    // Sanidade: descarta resultados a mais de 80 km do CD
-                    if (!Number.isFinite(lat) || !Number.isFinite(lng) || haversineDistanceKm(hubLocation.lat, hubLocation.lng, lat, lng) > 80) continue;
-                    geoCache[key] = { lat, lng };
-                    try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geoCache)); } catch (e) {}
-                    return geoCache[key];
-                } catch (e) { /* tenta a próxima variação */ }
+                    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                        geoCache[key] = { lat, lng };
+                        try { localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geoCache)); } catch (e) {}
+                        return geoCache[key];
+                    }
+                } catch (e) {}
             }
 
-            // Fallback via CEP inteligente (ViaCEP) se ainda não encontrou
+            // 3ª Tentativa: Fallback inteligente com ViaCEP (busca dados oficiais do logradouro e bairro para a cidade)
             if (cleanCep.length === 8) {
                 try {
                     const viaResp = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
                     if (viaResp.ok) {
                         const viaData = await viaResp.json();
                         if (viaData && viaData.logradouro) {
-                            const viaQ = [viaData.logradouro, viaData.bairro || bairro, viaData.localidade || city, 'Brasil'].filter(Boolean).join(', ');
+                            const viaCity = viaData.localidade || cleanCity;
+                            const viaBairro = viaData.bairro || cleanBairro;
+                            const viaQ = [viaCity, viaBairro, viaData.logradouro, 'Brasil'].filter(Boolean).join(', ');
                             const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(viaQ)}`;
                             const resp = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' } });
                             if (resp.ok) {
@@ -3384,7 +3469,7 @@
         // ============================================================================
         // VERIFICADOR DE ATUALIZAÇÕES AUTOMÁTICO (GITHUB RELEASES)
         // ============================================================================
-        const CURRENT_APP_VERSION = "1.1.2";
+        const CURRENT_APP_VERSION = "1.1.3";
         let latestReleaseData = null;
 
         async function checkForUpdates(isManualCheck = false) {

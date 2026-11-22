@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SPX Route OS | Roteirização Inteligente Shopee Express</title>
     
     <!-- Google Fonts: Inter & JetBrains Mono (Padrão shadcn/ui) -->
@@ -238,6 +238,21 @@
         }
 
         .spx-dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.9); }
+        /* Trava de zoom no app inteiro: zoom permitido APENAS no mapa */
+        html, body {
+            touch-action: pan-x pan-y;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-text-size-adjust: 100%;
+        }
+        #map, .leaflet-container {
+            touch-action: none;
+        }
+        input, textarea, [contenteditable="true"] {
+            -webkit-user-select: text;
+            user-select: text;
+            touch-action: manipulation;
+        }
         /* Ajustes mobile: ações opcionais recolhidas e mapa aproveitando a tela */
         .mobile-map-toggle { display:none; }
         @media (max-width: 767px) {
@@ -281,19 +296,19 @@
          TOPBAR ESTILO NEXT.JS APP ROUTER / SHADCN HEADER
          ======================================================================== -->
     <header class="bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 z-30 shrink-0">
-        <!-- Logo isolada no topo para Mobile (exclusivo para mobile, centralizada e limpa) -->
-        <div class="px-4 py-2 border-b border-[#E4E4E7]/70 dark:border-zinc-800/70 md:hidden flex items-center justify-center bg-white dark:bg-zinc-900">
-            <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-[#EE4D2D] to-[#D73211] text-white flex items-center justify-center shadow-shadcn-sm shrink-0 border border-white/20">
-                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+        <!-- Logo isolada no topo para Mobile (exclusivo para mobile, centralizada, espaçada e limpa) -->
+        <div class="px-6 py-5 border-b border-[#E4E4E7]/80 dark:border-zinc-800/80 md:hidden flex items-center justify-center bg-white dark:bg-zinc-900 shadow-shadcn-xs">
+            <div class="flex items-center gap-3 py-1">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#EE4D2D] to-[#D73211] text-white flex items-center justify-center shadow-shadcn-sm shrink-0 border border-white/20">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                     </svg>
                 </div>
-                <div class="flex items-center gap-1.5 leading-none">
-                    <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
+                <div class="flex items-center gap-2 leading-none">
+                    <span class="font-black text-base tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                         <span class="text-[#EE4D2D]">SPX</span> Route OS
                     </span>
-                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.3</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.4</span>
                 </div>
             </div>
         </div>
@@ -315,7 +330,7 @@
                         <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                             <span class="text-[#EE4D2D]">SPX</span> Route OS
                         </span>
-                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.3</span>
+                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.4</span>
                     </div>
                     <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
@@ -519,9 +534,12 @@
                 </div>
 
                 <!-- Barra de Ações da Rota (somente ícones) -->
-                <div class="flex items-center gap-2">
-                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota" aria-label="Otimizar rota" class="shadcn-btn flex-1 h-10 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
+                <div class="flex items-center gap-1.5">
+                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota por proximidade" aria-label="Otimizar rota" class="shadcn-btn flex-1 h-10 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
                         <i data-lucide="sparkles" class="w-4 h-4 text-[#EE4D2D]"></i>
+                    </button>
+                    <button id="btnStreetCluster" onclick="openStreetClusterModal()" disabled title="Organizar por Rua (Teste) - Finaliza uma rua antes de ir para outra" aria-label="Organizar por Rua (Teste)" class="shadcn-btn flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white shadow-shadcn-xs">
+                        <i data-lucide="milestone" class="w-4 h-4 text-white"></i>
                     </button>
                     <button id="btnChooseFirstStop" onclick="openChooseFirstStopModal()" disabled title="Escolher 1º pacote/parada e gerar roteiro a partir dele" aria-label="Escolher 1º pacote e gerar roteiro" class="shadcn-btn flex-1 h-10 bg-amber-500 hover:bg-amber-600 text-white shadow-shadcn-xs">
                         <i data-lucide="flag" class="w-4 h-4"></i>
@@ -897,6 +915,61 @@
     </div>
 
     <!-- ========================================================================
+         MODAL ORGANIZAR POR RUA (TESTE / BETA)
+         ======================================================================== -->
+    <div id="streetClusterModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/65 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity" onclick="if(event.target===this)closeStreetClusterModal()">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl overflow-hidden animate-dialog flex flex-col max-h-[90vh]">
+            <!-- Cabeçalho -->
+            <div class="p-4 border-b border-[#E4E4E7] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-indigo-50 dark:bg-indigo-950/40">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                        <i data-lucide="milestone" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-50">Organizar Entregas por Rua</h3>
+                            <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">TESTE</span>
+                        </div>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Finaliza todas as entregas de uma rua antes de ir para a próxima</p>
+                    </div>
+                </div>
+                <button onclick="closeStreetClusterModal()" class="shadcn-btn h-8 w-8 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Resumo / Estatísticas das Ruas -->
+            <div class="p-3 bg-zinc-50 dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-3">
+                    <span id="streetClusterTotalRuas" class="font-semibold text-indigo-600 dark:text-indigo-400 font-mono">0 ruas agrupadas</span>
+                    <span class="text-zinc-300 dark:text-zinc-700">•</span>
+                    <span id="streetClusterTotalStops" class="text-zinc-600 dark:text-zinc-400 font-mono">0 paradas</span>
+                </div>
+                <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                    0 ziguezagues
+                </span>
+            </div>
+
+            <!-- Lista de Ruas e Paradas -->
+            <div id="streetClusterModalList" class="p-3 overflow-y-auto flex-1 space-y-2.5 max-h-[55vh]">
+                <!-- Renderizado via JS -->
+            </div>
+
+            <!-- Rodapé com Ações -->
+            <div class="p-3 border-t border-[#E4E4E7] dark:border-zinc-800 shrink-0 flex items-center justify-between gap-2 bg-white dark:bg-zinc-900">
+                <button onclick="closeStreetClusterModal()" class="shadcn-btn h-9 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                    Cancelar
+                </button>
+                <button onclick="applyStreetClusterRoute()" class="shadcn-btn h-9 px-4 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 shadow-shadcn-xs">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    Aplicar Rota por Rua
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
          MODAL DE IMPORTAÇÃO ESTILO SHADCN DIALOG
          ======================================================================== -->
     <div id="importModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
@@ -1206,6 +1279,39 @@
             setTimeout(() => checkForUpdates(false), 2500);
             window.addEventListener('resize', () => { if (map) map.invalidateSize({ debounceMoveend: true }); });
         });
+
+        // ============================================================================
+        // TRAVA DE ZOOM NO APP: ZOOM PERMITIDO APENAS NO MAPA
+        // ============================================================================
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches && e.touches.length > 1) {
+                const onMap = e.target.closest('#map') || e.target.closest('.leaflet-container');
+                if (!onMap) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches && e.touches.length > 1) {
+                const onMap = e.target.closest('#map') || e.target.closest('.leaflet-container');
+                if (!onMap) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        let lastTouchEndGlobal = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = Date.now();
+            const onMap = e.target.closest('#map') || e.target.closest('.leaflet-container');
+            if (!onMap && (now - lastTouchEndGlobal <= 300)) {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                }
+            }
+            lastTouchEndGlobal = now;
+        }, { passive: false });
 
         // ============================================================================
         // PERSISTÊNCIA: o progresso sobrevive a recarregar a página
@@ -1920,6 +2026,7 @@
             const num = parseFloat(cleaned);
             return Number.isFinite(num) && num !== 0 ? num : null;
         }
+        const parseCoordinateValue = parseCoordinateSafe;
 
         async function normalizeAndGroupSPXRows(rows, sourceLabel = "Exemplo_AT20261120D7DD0.xlsx") {
             const rawPackages = [];
@@ -1947,8 +2054,8 @@
                 const city = String(extractNormalizedField(row, ['city', 'cidade', 'municipio']) || "").trim();
                 const zipcode = String(extractNormalizedField(row, ['zipcode/postal code', 'zipcode', 'postal code', 'cep']) || "").trim();
 
-                const sheetLat = parseCoordinateValue(extractNormalizedField(row, ['latitude', 'lat']));
-                const sheetLng = parseCoordinateValue(extractNormalizedField(row, ['longitude', 'lng', 'lon']));
+                const sheetLat = parseCoordinateSafe(extractNormalizedField(row, ['latitude', 'lat']));
+                const sheetLng = parseCoordinateSafe(extractNormalizedField(row, ['longitude', 'lng', 'lon']));
 
                 let lat = null;
                 let lng = null;
@@ -1982,6 +2089,7 @@
                     zipcode: zipcode,
                     lat: lat,
                     lng: lng,
+                    approx: approx,
                     status: "Pendente",
                     deliveredAt: "",
                     originalRow: row
@@ -2485,6 +2593,235 @@
             showToast(`Roteiro gerado a partir de: ${label}`, "success");
         }
 
+        // ============================================================================
+        // FERRAMENTA DE TESTE: ORGANIZAR ENTREGAS POR RUA (RUA POR RUA)
+        // ============================================================================
+        function extractStreetDetails(fullAddress) {
+            if (!fullAddress || typeof fullAddress !== 'string') {
+                return { street: "Endereço não informado", numberStr: "", numberVal: 0, normStreet: "sem rua" };
+            }
+
+            const raw = fullAddress.trim();
+            // Limpa notas e complementos comuns da Shopee/Bauru
+            let clean = raw
+                .replace(/\s*-\s*(casa\s+[a-z0-9]+|apto?\s*\d+|bloco?\s*[a-z0-9]+|qd\.?\s*\d+|lt\.?\s*\d+|fundos|frente|esquina|proximo|próximo).*$/i, '')
+                .trim();
+
+            const parts = clean.split(',');
+            let streetPart = parts[0] ? parts[0].trim() : clean;
+            let numPart = parts.length > 1 ? parts[1].trim() : "";
+
+            if (!numPart) {
+                const m = streetPart.match(/^(.*?)[\s,]+(\d+[\.\-\/]?\d*)\s*(.*)$/);
+                if (m) {
+                    streetPart = m[1].trim();
+                    numPart = m[2].trim();
+                }
+            }
+
+            const numCleanMatch = numPart.match(/^(\d+[\.\-\/]?\d*)/);
+            const numberStr = numCleanMatch ? numCleanMatch[1] : (numPart.replace(/[^0-9]/g, '') || "0");
+            const numberVal = parseFloat(numberStr.replace('-', '.')) || 0;
+
+            let norm = streetPart.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/^(rua|r\.|avenida|av\.|alameda|al\.|travessa|tv\.|rodovia|rod\.|praca|pc\.|estrada|estr\.)\s+/i, "")
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            return {
+                street: streetPart,
+                numberStr: numberStr,
+                numberVal: numberVal,
+                normStreet: norm || "outros"
+            };
+        }
+
+        function organizeRouteByStreets(startPoint = null) {
+            if (!groupedStops || groupedStops.length < 2) {
+                showToast("Importe pelo menos 2 paradas para organizar por rua.", "info");
+                return null;
+            }
+
+            // 1. Agrupar paradas por rua normalizada
+            const streetMap = new Map();
+            groupedStops.forEach(stop => {
+                const addr = stop.primaryAddress || (stop.packages && stop.packages[0] && stop.packages[0].address) || "";
+                const details = extractStreetDetails(addr);
+                stop._streetDetails = details;
+
+                const key = `${(stop.city || '').toLowerCase().trim()}|${details.normStreet}`;
+                if (!streetMap.has(key)) {
+                    streetMap.set(key, {
+                        key: key,
+                        displayName: details.street,
+                        normStreet: details.normStreet,
+                        bairro: stop.bairro || "",
+                        city: stop.city || "",
+                        stops: []
+                    });
+                }
+                streetMap.get(key).stops.push(stop);
+            });
+
+            // 2. Ordenar paradas dentro de cada rua pelo número da casa
+            streetMap.forEach(group => {
+                group.stops.sort((a, b) => {
+                    const na = a._streetDetails.numberVal || 0;
+                    const nb = b._streetDetails.numberVal || 0;
+                    if (na !== nb) return na - nb;
+                    return (a.minSequence || 0) - (b.minSequence || 0);
+                });
+
+                let sumLat = 0, sumLng = 0, validCoords = 0;
+                group.stops.forEach(s => {
+                    if (Number.isFinite(s.lat) && Number.isFinite(s.lng)) {
+                        sumLat += s.lat;
+                        sumLng += s.lng;
+                        validCoords++;
+                    }
+                });
+                group.centerLat = validCoords > 0 ? sumLat / validCoords : hubLocation.lat;
+                group.centerLng = validCoords > 0 ? sumLng / validCoords : hubLocation.lng;
+            });
+
+            // 3. Ordenar as RUAS sequencialmente pelo Vizinho Mais Próximo
+            const unvisitedGroups = Array.from(streetMap.values());
+            const orderedStreets = [];
+            const finalStopsSequence = [];
+
+            let curLat = startPoint && Number.isFinite(startPoint.lat) ? startPoint.lat : hubLocation.lat;
+            let curLng = startPoint && Number.isFinite(startPoint.lng) ? startPoint.lng : hubLocation.lng;
+
+            while (unvisitedGroups.length > 0) {
+                let bestIdx = 0;
+                let bestDist = Infinity;
+                let bestReverse = false;
+
+                for (let i = 0; i < unvisitedGroups.length; i++) {
+                    const grp = unvisitedGroups[i];
+                    const firstStop = grp.stops[0];
+                    const lastStop = grp.stops[grp.stops.length - 1];
+
+                    const dFirst = haversineDistanceKm(curLat, curLng, firstStop.lat, firstStop.lng);
+                    const dLast = haversineDistanceKm(curLat, curLng, lastStop.lat, lastStop.lng);
+
+                    if (dFirst < bestDist) {
+                        bestDist = dFirst;
+                        bestIdx = i;
+                        bestReverse = false;
+                    }
+                    if (dLast < bestDist) {
+                        bestDist = dLast;
+                        bestIdx = i;
+                        bestReverse = true;
+                    }
+                }
+
+                const chosenGrp = unvisitedGroups.splice(bestIdx, 1)[0];
+                if (bestReverse && chosenGrp.stops.length > 1) {
+                    chosenGrp.stops.reverse();
+                }
+
+                orderedStreets.push(chosenGrp);
+                const streetNum = orderedStreets.length;
+                const totalStreets = streetMap.size;
+
+                chosenGrp.stops.forEach((st, idxInStreet) => {
+                    st._streetOrder = streetNum;
+                    st._streetTotal = totalStreets;
+                    st._streetName = chosenGrp.displayName;
+                    st._streetPos = `${idxInStreet + 1}/${chosenGrp.stops.length}`;
+                    finalStopsSequence.push(st);
+                });
+
+                const lastStop = chosenGrp.stops[chosenGrp.stops.length - 1];
+                if (lastStop && Number.isFinite(lastStop.lat)) {
+                    curLat = lastStop.lat;
+                    curLng = lastStop.lng;
+                }
+            }
+
+            return {
+                orderedStreets: orderedStreets,
+                stops: finalStopsSequence,
+                totalStreets: orderedStreets.length,
+                totalStops: finalStopsSequence.length
+            };
+        }
+
+        let pendingStreetClusterPlan = null;
+
+        function openStreetClusterModal() {
+            if (!groupedStops || groupedStops.length < 2) {
+                showToast("Importe pelo menos 2 paradas para organizar por rua.", "info");
+                return;
+            }
+            const plan = organizeRouteByStreets(userCurrentLocation || hubLocation);
+            if (!plan) return;
+            pendingStreetClusterPlan = plan;
+
+            const overlay = document.getElementById('streetClusterModalOverlay');
+            const totalRuasEl = document.getElementById('streetClusterTotalRuas');
+            const totalStopsEl = document.getElementById('streetClusterTotalStops');
+            const listEl = document.getElementById('streetClusterModalList');
+
+            totalRuasEl.textContent = `${plan.totalStreets} ruas agrupadas`;
+            totalStopsEl.textContent = `${plan.totalStops} paradas no total`;
+
+            listEl.innerHTML = plan.orderedStreets.map((group, idx) => {
+                const pkgCount = group.stops.reduce((acc, st) => acc + (st.packages ? st.packages.length : 1), 0);
+                return `
+                    <div class="p-3 bg-zinc-50 dark:bg-zinc-950/70 border border-[#E4E4E7] dark:border-zinc-800 rounded-lg">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="w-6 h-6 rounded-md bg-indigo-600 text-white font-mono text-[11px] font-bold flex items-center justify-center shrink-0">
+                                    ${idx + 1}
+                                </span>
+                                <div class="min-w-0">
+                                    <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">${escapeHtml(group.displayName)}</h4>
+                                    <p class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(group.bairro || '')}${group.bairro && group.city ? ' • ' : ''}${escapeHtml(group.city || '')}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="font-mono text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                    ${group.stops.length} ${group.stops.length === 1 ? 'parada' : 'paradas'} (${pkgCount} pcts)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 flex items-center gap-1.5 flex-wrap">
+                            <span class="text-[10px] text-zinc-400 font-mono">Sequência nesta rua:</span>
+                            ${group.stops.map(st => `
+                                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                                    ${escapeHtml(st.primaryAddress)}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            overlay.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeStreetClusterModal() {
+            document.getElementById('streetClusterModalOverlay').classList.add('hidden');
+            pendingStreetClusterPlan = null;
+        }
+
+        function applyStreetClusterRoute() {
+            if (!pendingStreetClusterPlan || !pendingStreetClusterPlan.stops) {
+                showToast("Nenhum plano de ruas disponível.", "error");
+                return;
+            }
+            groupedStops = pendingStreetClusterPlan.stops;
+            refreshAllViews(true);
+            closeStreetClusterModal();
+            showToast(`Rota organizada por ruas! ${pendingStreetClusterPlan.totalStreets} ruas agrupadas em sequência.`, "success");
+        }
+
         function clearCurrentManifest() {
             bgGeoToken++;
             document.getElementById('geocodingProgressWrapper').classList.add('hidden');
@@ -2591,6 +2928,7 @@
 
             const hasData = groupedStops.length > 0;
             document.getElementById('btnOptimizeRoute').disabled = !hasData;
+            if (document.getElementById('btnStreetCluster')) document.getElementById('btnStreetCluster').disabled = !hasData;
             document.getElementById('btnRestoreOriginal').disabled = !hasData;
             document.getElementById('btnExportReport').disabled = !hasData;
             document.getElementById('btnClearManifest').disabled = !hasData;
@@ -3029,6 +3367,7 @@
                                             ${pkgCount} ${pkgCount === 1 ? 'pct' : 'pcts'}
                                         </span>
                                         ${statusPillHtml}
+                                        ${stop._streetName ? `<span class="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">🛣️ ${escapeHtml(stop._streetName)} (${stop._streetPos})</span>` : ''}
                                     </div>
 
                                     <h4 class="font-semibold text-xs text-[#09090B] dark:text-zinc-50 mt-1.5 leading-snug">
@@ -3469,7 +3808,7 @@
         // ============================================================================
         // VERIFICADOR DE ATUALIZAÇÕES AUTOMÁTICO (GITHUB RELEASES)
         // ============================================================================
-        const CURRENT_APP_VERSION = "1.1.3";
+        const CURRENT_APP_VERSION = "1.1.4";
         let latestReleaseData = null;
 
         async function checkForUpdates(isManualCheck = false) {

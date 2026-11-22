@@ -56,7 +56,9 @@ public class MainActivity extends Activity {
         s.setJavaScriptCanOpenWindowsAutomatically(true);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
+        s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
+        s.setDisplayZoomControls(false);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
         webView.addJavascriptInterface(new Object() {

@@ -9,17 +9,20 @@ Este projeto inclui GitHub Actions para compilar o APK na nuvem, sem Android Stu
 3. Extraia o ZIP no celular usando o gerenciador de arquivos. Entre na pasta `spx-android`.
 4. No repositório GitHub, use **Add file > Upload files** e envie o conteúdo da pasta `spx-android` (incluindo a pasta oculta `.github`). Se o seletor do Android não mostrar arquivos ocultos, habilite “Mostrar arquivos ocultos” no gerenciador. A estrutura na raiz do repositório deve conter `app`, `.github`, `build.gradle`, `settings.gradle` e `gradle.properties`.
 5. Toque em **Commit changes**.
-6. Abra a aba **Actions** do repositório. O fluxo “Gerar APK SPX Route OS” será iniciado automaticamente. Aguarde ficar verde (concluído).
+6. Abra a aba **Actions** do repositório. O fluxo “Gerar APK e Publicar Release” será iniciado automaticamente. Aguarde ficar verde (concluído).
 7. Abra a execução concluída, role até **Artifacts** e toque em `SPX-Route-OS-APK` para baixar o ZIP do APK.
-8. Extraia esse ZIP. Toque em `app-debug.apk` e autorize o navegador/gerenciador a instalar apps desconhecidos, se o Android solicitar.
+8. Extraia esse ZIP. Toque em `SPX-Route-OS.apk` e autorize o navegador/gerenciador a instalar apps desconhecidos, se o Android solicitar.
 
 ## Se não aparecer a pasta .github
 
-O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocultos” no gerenciador de arquivos antes de selecionar o conteúdo. Sem `.github/workflows/android-apk.yml`, a compilação automática não será iniciada.
+O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocultos” no gerenciador de arquivos antes de selecionar o conteúdo. Sem `.github/workflows/build-apk.yml`, a compilação automática não será iniciada.
 
 ## Requisitos e observações
 
-- Android 6.0 (API 23) ou superior; não compatível com Android 4.4.4.
+- Android 5.0 (API 21) ou superior.
+- Versão atual: 1.2.0 (`versionCode` 7).
 - A compilação acontece nos servidores do GitHub Actions; não exige SDK no telefone.
 - O repositório é recomendado como privado porque o código contém o sistema de entregas.
 - O APK gerado é de depuração (`debug`), adequado para instalação e testes pessoais. Para distribuição pública, será necessária uma versão assinada de lançamento.
+- O verificador de atualizações do aplicativo aceita apenas APKs do repositório `dnlortega/spx-android`. Em uma cópia publicada em outro repositório, baixe e instale o artefato manualmente.
+- Para atualizar sem desinstalar, todos os builds precisam usar o mesmo keystore. Sem um keystore estável configurado no GitHub, o Android poderá exigir a desinstalação do APK anterior.

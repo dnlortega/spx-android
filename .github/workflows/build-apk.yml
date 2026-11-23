@@ -52,7 +52,7 @@ jobs:
         run: |
           VERSION=$(grep "versionName" app/build.gradle | head -n1 | sed -E "s/.*'([^']+)'.*/\1/")
           if [ -z "$VERSION" ]; then
-            VERSION="1.1.0"
+            VERSION="1.2.0"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           
@@ -84,14 +84,18 @@ jobs:
             1. Baixe o arquivo **`SPX-Route-OS.apk`** abaixo.
             2. Toque no arquivo baixado no seu celular Android para instalar ou atualizar.
             3. Caso o Android pergunte, autorize a instalação de fontes desconhecidas.
-            
-            ### ✨ Novidades desta versão:
-            - **Logo Oficial com Nome**: Identidade visual completa no topo da aplicação.
-            - **Exibir / Ocultar Cards**: Controle para recolher ou expandir os cards de métricas (Paradas, Pacotes, Distância e Progresso).
-            - **Rua Atual & Localização em Tempo Real**: Rastreamento GPS ao vivo no mapa e nome da rua atual no painel principal.
-            - **Novo Ícone do Aplicativo**: Ícone exclusivo padrão Shopee Express em alta resolução.
-            - **Verificador de Atualizações Automático**: Notificação no app quando houver nova versão com opção de atualizar diretamente.
-            - **Suporte a Inteligência Artificial (IA)**: Módulo integrado para assistência inteligente na rota e tratamento de endereços.
+
+            ### Novidades da versão:
+            - **Rotas com trânsito**: Google Routes com OSRM e estimativa local como reserva.
+            - **Primeira e última entrega**: Escolha as extremidades da rota e mantenha ambas fixas ao reotimizar.
+            - **Prioridade, janelas e ETA**: Urgentes primeiro, horários de chegada/conclusão, serviço por parada e previsão de término.
+            - **Entrada multimodal de endereços**: Digitação com autocomplete, voz, OCR, código de barras e planilhas XLS/XLSX/CSV.
+            - **Package Finder**: Localização exata do volume por zona e posição no veículo.
+            - **POD completo**: Assinatura digital, fotos, observações e registro de insucessos.
+            - **Navegação integrada**: GPS, manobras, ETA, recálculo de desvio e opções externas Google Maps, Waze e Apple Maps.
+            - **Transferência offline**: Paradas por link, QR Code ou arquivo, com validação e deduplicação.
+            - **App local primeiro**: Dados no dispositivo; painel Equipes, rastreamento remoto e notificações ao cliente serão uma fase futura com backend.
+            - **Mais leve**: CSS estático e biblioteca Excel carregada somente sob demanda.
           files: |
             release-assets/SPX-Route-OS.apk
             release-assets/SPX-Route-OS-v${{ steps.prep.outputs.VERSION }}.apk

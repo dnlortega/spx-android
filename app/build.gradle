@@ -8,7 +8,12 @@ android {
         applicationId 'br.com.spxroute.app'
         minSdk 21
         targetSdk 35
-        versionCode 6
-        versionName '1.1.4'
+        versionCode 7
+        versionName '1.2.0'
     }
+}
+
+dependencies {
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
 }

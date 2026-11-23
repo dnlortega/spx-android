@@ -5,52 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SPX Route OS | Roteirização Inteligente Shopee Express</title>
     
-    <!-- Google Fonts: Inter & JetBrains Mono (Padrão shadcn/ui) -->
+    <!-- =========================================================
+         FONTES: Google Fonts com fallback embutido (funciona offline)
+         ========================================================= -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    
-    <!-- Leaflet CSS & JS (Mapa Interativo) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    
-    <!-- SheetJS (xlsx) para Leitura e Geração de Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js" onerror="var f=document.createElement('script');f.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';document.head.appendChild(f)"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" onerror="var f=document.createElement('script');f.src='https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js';document.head.appendChild(f)"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"
+          onerror="this.onerror=null">
+    <style>
+        /* Fallback de fonte para modo offline — garante UI legível sem internet */
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        code, .font-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
 
-    <!-- Configuração Customizada do Tailwind (Tokens shadcn/ui) -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        shopee: {
-                            DEFAULT: '#EE4D2D',
-                            dark: '#D73211',
-                            light: '#FFF0ED',
-                            hover: '#E04324'
-                        }
-                    },
-                    boxShadow: {
-                        'shadcn-xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
-                        'shadcn-sm': '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
-                        'shadcn-md': '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
-                        'shadcn-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- CSS estático: menor e sem compilação no dispositivo. -->
+    <link rel="stylesheet" href="app.css">
+
+    <!-- =========================================================
+         LEAFLET CSS & JS — local primeiro, CDN como fallback
+         ========================================================= -->
+    <link rel="stylesheet" href="libs/leaflet.css"
+          onerror="if(!window.SPXAndroid){var l=document.createElement('link');l.rel='stylesheet';l.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(l)}" />
+    <script src="libs/leaflet.js"
+            onerror="if(!window.SPXAndroid){var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';document.head.appendChild(s)}"></script>
+
+    <!-- =========================================================
+         LUCIDE ICONS — local primeiro, CDN como fallback
+         ========================================================= -->
+    <script src="libs/lucide.min.js"
+            onerror="if(!window.SPXAndroid){var s=document.createElement('script');s.src='https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js';document.head.appendChild(s)}"></script>
+    <script src="libs/lz-string.min.js"></script>
+    <script src="libs/qrcode.js"></script>
 
     <style>
         /* Design Tokens e Utilitários estilo shadcn/ui */
@@ -308,7 +293,7 @@
                     <span class="font-black text-base tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                         <span class="text-[#EE4D2D]">SPX</span> Route OS
                     </span>
-                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.4</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.2.0</span>
                 </div>
             </div>
         </div>
@@ -330,7 +315,7 @@
                         <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                             <span class="text-[#EE4D2D]">SPX</span> Route OS
                         </span>
-                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.1.4</span>
+                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.2.0</span>
                     </div>
                     <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
@@ -365,6 +350,10 @@
                 <label for="excelFileInput" title="Importar planilha (I)" aria-label="Importar planilha" class="shadcn-btn h-9 w-9 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
                     <i data-lucide="upload" class="w-4 h-4"></i>
                 </label>
+
+                <button onclick="SPXLogistics.openHub()" title="Operações de entrega" aria-label="Operações de entrega" class="shadcn-btn h-9 w-9 bg-zinc-900 hover:bg-zinc-700 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shadow-shadcn-xs">
+                    <i data-lucide="package-plus" class="w-4 h-4"></i>
+                </button>
 
                 <!-- Carregar exemplo -->
                 <button onclick="loadSampleRoute()" title="Carregar exemplo" aria-label="Carregar exemplo" class="mobile-header-extra shadcn-btn h-9 w-9 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
@@ -541,8 +530,8 @@
                     <button id="btnStreetCluster" onclick="openStreetClusterModal()" disabled title="Organizar por Rua (Teste) - Finaliza uma rua antes de ir para outra" aria-label="Organizar por Rua (Teste)" class="shadcn-btn flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white shadow-shadcn-xs">
                         <i data-lucide="milestone" class="w-4 h-4 text-white"></i>
                     </button>
-                    <button id="btnChooseFirstStop" onclick="openChooseFirstStopModal()" disabled title="Escolher 1º pacote/parada e gerar roteiro a partir dele" aria-label="Escolher 1º pacote e gerar roteiro" class="shadcn-btn flex-1 h-10 bg-amber-500 hover:bg-amber-600 text-white shadow-shadcn-xs">
-                        <i data-lucide="flag" class="w-4 h-4"></i>
+                    <button id="btnChooseRouteEndpoints" onclick="openRouteEndpointModal('first')" disabled title="Definir 1ª e última entrega e reotimizar a rota" aria-label="Definir 1ª e última entrega" class="shadcn-btn flex-1 h-10 bg-violet-600 hover:bg-violet-700 text-white shadow-shadcn-xs">
+                        <i data-lucide="route" class="w-4 h-4"></i>
                     </button>
                     <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganizar entregas (só o que falta entregar, a partir de onde você está)" aria-label="Reorganizar entregas" class="shadcn-btn flex-1 h-10 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
                         <i data-lucide="list-ordered" class="w-4 h-4"></i>
@@ -557,6 +546,28 @@
                         <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
                         <span id="filterActiveDot" class="hidden absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[#EE4D2D] ring-2 ring-white dark:ring-zinc-900"></span>
                     </button>
+                </div>
+            </div>
+
+            <div id="routeEndpointsBar" class="hidden px-3 py-2 border-b border-[#E4E4E7] dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60">
+                <div class="flex items-center gap-2 text-[11px]">
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                        <i data-lucide="flag" class="w-3.5 h-3.5 text-amber-500 shrink-0"></i>
+                        <span class="text-zinc-500 shrink-0">1ª</span>
+                        <strong id="selectedFirstStopLabel" class="font-medium text-zinc-800 dark:text-zinc-200 truncate">Automática</strong>
+                        <button id="clearFirstEndpoint" onclick="clearRouteEndpoint('first')" disabled title="Limpar 1ª entrega fixa" aria-label="Limpar 1ª entrega fixa" class="p-0.5 text-zinc-400 hover:text-amber-600 disabled:opacity-25 shrink-0">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    <div class="w-px h-4 bg-zinc-200 dark:bg-zinc-700 shrink-0"></div>
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
+                        <span class="text-zinc-500 shrink-0">Última</span>
+                        <strong id="selectedLastStopLabel" class="font-medium text-zinc-800 dark:text-zinc-200 truncate">Automática</strong>
+                        <button id="clearLastEndpoint" onclick="clearRouteEndpoint('last')" disabled title="Limpar última entrega fixa" aria-label="Limpar última entrega fixa" class="p-0.5 text-zinc-400 hover:text-blue-600 disabled:opacity-25 shrink-0">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -697,15 +708,19 @@
                             </div>
                             <h4 id="nextStopAddressText" class="text-xs sm:text-sm font-semibold text-[#09090B] dark:text-zinc-50 truncate mt-0.5">---</h4>
                             <p id="nextStopBairroText" class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate">---</p>
+                            <p id="nextStopEtaText" class="hidden text-[11px] font-semibold text-blue-600 dark:text-blue-400 mt-1">---</p>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2 shrink-0">
-                        <a id="nextStopGmapsBtn" href="#" target="_blank" rel="noopener noreferrer" title="Navegar com Google Maps" aria-label="Navegar com Google Maps" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shadow-shadcn-xs">
+                        <a id="nextStopGmapsBtn" href="#" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Navegar com Google Maps" aria-label="Navegar com Google Maps" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 shadow-shadcn-xs">
                             <i data-lucide="navigation" class="w-5 h-5 text-[#EE4D2D]"></i>
                         </a>
-                        <a id="nextStopWazeBtn" href="#" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                        <a id="nextStopWazeBtn" href="#" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
                             <i data-lucide="compass" class="w-5 h-5 text-cyan-500"></i>
+                        </a>
+                        <a id="nextStopAppleBtn" href="#" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Navegar com Apple Maps" aria-label="Navegar com Apple Maps" class="shadcn-btn flex-1 sm:flex-none sm:w-11 h-11 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                            <i data-lucide="map" class="w-5 h-5 text-sky-500"></i>
                         </a>
                     </div>
                 </div>
@@ -871,7 +886,7 @@
     </div>
 
     <!-- ========================================================================
-         MODAL ESCOLHER PRIMEIRA PARADA / INICIAR ROTEIRO
+         MODAL ESCOLHER PRIMEIRA OU ÚLTIMA PARADA
          ======================================================================== -->
     <div id="chooseFirstStopModalOverlay" class="hidden fixed inset-0 z-50 bg-zinc-950/65 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity" onclick="if(event.target===this)closeChooseFirstStopModal()">
         <div class="bg-white dark:bg-zinc-900 w-full max-w-md rounded-xl border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xl overflow-hidden animate-dialog flex flex-col max-h-[90vh]">
@@ -879,11 +894,11 @@
             <div class="p-4 border-b border-[#E4E4E7] dark:border-zinc-800 flex items-center justify-between shrink-0 bg-amber-50 dark:bg-amber-950/30">
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-xs shrink-0">
-                        <i data-lucide="flag" class="w-5 h-5"></i>
+                        <i id="routeEndpointModalIcon" data-lucide="flag" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-50">Escolher 1ª Entrega</h3>
-                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">O roteiro será recalculado a partir desta parada</p>
+                        <h3 id="routeEndpointModalTitle" class="text-sm font-bold text-zinc-900 dark:text-zinc-50">Escolher 1ª Entrega</h3>
+                        <p id="routeEndpointModalSubtitle" class="text-[11px] text-zinc-500 dark:text-zinc-400">O roteiro será recalculado a partir desta parada</p>
                     </div>
                 </div>
                 <button onclick="closeChooseFirstStopModal()" class="shadcn-btn h-8 w-8 text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100">
@@ -891,11 +906,22 @@
                 </button>
             </div>
 
+            <div class="grid grid-cols-2 gap-2 p-3 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
+                <button id="firstEndpointTab" onclick="switchRouteEndpointMode('first')" aria-pressed="true" class="h-9 rounded-md text-xs font-semibold bg-amber-500 text-white flex items-center justify-center gap-1.5">
+                    <i data-lucide="flag" class="w-3.5 h-3.5"></i>
+                    1ª entrega
+                </button>
+                <button id="lastEndpointTab" onclick="switchRouteEndpointMode('last')" aria-pressed="false" class="h-9 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center gap-1.5">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                    Última entrega
+                </button>
+            </div>
+
             <!-- Busca -->
             <div class="p-3 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
                 <div class="relative">
                     <i data-lucide="search" class="w-3.5 h-3.5 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                    <input type="text" id="firstStopSearchInput" oninput="renderFirstStopModalList(this.value)" placeholder="Buscar por Stop, SPX TN ou endereço..." aria-label="Buscar parada" class="w-full h-10 pl-8 pr-3 bg-white dark:bg-zinc-950 border border-[#E4E4E7] dark:border-zinc-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 rounded-md text-xs text-[#09090B] dark:text-zinc-100 placeholder:text-[#71717A] outline-none transition" />
+                    <input type="text" id="firstStopSearchInput" oninput="renderRouteEndpointModalList(this.value)" placeholder="Buscar por Stop, SPX TN ou endereço..." aria-label="Buscar parada" class="w-full h-10 pl-8 pr-3 bg-white dark:bg-zinc-950 border border-[#E4E4E7] dark:border-zinc-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15 rounded-md text-xs text-[#09090B] dark:text-zinc-100 placeholder:text-[#71717A] outline-none transition" />
                 </div>
             </div>
 
@@ -907,9 +933,14 @@
             <!-- Rodapé -->
             <div class="p-3 border-t border-[#E4E4E7] dark:border-zinc-800 shrink-0 flex items-center justify-between gap-2">
                 <span id="firstStopModalCount" class="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono"></span>
-                <button onclick="closeChooseFirstStopModal()" class="shadcn-btn h-9 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
-                    Cancelar
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="clearRouteEndpointModalBtn" onclick="clearRouteEndpoint(routeEndpointMode); closeChooseFirstStopModal();" class="shadcn-btn h-9 px-3 text-xs font-medium bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700">
+                        Automático
+                    </button>
+                    <button onclick="closeChooseFirstStopModal()" class="shadcn-btn h-9 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                        Cancelar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1073,6 +1104,11 @@
         </div>
     </div>
 
+    <script src="js/store.js"></script>
+    <script src="js/route-engine.js"></script>
+    <script src="js/transfer.js"></script>
+    <script src="js/logistics-ui.js"></script>
+
     <script>
         window.addEventListener('error', (e) => { try { showToast('Erro: ' + (e.message || 'falha inesperada'), 'error'); } catch (_) {} });
         window.addEventListener('unhandledrejection', (e) => { try { showToast('Erro: ' + ((e.reason && e.reason.message) || e.reason), 'error'); } catch (_) {} });
@@ -1129,6 +1165,10 @@
         let activeAtId = "";
         let groupedStops = [];
         let originalStopsSnapshot = [];
+        let activeRoutePlan = null;
+        let selectedFirstStopId = null;
+        let selectedLastStopId = null;
+        let routeEndpointMode = 'first';
         let currentStatusFilter = "TODOS";
         let currentViewMode = "STOP"; // 'STOP' | 'PACKAGE'
 
@@ -1267,6 +1307,7 @@
         // ============================================================================
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            if (window.SPXLogistics) SPXLogistics.init();
             initMap();
             setupFileInputListener();
             setupKeyboardShortcuts();
@@ -1317,13 +1358,62 @@
         // PERSISTÊNCIA: o progresso sobrevive a recarregar a página
         // ============================================================================
         const STATE_KEY = 'spx_route_state_v1';
+        let sheetJsPromise = null;
+
+        function ensureSheetJs() {
+            if (window.XLSX) return Promise.resolve(window.XLSX);
+            if (sheetJsPromise) return sheetJsPromise;
+            const sources = window.SPXAndroid
+                ? ['libs/xlsx.full.min.js']
+                : ['libs/xlsx.full.min.js', 'https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js'];
+            sheetJsPromise = new Promise((resolve, reject) => {
+                function loadSource(index) {
+                    if (index >= sources.length) {
+                        reject(new Error('Biblioteca Excel (SheetJS) indisponível.'));
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    const timeout = setTimeout(() => {
+                        script.remove();
+                        loadSource(index + 1);
+                    }, 20000);
+                    script.src = sources[index];
+                    script.async = true;
+                    script.onload = () => {
+                        clearTimeout(timeout);
+                        if (window.XLSX) resolve(window.XLSX);
+                        else loadSource(index + 1);
+                    };
+                    script.onerror = () => {
+                        clearTimeout(timeout);
+                        script.remove();
+                        loadSource(index + 1);
+                    };
+                    document.head.appendChild(script);
+                }
+                loadSource(0);
+            });
+            sheetJsPromise.catch(() => { sheetJsPromise = null; });
+            return sheetJsPromise;
+        }
 
         function saveState() {
             try {
-                if (!groupedStops.length) { localStorage.removeItem(STATE_KEY); return; }
-                const payload = { activeAtId, hubLocation, groupedStops, originalStopsSnapshot };
+                if (!groupedStops.length) { localStorage.removeItem(STATE_KEY); return true; }
+                const payload = {
+                    activeAtId,
+                    hubLocation,
+                    groupedStops,
+                    originalStopsSnapshot,
+                    activeRoutePlan,
+                    selectedFirstStopId,
+                    selectedLastStopId
+                };
                 localStorage.setItem(STATE_KEY, JSON.stringify(payload, (k, v) => (k.startsWith('_') || k === 'originalRow') ? undefined : v));
-            } catch (e) { /* cota cheia ou modo privado */ }
+                return true;
+            } catch (e) {
+                return false;
+            }
         }
 
         function restoreSavedState() {
@@ -1339,8 +1429,11 @@
                 if (!raw) return;
                 const st = JSON.parse(raw);
                 if (!st || !Array.isArray(st.groupedStops) || !st.groupedStops.length) return;
-                groupedStops = st.groupedStops;
-                originalStopsSnapshot = st.originalStopsSnapshot || JSON.parse(JSON.stringify(st.groupedStops));
+                groupedStops = st.groupedStops.map(normalizeStopDeliveryFields);
+                originalStopsSnapshot = (st.originalStopsSnapshot || JSON.parse(JSON.stringify(st.groupedStops))).map(normalizeStopDeliveryFields);
+                activeRoutePlan = st.activeRoutePlan || null;
+                selectedFirstStopId = typeof st.selectedFirstStopId === 'string' ? st.selectedFirstStopId : null;
+                selectedLastStopId = typeof st.selectedLastStopId === 'string' ? st.selectedLastStopId : null;
                 if (st.hubLocation) { hubLocation = st.hubLocation; renderHubMarker(); }
                 activeAtId = st.activeAtId || "ROMANEIO SPX";
                 document.getElementById('activeAtIdValue').textContent = activeAtId;
@@ -1369,22 +1462,44 @@
             clearTimeout(roadTimer);
             roadTimer = setTimeout(fetchRoadRoute, 700);
         }
+        function getRoutingSettings() {
+            let settings = {};
+            try { settings = JSON.parse(localStorage.getItem('spx_logistics_settings') || '{}') || {}; }
+            catch (_) {}
+            try {
+                let key = '';
+                if (window.SPXAndroid && typeof SPXAndroid.getGoogleRoutesKey === 'function') {
+                    key = String(SPXAndroid.getGoogleRoutesKey() || '').trim();
+                }
+                if (!key) key = String(localStorage.getItem('spx_google_routes_key') || '').trim();
+                settings.googleRoutesKey = key || settings.googleRoutesKey || '';
+            } catch (_) {}
+            return settings;
+        }
+
         async function fetchRoadRoute() {
-            if (groupedStops.length < 1 || groupedStops.length > 90) { roadRoute = null; return; }
+            if (!window.SPXRouteEngine || groupedStops.length < 1 || groupedStops.length > 90) { roadRoute = null; return; }
             const sig = currentRouteSig();
             if (sig === roadRouteSig && roadRoute) return;
             const id = ++roadReqId;
+            const settings = getRoutingSettings();
+            const pts = [hubLocation, ...groupedStops];
+            const provider = settings.googleRoutesKey && pts.length <= 26 ? 'auto' : 'osrm';
             try {
-                const pts = [hubLocation, ...groupedStops];
-                const url = `https://router.project-osrm.org/route/v1/driving/${pts.map(p => p.lng + ',' + p.lat).join(';')}?overview=full&geometries=geojson`;
-                const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), 12000);
-                const resp = await fetch(url, { signal: ctrl.signal });
-                clearTimeout(t);
-                const j = await resp.json();
-                if (id !== roadReqId || j.code !== 'Ok' || !j.routes || !j.routes[0]) return;
-                const r = j.routes[0];
-                roadRoute = { km: r.distance / 1000, min: r.duration / 60, coords: r.geometry.coordinates.map(c => [c[1], c[0]]) };
+                const route = await SPXRouteEngine.computeRoute(pts, {
+                    provider,
+                    googleKey: settings.googleRoutesKey || '',
+                    request: window.SPXLogistics ? SPXLogistics.googleRequest : undefined
+                });
+                if (id !== roadReqId) return;
+                roadRoute = {
+                    km: route.distanceMeters / 1000,
+                    min: route.durationSec / 60,
+                    coords: route.coords,
+                    steps: route.steps,
+                    provider: route.provider,
+                    trafficAware: route.trafficAware
+                };
                 roadRouteSig = sig;
                 updateDashboardStats();
                 renderMapMarkersAndPolyline(false);
@@ -1494,23 +1609,19 @@
             else if (done.length) { start = done[done.length - 1]; origem = "da última entrega concluída"; }
             else { start = hubLocation; origem = "do CD"; }
 
-            // 4) Vizinho mais próximo + 2-opt
-            const left = [...pending], route = [];
-            let cur = start;
-            while (left.length) {
-                let bi = 0, bd = Infinity;
-                for (let i = 0; i < left.length; i++) {
-                    const d = haversineDistanceKm(cur.lat, cur.lng, left[i].lat, left[i].lng);
-                    if (d < bd) { bd = d; bi = i; }
+            // 4) Matriz rodoviária + prioridade/janelas + duração de serviço
+            groupedStops = [...done, ...pending];
+            try {
+                const ok = await optimizePendingFrom(start, undefined, origem, true);
+                if (ok) {
+                    const pendingCount = groupedStops.length - done.length;
+                    showToast(`${pendingCount} entregas reorganizadas a partir ${origem}.${mergedCount ? ' ' + mergedCount + ' parada(s) no mesmo ponto foram unidas.' : ''}`, "success");
                 }
-                cur = left.splice(bi, 1)[0];
-                route.push(cur);
+            } catch (error) {
+                showToast("Não foi possível reorganizar agora. Verifique a conexão e tente novamente.", "error");
+            } finally {
+                btn.disabled = false;
             }
-            const ordered = twoOptImprove(route, start);
-
-            groupedStops = [...done, ...ordered];
-            refreshAllViews(true);
-            showToast(`${ordered.length} entregas reorganizadas a partir ${origem}.${mergedCount ? ' ' + mergedCount + ' parada(s) no mesmo ponto foram unidas.' : ''}`, "success");
         }
 
         function setupKeyboardShortcuts() {
@@ -1592,7 +1703,10 @@
         }
 
         function toggleStreetNames() {
-            showToast("Os nomes das ruas já vêm integrados ao mapa OpenStreetMap e não podem ser ocultados nesta camada.", "info");
+            showStreetNames = !showStreetNames;
+            applyMapTileLayer();
+            const btn = document.getElementById('btnStreetNames');
+            if (btn) btn.setAttribute('aria-pressed', String(showStreetNames));
         }
 
         function cycleMapTileLayer() {
@@ -1870,15 +1984,28 @@
             }
         }
 
-        function parseWorkbookSafely(arrayBuffer) {
+        async function parseWorkbookSafely(arrayBuffer, fileName = "") {
+            await ensureSheetJs();
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
                         if (typeof XLSX === 'undefined') {
                             throw new Error("Biblioteca de leitura Excel (SheetJS) indisponível.");
                         }
-                        const workbook = XLSX.read(arrayBuffer, {
-                            type: 'array',
+                        let input = arrayBuffer;
+                        let inputType = 'array';
+                        if (/\.csv$/i.test(fileName)) {
+                            let text;
+                            try {
+                                text = new TextDecoder('utf-8', { fatal: true }).decode(arrayBuffer);
+                            } catch (_) {
+                                text = new TextDecoder('windows-1252').decode(arrayBuffer);
+                            }
+                            input = text.replace(/^\uFEFF/, '');
+                            inputType = 'string';
+                        }
+                        const workbook = XLSX.read(input, {
+                            type: inputType,
                             cellStyles: false,
                             cellHTML: false,
                             cellFormula: false,
@@ -1926,7 +2053,7 @@
                 });
                 if (activeImportToken !== myToken) return;
 
-                const rawRows = await parseWorkbookSafely(data);
+                const rawRows = await parseWorkbookSafely(data, file.name);
                 if (activeImportToken !== myToken) return;
 
                 if (!rawRows || rawRows.length === 0) {
@@ -2018,15 +2145,75 @@
 
         function parseCoordinateSafe(val) {
             if (val === null || val === undefined || val === "") return null;
-            if (typeof val === 'number') {
-                return Number.isFinite(val) && val !== 0 ? val : null;
-            }
+            if (typeof val === 'number') return Number.isFinite(val) ? val : null;
             const cleaned = String(val).trim().replace(',', '.');
-            if (!cleaned || cleaned === '-') return null;
-            const num = parseFloat(cleaned);
-            return Number.isFinite(num) && num !== 0 ? num : null;
+            if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(cleaned)) return null;
+            const num = Number(cleaned);
+            return Number.isFinite(num) ? num : null;
         }
         const parseCoordinateValue = parseCoordinateSafe;
+
+        function stableHash(value) {
+            const text = String(value || "");
+            let hash = 2166136261;
+            for (let i = 0; i < text.length; i++) {
+                hash ^= text.charCodeAt(i);
+                hash = Math.imul(hash, 16777619);
+            }
+            return (hash >>> 0).toString(36);
+        }
+
+        function parseDeliveryNumber(value, fallback = 0) {
+            if (value === null || value === undefined || value === "") return fallback;
+            const text = String(value).trim().replace(/\s*(min|minutos?)$/i, '').replace(',', '.');
+            const number = Number(text);
+            return Number.isFinite(number) && number >= 0 ? number : fallback;
+        }
+
+        function normalizeClockValue(value) {
+            if (value instanceof Date && !Number.isNaN(value.getTime())) {
+                return `${String(value.getUTCHours()).padStart(2, "0")}:${String(value.getUTCMinutes()).padStart(2, "0")}`;
+            }
+            if (typeof value === 'number' && Number.isFinite(value) && value >= 0 && value < 1) {
+                const totalMinutes = Math.round(value * 24 * 60) % (24 * 60);
+                return `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
+            }
+            const match = String(value || "").trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+            if (!match) return "";
+            const hours = Number(match[1]);
+            const minutes = Number(match[2]);
+            return hours <= 23 && minutes <= 59 ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}` : "";
+        }
+
+        function priorityValue(value) {
+            const priority = String(value || "").trim().toLowerCase();
+            return ["urgente", "alta", "normal"].includes(priority) ? priority : "normal";
+        }
+
+        function normalizeStopDeliveryFields(stop) {
+            if (!stop) return stop;
+            stop.priority = priorityValue(stop.priority);
+            stop.serviceMinutes = parseDeliveryNumber(stop.serviceMinutes, 4);
+            stop.windowStart = normalizeClockValue(stop.windowStart);
+            stop.windowEnd = normalizeClockValue(stop.windowEnd);
+            stop.windowType = String(stop.windowType || "chegada").toLowerCase();
+            stop.recipient = stop.recipient || "";
+            stop.phone = stop.phone || "";
+            stop.vehiclePosition = stop.vehiclePosition || "";
+            stop.notes = stop.notes || "";
+            (stop.packages || []).forEach(pkg => {
+                pkg.priority = priorityValue(pkg.priority || stop.priority);
+                pkg.serviceMinutes = parseDeliveryNumber(pkg.serviceMinutes, stop.serviceMinutes);
+                pkg.windowStart = normalizeClockValue(pkg.windowStart || stop.windowStart);
+                pkg.windowEnd = normalizeClockValue(pkg.windowEnd || stop.windowEnd);
+                pkg.windowType = String(pkg.windowType || stop.windowType || "chegada").toLowerCase();
+                pkg.recipient = pkg.recipient || stop.recipient;
+                pkg.phone = pkg.phone || stop.phone;
+                pkg.vehiclePosition = pkg.vehiclePosition || stop.vehiclePosition;
+                pkg.notes = pkg.notes || stop.notes;
+            });
+            return stop;
+        }
 
         async function normalizeAndGroupSPXRows(rows, sourceLabel = "Exemplo_AT20261120D7DD0.xlsx") {
             const rawPackages = [];
@@ -2053,6 +2240,15 @@
                 const bairro = String(extractNormalizedField(row, ['bairro', 'neighborhood', 'distrito']) || "").trim();
                 const city = String(extractNormalizedField(row, ['city', 'cidade', 'municipio']) || "").trim();
                 const zipcode = String(extractNormalizedField(row, ['zipcode/postal code', 'zipcode', 'postal code', 'cep']) || "").trim();
+                const recipient = String(extractNormalizedField(row, ['recipient', 'receiver', 'recebedor', 'nome do recebedor', 'destinatario']) || "").trim();
+                const phone = String(extractNormalizedField(row, ['phone', 'recipient phone', 'telefone', 'contato', 'phone number']) || "").trim();
+                const priority = priorityValue(extractNormalizedField(row, ['priority', 'prioridade']));
+                const serviceMinutes = parseDeliveryNumber(extractNormalizedField(row, ['service minutes', 'service time', 'tempo de servico', 'tempo medio de servico', 'duracao do servico', 'servico (min)']), 4);
+                const windowStart = normalizeClockValue(extractNormalizedField(row, ['window start', 'time window start', 'inicio da janela', 'janela inicial', 'horario inicial']));
+                const windowEnd = normalizeClockValue(extractNormalizedField(row, ['window end', 'time window end', 'fim da janela', 'janela final', 'horario final']));
+                const windowType = String(extractNormalizedField(row, ['window type', 'tipo da janela', 'tipo de janela']) || "chegada").trim().toLowerCase();
+                const vehiclePosition = String(extractNormalizedField(row, ['vehicle position', 'package position', 'posicao no veiculo', 'posicao do volume', 'localizacao no veiculo', 'compartimento']) || "").trim();
+                const notes = String(extractNormalizedField(row, ['notes', 'observations', 'observacoes', 'observacao', 'delivery notes']) || "").trim();
 
                 const sheetLat = parseCoordinateSafe(extractNormalizedField(row, ['latitude', 'lat']));
                 const sheetLng = parseCoordinateSafe(extractNormalizedField(row, ['longitude', 'lng', 'lon']));
@@ -2062,7 +2258,7 @@
                 let approx = false;
 
                 // Se a planilha já traz coordenadas válidas da Shopee, usa direto (instantâneo e preciso!)
-                if (sheetLat !== null && sheetLng !== null && Number.isFinite(sheetLat) && Number.isFinite(sheetLng) && (sheetLat !== 0 || sheetLng !== 0)) {
+                if (sheetLat !== null && sheetLng !== null && Math.abs(sheetLat) <= 90 && Math.abs(sheetLng) <= 180) {
                     lat = sheetLat;
                     lng = sheetLng;
                     approx = false;
@@ -2077,7 +2273,7 @@
                 }
 
                 rawPackages.push({
-                    id: `pkg-${index}-${Date.now()}`,
+                    id: `pkg-${stableHash(`${spxTn}|${sequence}|${address}|${index}`)}`,
                     atId: atIdRaw || detectedAtId || "ROMANEIO SPX",
                     sequence: sequence,
                     stopRaw: hasValidStopNumber ? stopStr : "-",
@@ -2092,6 +2288,15 @@
                     approx: approx,
                     status: "Pendente",
                     deliveredAt: "",
+                    recipient,
+                    phone,
+                    priority,
+                    serviceMinutes,
+                    windowStart,
+                    windowEnd,
+                    windowType,
+                    vehiclePosition,
+                    notes,
                     originalRow: row
                 });
             }
@@ -2134,11 +2339,47 @@
 
             groupedStops = buildGroupedStopsFromPackages(rawPackages);
             originalStopsSnapshot = JSON.parse(JSON.stringify(groupedStops));
+            activeRoutePlan = null;
+            selectedFirstStopId = null;
+            selectedLastStopId = null;
             expandedStopIds.clear();
 
-            refreshAllViews(false);
+            // ── AUTO-OTIMIZAÇÃO: Vizinho Mais Próximo a partir do CD ──
+            // Sempre que importar uma planilha, otimiza automaticamente
+            // os pontos mais próximos sequencialmente para evitar rotas em ziguezague
+            if (groupedStops.length >= 2) {
+                const hasRealCoords = groupedStops.filter(s => Number.isFinite(s.lat)).length;
+                if (hasRealCoords > 0) {
+                    const startLat = hubLocation.lat;
+                    const startLng = hubLocation.lng;
+                    const unvisited = [...groupedStops];
+                    const optimized = [];
+                    let curLat = startLat, curLng = startLng;
+                    while (unvisited.length > 0) {
+                        let bestIdx = 0, bestDist = Infinity;
+                        for (let i = 0; i < unvisited.length; i++) {
+                            const c = unvisited[i];
+                            if (!Number.isFinite(c.lat)) { bestIdx = i; break; }
+                            const d = haversineDistanceKm(curLat, curLng, c.lat, c.lng);
+                            if (d < bestDist) { bestDist = d; bestIdx = i; }
+                        }
+                        const chosen = unvisited.splice(bestIdx, 1)[0];
+                        optimized.push(chosen);
+                        if (Number.isFinite(chosen.lat)) { curLat = chosen.lat; curLng = chosen.lng; }
+                    }
+                    groupedStops = optimized;
+                }
+            }
+
+            try {
+                if (groupedStops.length >= 2) await optimizePendingFrom(hubLocation, undefined, "do CD", true);
+                else refreshAllViews(true);
+            } catch (error) {
+                console.warn("Auto-otimização indisponível:", error);
+                refreshAllViews(true);
+            }
             updateHeaderImportPill('success', `${groupedStops.length} paradas • ${sourceLabel}`);
-            showToast(`${rawPackages.length} pacotes agrupados em ${groupedStops.length} paradas.`, "success");
+            showToast(`${rawPackages.length} pacotes agrupados em ${groupedStops.length} paradas${activeRoutePlan ? " e rota otimizada" : ""}.`, "success");
             backgroundGeocode();
 
             return {
@@ -2275,6 +2516,7 @@
             const my = ++bgGeoToken;
             const todo = groupedStops.filter(st => st.approx);
             if (!todo.length) return;
+            const shouldReoptimize = !!activeRoutePlan;
             const wrap = document.getElementById('geocodingProgressWrapper');
             const txt = document.getElementById('geocodingStatusText');
             const bar = document.getElementById('geocodingProgressBar');
@@ -2291,6 +2533,7 @@
                     apply(st);
                     const snap = originalStopsSnapshot.find(g => g.groupId === st.groupId);
                     if (snap) apply(snap);
+                    activeRoutePlan = null;
                     fixed++;
                     if (fixed % 5 === 0) refreshAllViews(false);
                 }
@@ -2301,6 +2544,9 @@
             }
             wrap.classList.add('hidden');
             refreshAllViews(false);
+            if (shouldReoptimize && fixed > 0 && groupedStops.length >= 2) {
+                try { await optimizePendingFrom(hubLocation, undefined, "do CD", true); } catch (error) {}
+            }
             const left = groupedStops.filter(g => g.approx).length;
             if (left > 0) showToast(`${fixed} endereços localizados via Endereço/CEP; ${left} ficaram aprox.`, "info");
             else showToast(`Todos os ${fixed} endereços foram geocodificados com sucesso por Endereço/CEP!`, "success");
@@ -2342,6 +2588,15 @@
                             lng: pkg.lng,
                             minSequence: pkg.sequence,
                             approx: !!pkg.approx,
+                            recipient: pkg.recipient || "",
+                            phone: pkg.phone || "",
+                            priority: priorityValue(pkg.priority),
+                            serviceMinutes: parseDeliveryNumber(pkg.serviceMinutes, 4),
+                            windowStart: normalizeClockValue(pkg.windowStart),
+                            windowEnd: normalizeClockValue(pkg.windowEnd),
+                            windowType: pkg.windowType || "chegada",
+                            vehiclePosition: pkg.vehiclePosition || "",
+                            notes: pkg.notes || "",
                             packages: []
                         });
                     }
@@ -2350,6 +2605,15 @@
                     if (pkg.sequence < group.minSequence) {
                         group.minSequence = pkg.sequence;
                     }
+                    if (!group.recipient && pkg.recipient) group.recipient = pkg.recipient;
+                    if (!group.phone && pkg.phone) group.phone = pkg.phone;
+                    if (!group.vehiclePosition && pkg.vehiclePosition) group.vehiclePosition = pkg.vehiclePosition;
+                    const ranks = { urgente: 0, alta: 1, normal: 2 };
+                    if (ranks[priorityValue(pkg.priority)] < ranks[group.priority]) group.priority = priorityValue(pkg.priority);
+                    group.serviceMinutes = Math.max(group.serviceMinutes, parseDeliveryNumber(pkg.serviceMinutes, 4));
+                    if (pkg.windowStart && (!group.windowStart || pkg.windowStart < group.windowStart)) group.windowStart = pkg.windowStart;
+                    if (pkg.windowEnd && (!group.windowEnd || pkg.windowEnd > group.windowEnd)) group.windowEnd = pkg.windowEnd;
+                    if (pkg.notes && !group.notes.includes(pkg.notes)) group.notes = [group.notes, pkg.notes].filter(Boolean).join(" | ");
                 } else {
                     unnumberedStops.push({
                         groupId: `UNASSIGNED_${idx}_${pkg.spxTn}`,
@@ -2364,6 +2628,15 @@
                         lng: pkg.lng,
                         minSequence: pkg.sequence,
                         approx: !!pkg.approx,
+                        recipient: pkg.recipient || "",
+                        phone: pkg.phone || "",
+                        priority: priorityValue(pkg.priority),
+                        serviceMinutes: parseDeliveryNumber(pkg.serviceMinutes, 4),
+                        windowStart: normalizeClockValue(pkg.windowStart),
+                        windowEnd: normalizeClockValue(pkg.windowEnd),
+                        windowType: pkg.windowType || "chegada",
+                        vehiclePosition: pkg.vehiclePosition || "",
+                        notes: pkg.notes || "",
                         packages: [pkg]
                     });
                 }
@@ -2378,7 +2651,7 @@
 
             unnumberedStops.sort((a, b) => a.minSequence - b.minSequence);
 
-            return [...numberedList, ...unnumberedStops];
+            return [...numberedList, ...unnumberedStops].map(normalizeStopDeliveryFields);
         }
 
         // ============================================================================
@@ -2395,66 +2668,137 @@
             return R * c;
         }
 
-        function optimizeRouteNearestNeighbor() {
+        function isRoutePlanCurrent() {
+            if (!activeRoutePlan || !Array.isArray(activeRoutePlan.schedule)) return false;
+            const pendingIds = groupedStops
+                .filter(stop => getStopAggregateStatus(stop) === 'Pendente' || getStopAggregateStatus(stop) === 'Parcial')
+                .map(stop => stop.groupId);
+            const plannedPendingIds = activeRoutePlan.schedule
+                .map(item => item.stopId)
+                .filter(id => pendingIds.includes(id));
+            return plannedPendingIds.length === pendingIds.length && pendingIds.every(id => plannedPendingIds.includes(id));
+        }
+
+        function getRemainingSchedule() {
+            if (!isRoutePlanCurrent()) return [];
+            const pendingIds = new Set(groupedStops
+                .filter(stop => ['Pendente', 'Parcial'].includes(getStopAggregateStatus(stop)))
+                .map(stop => stop.groupId));
+            return activeRoutePlan.schedule.filter(item => pendingIds.has(item.stopId));
+        }
+
+        function getStopEta(groupId) {
+            const schedule = getRemainingSchedule();
+            const targetIndex = schedule.findIndex(item => item.stopId === groupId);
+            if (targetIndex < 0) return null;
+            let minutes = 0;
+            for (let i = 0; i <= targetIndex; i++) {
+                const item = schedule[i];
+                minutes += (Number(item.durationSec) || 0) / 60 + (Number(item.waitMinutes) || 0);
+                if (i < targetIndex) {
+                    const stop = groupedStops.find(entry => entry.groupId === item.stopId);
+                    minutes += parseDeliveryNumber(stop && stop.serviceMinutes, 4);
+                }
+            }
+            return new Date(Date.now() + minutes * 60000);
+        }
+
+        async function optimizePendingFrom(start, firstStopId = selectedFirstStopId, originLabel = "do CD", silent = false, lastStopId = selectedLastStopId) {
+            if (!window.SPXRouteEngine) {
+                showToast("Motor de rotas indisponível.", "error");
+                return false;
+            }
+            const done = groupedStops.filter(stop => ['Entregue', 'Insucesso'].includes(getStopAggregateStatus(stop)));
+            const pending = groupedStops.filter(stop => !['Entregue', 'Insucesso'].includes(getStopAggregateStatus(stop)));
+            if (!pending.length) {
+                selectedFirstStopId = null;
+                selectedLastStopId = null;
+                activeRoutePlan = null;
+                refreshAllViews(false);
+                if (!silent) showToast("Todas as entregas já foram concluídas.", "info");
+                return false;
+            }
+            const pendingIds = new Set(pending.map(stop => stop.groupId));
+            const validFirstStopId = pendingIds.has(String(firstStopId)) ? firstStopId : null;
+            let validLastStopId = pendingIds.has(String(lastStopId)) ? lastStopId : null;
+            if (pending.length > 1 && validFirstStopId && validLastStopId && String(validFirstStopId) === String(validLastStopId)) {
+                validLastStopId = null;
+            }
+            selectedFirstStopId = validFirstStopId;
+            selectedLastStopId = validLastStopId;
+            const settings = getRoutingSettings();
+            const points = [start, ...pending];
+            let matrix;
+            try {
+                matrix = await SPXRouteEngine.buildMatrix(points, {
+                    provider: settings.googleRoutesKey && points.length <= 26 ? 'google' : 'osrm',
+                    googleKey: settings.googleRoutesKey || '',
+                    departureTime: new Date().toISOString(),
+                    request: window.SPXLogistics ? SPXLogistics.googleRequest : undefined
+                });
+            } catch (error) {
+                matrix = await SPXRouteEngine.buildMatrix(points, {
+                    provider: 'osrm',
+                    request: window.SPXLogistics ? SPXLogistics.googleRequest : undefined
+                });
+            }
+            const result = SPXRouteEngine.optimizeStops({
+                stops: pending,
+                start,
+                matrix,
+                departureTime: new Date().toISOString(),
+                firstStopId: validFirstStopId,
+                lastStopId: validLastStopId
+            });
+            const ordered = result.stops.map(stop => pending.find(item => item.groupId === stop.groupId) || stop);
+            groupedStops = [...done, ...ordered];
+            activeRoutePlan = {
+                provider: matrix.provider,
+                trafficAware: !!matrix.trafficAware,
+                generatedAt: new Date().toISOString(),
+                start,
+                firstStopId: validFirstStopId,
+                lastStopId: validLastStopId,
+                schedule: result.schedule.map((item, index) => Object.assign({}, item, {
+                    stopId: ordered[index] ? ordered[index].groupId : item.stopId
+                })),
+                metrics: result.metrics
+            };
+            refreshAllViews(true);
+            saveState();
+            if (!silent) {
+                const traffic = activeRoutePlan.trafficAware ? "com trânsito em tempo real" : "sem trânsito em tempo real";
+                showToast(`${ordered.length} parada(s) otimizada(s) a partir ${originLabel}, ${traffic}.`, "success");
+            }
+            return true;
+        }
+
+        async function optimizeRouteNearestNeighbor(options = {}) {
             if (!groupedStops || groupedStops.length < 2) {
-                showToast("Importe pelo menos 2 paradas para otimizar a rota.", "info");
+                if (!options.silent) showToast("Importe pelo menos 2 paradas para otimizar a rota.", "info");
                 return;
             }
-
-            const unvisited = [...groupedStops];
-            const optimized = [];
-            let currentLat = hubLocation.lat;
-            let currentLng = hubLocation.lng;
-
-            while (unvisited.length > 0) {
-                let nearestIdx = 0;
-                let nearestDist = Infinity;
-
-                for (let i = 0; i < unvisited.length; i++) {
-                    const candidate = unvisited[i];
-                    const d = haversineDistanceKm(currentLat, currentLng, candidate.lat, candidate.lng);
-                    if (d < nearestDist) {
-                        nearestDist = d;
-                        nearestIdx = i;
-                    }
-                }
-
-                const chosen = unvisited.splice(nearestIdx, 1)[0];
-                optimized.push(chosen);
-                currentLat = chosen.lat;
-                currentLng = chosen.lng;
+            const btn = document.getElementById('btnOptimizeRoute');
+            if (btn) btn.disabled = true;
+            try {
+                await optimizePendingFrom(hubLocation, null, "do CD", !!options.silent);
+            } catch (error) {
+                showToast("Não foi possível otimizar agora. Verifique a conexão e tente novamente.", "error");
+            } finally {
+                if (btn) btn.disabled = groupedStops.length < 2;
             }
-
-            groupedStops = twoOptImprove(optimized);
-            refreshAllViews(true);
-            showToast("Rota otimizada (vizinho mais próximo + 2-opt) a partir do CD.", "success");
         }
 
         function restoreOriginalStopOrder() {
             if (!originalStopsSnapshot || originalStopsSnapshot.length === 0) return;
 
-            const currentStatusByPkgId = new Map();
-            groupedStops.forEach(stop => {
-                stop.packages.forEach(pkg => {
-                    currentStatusByPkgId.set(pkg.id, {
-                        status: pkg.status,
-                        deliveredAt: pkg.deliveredAt
-                    });
-                });
-            });
-
-            const restored = JSON.parse(JSON.stringify(originalStopsSnapshot));
-            restored.forEach(stop => {
-                stop.packages.forEach(pkg => {
-                    const saved = currentStatusByPkgId.get(pkg.id);
-                    if (saved) {
-                        pkg.status = saved.status;
-                        pkg.deliveredAt = saved.deliveredAt;
-                    }
-                });
-            });
+            const currentByGroupId = new Map(groupedStops.map(stop => [stop.groupId, stop]));
+            const restored = originalStopsSnapshot.map(stop => currentByGroupId.get(stop.groupId)).filter(Boolean);
+            const snapshotIds = new Set(originalStopsSnapshot.map(stop => stop.groupId));
+            groupedStops.filter(stop => !snapshotIds.has(stop.groupId)).forEach(stop => restored.push(stop));
 
             groupedStops = restored;
+            activeRoutePlan = null;
             refreshAllViews(true);
             showToast("Sequência original SPX restaurada.", "info");
         }
@@ -2463,8 +2807,16 @@
             const targetIndex = index + direction;
             if (targetIndex < 0 || targetIndex >= groupedStops.length) return;
             const temp = groupedStops[index];
-            groupedStops[index] = groupedStops[targetIndex];
+            const target = groupedStops[targetIndex];
+            if (selectedFirstStopId && (String(selectedFirstStopId) === String(temp.groupId) || String(selectedFirstStopId) === String(target.groupId))) {
+                selectedFirstStopId = null;
+            }
+            if (selectedLastStopId && (String(selectedLastStopId) === String(temp.groupId) || String(selectedLastStopId) === String(target.groupId))) {
+                selectedLastStopId = null;
+            }
+            groupedStops[index] = target;
             groupedStops[targetIndex] = temp;
+            activeRoutePlan = null;
             refreshAllViews(false);
         }
 
@@ -2473,23 +2825,60 @@
         // ============================================================================
 
         function openChooseFirstStopModal() {
+            openRouteEndpointModal('first');
+        }
+
+        function openChooseLastStopModal() {
+            openRouteEndpointModal('last');
+        }
+
+        function updateRouteEndpointModalContent() {
+            const isFirst = routeEndpointMode === 'first';
+            document.getElementById('routeEndpointModalTitle').textContent = isFirst ? 'Definir 1ª Entrega' : 'Definir Última Entrega';
+            document.getElementById('routeEndpointModalSubtitle').textContent = isFirst
+                ? 'O roteiro será recalculado a partir desta parada'
+                : 'Esta parada será reservada para o fim do roteiro';
+            const icon = document.getElementById('routeEndpointModalIcon');
+            icon.setAttribute('data-lucide', isFirst ? 'flag' : 'map-pin');
+            const selectedId = isFirst ? selectedFirstStopId : selectedLastStopId;
+            const clearButton = document.getElementById('clearRouteEndpointModalBtn');
+            clearButton.style.display = selectedId ? '' : 'none';
+            const firstTab = document.getElementById('firstEndpointTab');
+            const lastTab = document.getElementById('lastEndpointTab');
+            firstTab.className = isFirst
+                ? 'h-9 rounded-md text-xs font-semibold bg-amber-500 text-white flex items-center justify-center gap-1.5'
+                : 'h-9 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center gap-1.5';
+            lastTab.className = isFirst
+                ? 'h-9 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center gap-1.5'
+                : 'h-9 rounded-md text-xs font-semibold bg-blue-600 text-white flex items-center justify-center gap-1.5';
+            firstTab.setAttribute('aria-pressed', String(isFirst));
+            lastTab.setAttribute('aria-pressed', String(!isFirst));
+            renderRouteEndpointModalList(document.getElementById('firstStopSearchInput').value);
+            lucide.createIcons();
+        }
+
+        function openRouteEndpointModal(mode) {
             if (!groupedStops || groupedStops.length === 0) {
-                showToast("Importe um romaneio antes de escolher a 1ª entrega.", "info");
+                showToast("Importe um romaneio antes de escolher as entregas extremas.", "info");
                 return;
             }
-            const overlay = document.getElementById('chooseFirstStopModalOverlay');
-            overlay.classList.remove('hidden');
-            const searchInput = document.getElementById('firstStopSearchInput');
-            searchInput.value = '';
-            renderFirstStopModalList('');
-            requestAnimationFrame(() => searchInput.focus());
+            routeEndpointMode = mode === 'last' ? 'last' : 'first';
+            document.getElementById('chooseFirstStopModalOverlay').classList.remove('hidden');
+            document.getElementById('firstStopSearchInput').value = '';
+            updateRouteEndpointModalContent();
+            requestAnimationFrame(() => document.getElementById('firstStopSearchInput').focus());
+        }
+
+        function switchRouteEndpointMode(mode) {
+            routeEndpointMode = mode === 'last' ? 'last' : 'first';
+            updateRouteEndpointModalContent();
         }
 
         function closeChooseFirstStopModal() {
             document.getElementById('chooseFirstStopModalOverlay').classList.add('hidden');
         }
 
-        function renderFirstStopModalList(query) {
+        function renderRouteEndpointModalList(query) {
             const container = document.getElementById('firstStopModalList');
             const countEl = document.getElementById('firstStopModalCount');
             const q = (query || '').toLowerCase().trim();
@@ -2512,7 +2901,8 @@
                 return;
             }
 
-            container.innerHTML = all.map((stop, idx) => {
+            const pendingCount = groupedStops.filter(item => !['Entregue', 'Insucesso'].includes(getStopAggregateStatus(item))).length;
+            container.innerHTML = all.map(stop => {
                 const realIdx = groupedStops.indexOf(stop);
                 const orderNum = realIdx + 1;
                 const pkgCount = stop.packages.length;
@@ -2526,6 +2916,19 @@
                 const doneBadge = isDone
                     ? `<span class="font-mono text-[10px] px-1.5 py-0.5 rounded ${aggStatus === 'Entregue' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${aggStatus}</span>`
                     : '';
+                const isFirst = routeEndpointMode === 'first';
+                const selectedId = isFirst ? selectedFirstStopId : selectedLastStopId;
+                const otherEndpointId = isFirst ? selectedLastStopId : selectedFirstStopId;
+                const isConflict = !isDone && pendingCount > 1 && !!otherEndpointId && String(stop.groupId) === String(otherEndpointId);
+                const isSelected = !!selectedId && String(stop.groupId) === String(selectedId);
+                const selectedBadge = isSelected
+                    ? `<span class="font-mono text-[10px] px-1.5 py-0.5 rounded ${isFirst ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${isFirst ? '1ª definida' : 'Última definida'}</span>`
+                    : '';
+                const actionLabel = isFirst ? 'Iniciar' : 'Finalizar';
+                const actionClass = isFirst ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700';
+                const actionTitle = isConflict
+                    ? 'Esta parada já ocupa a outra extremidade da rota'
+                    : (isFirst ? 'Iniciar roteiro por aqui' : 'Reservar esta parada para o fim');
 
                 return `
                     <div class="rounded-lg border ${isDone ? 'border-zinc-200 dark:border-zinc-800 opacity-60' : 'border-[#E4E4E7] dark:border-zinc-800'} bg-white dark:bg-zinc-900 p-3 flex items-center gap-3 shadow-shadcn-xs">
@@ -2535,13 +2938,14 @@
                                 ${stopBadge}
                                 <span class="font-mono text-[10px] text-zinc-500">${pkgCount} pct${pkgCount !== 1 ? 's' : ''}</span>
                                 ${doneBadge}
+                                ${selectedBadge}
                             </div>
                             <div class="text-xs font-semibold text-zinc-900 dark:text-zinc-50 truncate leading-snug">${escapeHtml(stop.primaryAddress)}</div>
                             <div class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">${escapeHtml(stop.bairro)}${stop.bairro && stop.city ? ' • ' : ''}${escapeHtml(stop.city)}</div>
                         </div>
-                        <button onclick="setAsFirstStopAndRoute('${stop.groupId}')" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-9 px-3 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0">
-                            <i data-lucide="flag" class="w-3.5 h-3.5"></i>
-                            Iniciar
+                        <button onclick="setAsRouteEndpointAndRoute(${escapeJsString(stop.groupId)})" ${isDone || isConflict ? 'disabled' : ''} title="${actionTitle}" aria-label="${actionTitle}" class="shadcn-btn h-9 px-3 ${actionClass} text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 disabled:opacity-40">
+                            <i data-lucide="${isFirst ? 'flag' : 'map-pin'}" class="w-3.5 h-3.5"></i>
+                            ${actionLabel}
                         </button>
                     </div>
                 `;
@@ -2550,47 +2954,88 @@
             lucide.createIcons();
         }
 
-        function setAsFirstStopAndRoute(targetGroupId) {
+        async function setAsFirstStopAndRoute(targetGroupId) {
+            routeEndpointMode = 'first';
+            return setAsRouteEndpointAndRoute(targetGroupId);
+        }
+
+        async function setAsRouteEndpointAndRoute(targetGroupId) {
             const targetIdx = groupedStops.findIndex(s => s.groupId === targetGroupId);
             if (targetIdx < 0) {
                 showToast("Parada não encontrada.", "error");
                 return;
             }
-
-            closeChooseFirstStopModal();
-
-            const firstStop = groupedStops[targetIdx];
-            const remaining = groupedStops.filter((_, i) => i !== targetIdx);
-
-            // Vizinho mais próximo a partir da 1ª parada escolhida, depois 2-opt
-            const unvisited = [...remaining];
-            const route = [];
-            let curLat = firstStop.lat;
-            let curLng = firstStop.lng;
-
-            while (unvisited.length > 0) {
-                let nearestIdx = 0;
-                let nearestDist = Infinity;
-                for (let i = 0; i < unvisited.length; i++) {
-                    const d = haversineDistanceKm(curLat, curLng, unvisited[i].lat, unvisited[i].lng);
-                    if (d < nearestDist) { nearestDist = d; nearestIdx = i; }
-                }
-                const chosen = unvisited.splice(nearestIdx, 1)[0];
-                route.push(chosen);
-                curLat = chosen.lat;
-                curLng = chosen.lng;
+            const targetStop = groupedStops[targetIdx];
+            if (['Entregue', 'Insucesso'].includes(getStopAggregateStatus(targetStop))) {
+                showToast("Escolha uma parada pendente.", "info");
+                return;
+            }
+            const isFirst = routeEndpointMode === 'first';
+            const pendingCount = groupedStops.filter(stop => !['Entregue', 'Insucesso'].includes(getStopAggregateStatus(stop))).length;
+            const otherEndpointId = isFirst ? selectedLastStopId : selectedFirstStopId;
+            if (pendingCount > 1 && otherEndpointId && String(otherEndpointId) === String(targetGroupId)) {
+                showToast("A primeira e a última entrega devem ser paradas diferentes.", "info");
+                return;
             }
 
-            // 2-opt nos restantes (ponto de partida fixo = firstStop)
-            const optimizedRest = twoOptImprove(route, firstStop);
+            closeChooseFirstStopModal();
+            const previousFirstStopId = selectedFirstStopId;
+            const previousLastStopId = selectedLastStopId;
+            if (isFirst) selectedFirstStopId = targetGroupId;
+            else selectedLastStopId = targetGroupId;
 
-            // Monta o array final: firstStop fixo em #1, restante otimizado
-            groupedStops = [firstStop, ...optimizedRest];
+            try {
+                const firstStopId = isFirst ? targetGroupId : selectedFirstStopId;
+                const lastStopId = isFirst ? selectedLastStopId : targetGroupId;
+                const firstStop = groupedStops.find(stop => stop.groupId === firstStopId);
+                const originLabel = firstStop ? `da parada ${firstStop.primaryAddress}` : "do CD";
+                const ok = await optimizePendingFrom(hubLocation, firstStopId, originLabel, true, lastStopId);
+                if (!ok) throw new Error('Não há entregas pendentes para otimizar.');
+                showToast(isFirst
+                    ? `Roteiro gerado a partir de: ${targetStop.primaryAddress}`
+                    : `Última entrega definida: ${targetStop.primaryAddress}`, "success");
+            } catch (error) {
+                selectedFirstStopId = previousFirstStopId;
+                selectedLastStopId = previousLastStopId;
+                refreshAllViews(false);
+                showToast("Não foi possível gerar o roteiro agora.", "error");
+            }
+        }
 
-            refreshAllViews(true);
+        function clearRouteEndpoint(endpoint) {
+            if (endpoint === 'last') selectedLastStopId = null;
+            else selectedFirstStopId = null;
+            if (activeRoutePlan) {
+                activeRoutePlan.firstStopId = selectedFirstStopId;
+                activeRoutePlan.lastStopId = selectedLastStopId;
+            }
+            refreshAllViews(false);
+            saveState();
+            showToast(endpoint === 'last' ? 'Última entrega voltou para o automático.' : 'Primeira entrega voltou para o automático.', "info");
+        }
 
-            const label = firstStop.isUnassignedStop ? firstStop.primaryAddress : `Stop ${firstStop.stopLabel}`;
-            showToast(`Roteiro gerado a partir de: ${label}`, "success");
+        function getRouteEndpointLabel(stopId) {
+            if (!stopId) return 'Automática';
+            const stop = groupedStops.find(item => item.groupId === stopId);
+            if (!stop) return 'Automática';
+            const prefix = stop.isUnassignedStop ? 'Sem Stop' : `Stop ${stop.stopLabel}`;
+            return `${prefix} · ${stop.primaryAddress}`;
+        }
+
+        function updateRouteEndpointUI() {
+            const pendingIds = new Set(groupedStops
+                .filter(stop => !['Entregue', 'Insucesso'].includes(getStopAggregateStatus(stop)))
+                .map(stop => stop.groupId));
+            if (selectedFirstStopId && !pendingIds.has(String(selectedFirstStopId))) selectedFirstStopId = null;
+            if (selectedLastStopId && !pendingIds.has(String(selectedLastStopId))) selectedLastStopId = null;
+            if (pendingIds.size > 1 && selectedFirstStopId && selectedLastStopId && String(selectedFirstStopId) === String(selectedLastStopId)) {
+                selectedLastStopId = null;
+            }
+            document.getElementById('selectedFirstStopLabel').textContent = getRouteEndpointLabel(selectedFirstStopId);
+            document.getElementById('selectedLastStopLabel').textContent = getRouteEndpointLabel(selectedLastStopId);
+            document.getElementById('clearFirstEndpoint').disabled = !selectedFirstStopId;
+            document.getElementById('clearLastEndpoint').disabled = !selectedLastStopId;
+            document.getElementById('routeEndpointsBar').classList.toggle('hidden', groupedStops.length === 0);
         }
 
         // ============================================================================
@@ -2758,7 +3203,7 @@
                 showToast("Importe pelo menos 2 paradas para organizar por rua.", "info");
                 return;
             }
-            const plan = organizeRouteByStreets(userCurrentLocation || hubLocation);
+            const plan = organizeRouteByStreets(driverPos || hubLocation);
             if (!plan) return;
             pendingStreetClusterPlan = plan;
 
@@ -2816,10 +3261,20 @@
                 showToast("Nenhum plano de ruas disponível.", "error");
                 return;
             }
-            groupedStops = pendingStreetClusterPlan.stops;
+            const plan = pendingStreetClusterPlan;
+            groupedStops = plan.stops.slice();
+            if (selectedFirstStopId) {
+                const firstIndex = groupedStops.findIndex(stop => stop.groupId === selectedFirstStopId);
+                if (firstIndex > 0) groupedStops.unshift(groupedStops.splice(firstIndex, 1)[0]);
+            }
+            if (selectedLastStopId && String(selectedLastStopId) !== String(selectedFirstStopId)) {
+                const lastIndex = groupedStops.findIndex(stop => stop.groupId === selectedLastStopId);
+                if (lastIndex >= 0 && lastIndex !== groupedStops.length - 1) groupedStops.push(groupedStops.splice(lastIndex, 1)[0]);
+            }
+            activeRoutePlan = null;
             refreshAllViews(true);
             closeStreetClusterModal();
-            showToast(`Rota organizada por ruas! ${pendingStreetClusterPlan.totalStreets} ruas agrupadas em sequência.`, "success");
+            showToast(`Rota organizada por ruas! ${plan.totalStreets} ruas agrupadas em sequência.`, "success");
         }
 
         function clearCurrentManifest() {
@@ -2827,6 +3282,9 @@
             document.getElementById('geocodingProgressWrapper').classList.add('hidden');
             groupedStops = [];
             originalStopsSnapshot = [];
+            activeRoutePlan = null;
+            selectedFirstStopId = null;
+            selectedLastStopId = null;
             activeAtId = "";
             expandedStopIds.clear();
 
@@ -2865,7 +3323,9 @@
         function calculateRouteMetrics() {
             let totalPackages = 0;
             let deliveredPackages = 0;
+            let failedPackages = 0;
             let totalDistanceKm = 0;
+            let serviceMinutes = 0;
 
             let prevLat = hubLocation.lat;
             let prevLng = hubLocation.lng;
@@ -2874,25 +3334,45 @@
                 totalDistanceKm += haversineDistanceKm(prevLat, prevLng, stop.lat, stop.lng);
                 prevLat = stop.lat;
                 prevLng = stop.lng;
-
+                if (['Pendente', 'Parcial'].includes(getStopAggregateStatus(stop))) {
+                    serviceMinutes += parseDeliveryNumber(stop.serviceMinutes, 4);
+                }
                 stop.packages.forEach(pkg => {
                     totalPackages++;
-                    if (pkg.status === "Entregue") {
-                        deliveredPackages++;
-                    }
+                    if (pkg.status === "Entregue") deliveredPackages++;
+                    if (pkg.status === "Insucesso") failedPackages++;
                 });
             });
 
+            const schedule = getRemainingSchedule();
             const rr = getValidRoadRoute();
-            const urbanKm = rr ? rr.km : totalDistanceKm * 1.28;
-            const estimatedMinutes = Math.round((rr ? rr.min : (urbanKm / 28) * 60) + (groupedStops.length * 3.5));
+            let distanceKm;
+            let estimatedMinutes;
+            let completionAt = null;
+
+            if (schedule.length) {
+                distanceKm = schedule.reduce((sum, item) => sum + (Number(item.distanceMeters) || 0), 0) / 1000;
+                estimatedMinutes = schedule.reduce((sum, item) => {
+                    const stop = groupedStops.find(entry => entry.groupId === item.stopId);
+                    return sum + (Number(item.durationSec) || 0) / 60 +
+                        (Number(item.waitMinutes) || 0) + parseDeliveryNumber(stop && stop.serviceMinutes, 4);
+                }, 0);
+                completionAt = new Date(Date.now() + estimatedMinutes * 60000).toISOString();
+            } else {
+                distanceKm = rr ? rr.km : totalDistanceKm * 1.28;
+                estimatedMinutes = (rr ? rr.min : (distanceKm / 28) * 60) + serviceMinutes;
+            }
 
             return {
                 totalStops: groupedStops.length,
+                pendingStops: groupedStops.filter(stop => ['Pendente', 'Parcial'].includes(getStopAggregateStatus(stop))).length,
                 totalPackages,
                 deliveredPackages,
-                distanceKm: urbanKm,
-                estimatedMinutes
+                failedPackages,
+                pendingPackages: totalPackages - deliveredPackages - failedPackages,
+                distanceKm,
+                estimatedMinutes: Math.round(estimatedMinutes),
+                completionAt
             };
         }
 
@@ -2918,6 +3398,7 @@
         }
 
         function refreshAllViews(shouldFitBounds = false) {
+            updateRouteEndpointUI();
             updateDashboardStats();
             updateNextStopFloatingCard();
             renderStopsList();
@@ -2933,7 +3414,8 @@
             document.getElementById('btnExportReport').disabled = !hasData;
             document.getElementById('btnClearManifest').disabled = !hasData;
             document.getElementById('btnReorganize').disabled = !hasData;
-            document.getElementById('btnChooseFirstStop').disabled = !hasData;
+            document.getElementById('btnChooseRouteEndpoints').disabled = !hasData;
+            if (window.SPXLogistics && typeof SPXLogistics.refresh === 'function') SPXLogistics.refresh();
         }
 
         function updateDashboardStats() {
@@ -2976,6 +3458,11 @@
 
             document.getElementById('nextStopGmapsBtn').href = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
             document.getElementById('nextStopWazeBtn').href = `https://waze.com/ul?ll=${stop.lat},${stop.lng}&navigate=yes`;
+            document.getElementById('nextStopAppleBtn').href = `https://maps.apple.com/?daddr=${stop.lat},${stop.lng}&dirflg=d`;
+            const eta = getStopEta(stop.groupId);
+            const etaText = document.getElementById('nextStopEtaText');
+            etaText.textContent = eta ? `ETA ${eta.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '---';
+            etaText.classList.toggle('hidden', !eta);
 
             card.classList.remove('hidden');
         }
@@ -3054,21 +3541,21 @@
                                 ${packagesListHtml}
                             </div>
                             <div class="grid grid-cols-4 gap-1.5">
-                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Entregar tudo" aria-label="Entregar tudo" class="shadcn-btn h-9 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                <button onclick="markEntireStopStatus(${escapeJsString(stop.groupId)}, 'Entregue')" title="Entregar tudo" aria-label="Entregar tudo" class="shadcn-btn h-9 bg-emerald-600 hover:bg-emerald-700 text-white">
                                     <i data-lucide="check-check" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Insucesso" aria-label="Insucesso" class="shadcn-btn h-9 bg-rose-600 hover:bg-rose-700 text-white">
+                                <button onclick="markEntireStopStatus(${escapeJsString(stop.groupId)}, 'Insucesso')" title="Insucesso" aria-label="Insucesso" class="shadcn-btn h-9 bg-rose-600 hover:bg-rose-700 text-white">
                                     <i data-lucide="x" class="w-4 h-4"></i>
                                 </button>
-                                <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
                                     <i data-lucide="navigation" class="w-4 h-4 text-[#4285F4]"></i>
                                 </a>
-                                <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
+                                <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200">
                                     <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
                                 </a>
                             </div>
                             <div class="mt-2">
-                                <button onclick="setAsFirstStopAndRoute('${stop.groupId}')" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5">
+                                <button onclick="setAsFirstStopAndRoute(${escapeJsString(stop.groupId)})" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5">
                                     <i data-lucide="flag" class="w-3.5 h-3.5"></i>
                                     Iniciar Roteiro Por Aqui
                                 </button>
@@ -3242,6 +3729,19 @@
             }, true);
         }
 
+        function formatStopEta(stop) {
+            const eta = getStopEta(stop.groupId);
+            return eta ? `ETA ${eta.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : "";
+        }
+
+        function formatVehiclePosition(value) {
+            if (!value) return "";
+            if (typeof value === "object") {
+                return [value.zone, value.shelf, value.compartment, value.label].filter(Boolean).join(" / ");
+            }
+            return String(value);
+        }
+
         function renderStopsList() {
             updateFilterIndicator();
             const container = document.getElementById('stopsListContainer');
@@ -3283,6 +3783,27 @@
                     const pkgCount = stop.packages.length;
                     const isNextStop = realIndex === nextPendingIdx;
                     const isExpanded = expandedStopIds.has(stop.groupId) || Boolean(query);
+                    const etaLabel = formatStopEta(stop);
+                    const priority = priorityValue(stop.priority);
+                    const priorityBadge = priority === "urgente"
+                        ? `<span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-600 text-white">URGENTE</span>`
+                        : priority === "alta"
+                            ? `<span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800">ALTA</span>`
+                            : "";
+                    const isFirstEndpoint = !!selectedFirstStopId && String(stop.groupId) === String(selectedFirstStopId);
+                    const isLastEndpoint = !!selectedLastStopId && String(stop.groupId) === String(selectedLastStopId);
+                    const endpointBadge = isFirstEndpoint && isLastEndpoint
+                        ? `<span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-950 text-violet-800 dark:text-violet-300">1ª/ÚLTIMA</span>`
+                        : isFirstEndpoint
+                            ? `<span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">1ª</span>`
+                            : isLastEndpoint
+                                ? `<span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300">ÚLTIMA</span>`
+                                : "";
+                    const deliveryMeta = [
+                        stop.windowStart || stop.windowEnd ? `Janela ${escapeHtml(stop.windowStart || '--:--')}–${escapeHtml(stop.windowEnd || '--:--')}` : "",
+                        `Serviço ${parseDeliveryNumber(stop.serviceMinutes, 4)} min`,
+                        formatVehiclePosition(stop.vehiclePosition) ? `Veículo: ${escapeHtml(formatVehiclePosition(stop.vehiclePosition))}` : ""
+                    ].filter(Boolean).join(" • ");
 
                     const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
                     const wazeUrl = `https://waze.com/ul?ll=${stop.lat},${stop.lng}&navigate=yes`;
@@ -3320,16 +3841,16 @@
                                     <div class="flex items-center justify-between gap-2 bg-[#FAFAFA] dark:bg-zinc-950 px-2.5 py-1.5 rounded-md border border-[#E4E4E7] dark:border-zinc-800">
                                         <div class="min-w-0 flex items-center gap-2">
                                             <span class="font-mono text-[11px] font-semibold text-[#09090B] dark:text-zinc-100 truncate">${escapeHtml(pkg.spxTn)}</span>
-                                            <button onclick="copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código SPX TN" aria-label="Copiar código SPX TN" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer shrink-0">
+                                            <button onclick="copyTrackingCode(${escapeJsString(pkg.spxTn)})" title="Copiar código SPX TN" aria-label="Copiar código SPX TN" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer shrink-0">
                                                 <i data-lucide="copy" class="w-3 h-3"></i>
                                             </button>
-                                            <span class="font-mono text-[11px] text-[#71717A] hidden sm:inline">Seq #${pkg.sequence}</span>
+                                            <span class="font-mono text-[11px] text-[#71717A] hidden sm:inline">Seq #${escapeHtml(pkg.sequence)}</span>
                                         </div>
                                         <div class="flex items-center gap-1 shrink-0">
-                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" title="Entregue" class="shadcn-btn h-8 w-8 ${isDel ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            <button onclick="setPackageStatus(${escapeJsString(stop.groupId)}, ${escapeJsString(pkg.id)}, 'Entregue')" title="Entregue" class="shadcn-btn h-8 w-8 ${isDel ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
                                                 <i data-lucide="check" class="w-4 h-4"></i>
                                             </button>
-                                            <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" title="Insucesso" class="shadcn-btn h-8 w-8 ${isFail ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                            <button onclick="setPackageStatus(${escapeJsString(stop.groupId)}, ${escapeJsString(pkg.id)}, 'Insucesso')" title="Insucesso" class="shadcn-btn h-8 w-8 ${isFail ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
                                                 <i data-lucide="x" class="w-4 h-4"></i>
                                             </button>
                                         </div>
@@ -3344,7 +3865,7 @@
                             <div class="flex items-start gap-2.5">
                                 <!-- Badge Circular Numerado + Setas Discretas Reordenação -->
                                 <div class="flex flex-col items-center gap-1 shrink-0">
-                                    <button onclick="focusStopOnMap('${stop.groupId}')" title="Ver no mapa" class="${numBadgeClass} font-mono text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-shadcn-xs cursor-pointer transition hover:scale-105">
+                                    <button onclick="focusStopOnMap(${escapeJsString(stop.groupId)})" title="Ver no mapa" class="${numBadgeClass} font-mono text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-shadcn-xs cursor-pointer transition hover:scale-105">
                                         ${orderNum}
                                     </button>
                                     <div class="flex items-center gap-0.5">
@@ -3358,7 +3879,7 @@
                                 </div>
 
                                 <!-- Informações da Parada (Clique expande SPX TNs) -->
-                                <div onclick="toggleStopExpand('${stop.groupId}')" class="flex-1 min-w-0 cursor-pointer">
+                                <div onclick="toggleStopExpand(${escapeJsString(stop.groupId)})" class="flex-1 min-w-0 cursor-pointer">
                                     <div class="flex items-center gap-1.5 flex-wrap">
                                         <span class="font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded ${stop.isUnassignedStop ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-[#E4E4E7] dark:border-zinc-700'}">
                                             ${stop.isUnassignedStop ? 'Sem Stop (-)' : `Stop ${escapeHtml(stop.stopLabel)}`}
@@ -3366,8 +3887,11 @@
                                         <span class="font-mono text-[11px] font-medium px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                                             ${pkgCount} ${pkgCount === 1 ? 'pct' : 'pcts'}
                                         </span>
+                                        ${priorityBadge}
+                                        ${endpointBadge}
                                         ${statusPillHtml}
-                                        ${stop._streetName ? `<span class="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">🛣️ ${escapeHtml(stop._streetName)} (${stop._streetPos})</span>` : ''}
+                                        ${etaLabel ? `<span class="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">${etaLabel}</span>` : ''}
+                                        ${stop._streetName ? `<span class="font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">${escapeHtml(stop._streetName)} (${escapeHtml(stop._streetPos)})</span>` : ''}
                                     </div>
 
                                     <h4 class="font-semibold text-xs text-[#09090B] dark:text-zinc-50 mt-1.5 leading-snug">
@@ -3376,25 +3900,26 @@
                                     <p class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate mt-0.5">
                                         ${escapeHtml(stop.bairro)}${stop.bairro && stop.city ? ' • ' : ''}${escapeHtml(stop.city)}${stop.zipcode ? ' • ' + escapeHtml(stop.zipcode) : ''}
                                     </p>
+                                    <p class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">${deliveryMeta}</p>
                                 </div>
 
                                 <!-- Ações Rápidas no Card -->
                                 <div class="flex flex-col gap-1.5 shrink-0">
                                     <div class="grid grid-cols-2 gap-1.5">
-                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Entregue')" title="Marcar parada como Entregue" aria-label="Marcar parada como Entregue" class="shadcn-btn h-9 w-9 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                        <button onclick="markEntireStopStatus(${escapeJsString(stop.groupId)}, 'Entregue')" title="Marcar parada como Entregue" aria-label="Marcar parada como Entregue" class="shadcn-btn h-9 w-9 ${aggStatus === 'Entregue' ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 border border-[#E4E4E7] dark:border-zinc-700'}">
                                             <i data-lucide="check" class="w-4 h-4"></i>
                                         </button>
-                                        <button onclick="markEntireStopStatus('${stop.groupId}', 'Insucesso')" title="Marcar parada como Insucesso" aria-label="Marcar parada como Insucesso" class="shadcn-btn h-9 w-9 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                        <button onclick="markEntireStopStatus(${escapeJsString(stop.groupId)}, 'Insucesso')" title="Marcar parada como Insucesso" aria-label="Marcar parada como Insucesso" class="shadcn-btn h-9 w-9 ${aggStatus === 'Insucesso' ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-zinc-600 dark:text-zinc-300 hover:text-rose-600 border border-[#E4E4E7] dark:border-zinc-700'}">
                                             <i data-lucide="x" class="w-4 h-4"></i>
                                         </button>
-                                        <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
+                                        <a href="${gmapsUrl}" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Abrir no Google Maps" aria-label="Abrir no Google Maps" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
                                             <i data-lucide="navigation" class="w-4 h-4 text-[#4285F4]"></i>
                                         </a>
-                                        <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
+                                        <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" onclick="if(window.SPXAndroid&&SPXAndroid.openExternalUrl){event.preventDefault();SPXAndroid.openExternalUrl(this.href);}" title="Navegar com Waze" aria-label="Navegar com Waze" class="shadcn-btn h-9 w-9 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-[#E4E4E7] dark:border-zinc-700">
                                             <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
                                         </a>
                                     </div>
-                                    <button onclick="setAsFirstStopAndRoute('${stop.groupId}')" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-8 w-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold flex items-center justify-center gap-1">
+                                    <button onclick="setAsFirstStopAndRoute(${escapeJsString(stop.groupId)})" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-8 w-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold flex items-center justify-center gap-1">
                                         <i data-lucide="flag" class="w-3 h-3"></i>
                                         1ª entrega
                                     </button>
@@ -3402,7 +3927,7 @@
                             </div>
 
                             <!-- Rodapé discreto para expandir pacotes SPX TN -->
-                            <div onclick="toggleStopExpand('${stop.groupId}')" class="mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 cursor-pointer">
+                            <div onclick="toggleStopExpand(${escapeJsString(stop.groupId)})" class="mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-[#71717A] dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 cursor-pointer">
                                 <span class="font-mono text-[11px] truncate">
                                     ${pkgCount === 1 ? escapeHtml(stop.packages[0].spxTn) : `${pkgCount} códigos SPX TN neste Stop`}
                                 </span>
@@ -3448,22 +3973,22 @@
                     const isFailed = pkg.status === 'Insucesso';
                     return `
                         <div class="bg-white dark:bg-zinc-900 rounded-xl p-3 border ${isDelivered ? 'border-emerald-200 dark:border-emerald-900/70 bg-emerald-50/30' : isFailed ? 'border-rose-200 dark:border-rose-900/70 bg-rose-50/30' : 'border-[#E4E4E7] dark:border-zinc-800'} shadow-shadcn-xs flex items-center justify-between gap-2.5">
-                            <div onclick="focusStopOnMap('${stop.groupId}')" class="min-w-0 flex-1 cursor-pointer">
+                            <div onclick="focusStopOnMap(${escapeJsString(stop.groupId)})" class="min-w-0 flex-1 cursor-pointer">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950">#${orderNum} • Stop ${escapeHtml(stop.stopLabel)}</span>
                                     <span class="font-mono text-xs font-bold text-[#EE4D2D]">${escapeHtml(pkg.spxTn)}</span>
-                                    <button onclick="event.stopPropagation(); copyTrackingCode('${escapeHtml(pkg.spxTn)}')" title="Copiar código" aria-label="Copiar código" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
+                                    <button onclick="event.stopPropagation(); copyTrackingCode(${escapeJsString(pkg.spxTn)})" title="Copiar código" aria-label="Copiar código" class="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer">
                                         <i data-lucide="copy" class="w-3 h-3"></i>
                                     </button>
                                 </div>
                                 <div class="text-xs font-semibold text-[#09090B] dark:text-zinc-50 truncate mt-1">${escapeHtml(pkg.address)}</div>
-                                <div class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate">${escapeHtml(pkg.bairro)} • Seq #${pkg.sequence}</div>
+                                <div class="text-[11px] text-[#71717A] dark:text-zinc-400 truncate">${escapeHtml(pkg.bairro)} • Seq #${escapeHtml(pkg.sequence)}</div>
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Entregue')" title="Marcar como Entregue" aria-label="Marcar como Entregue" class="shadcn-btn h-9 w-9 ${isDelivered ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                <button onclick="setPackageStatus(${escapeJsString(stop.groupId)}, ${escapeJsString(pkg.id)}, 'Entregue')" title="Marcar como Entregue" aria-label="Marcar como Entregue" class="shadcn-btn h-9 w-9 ${isDelivered ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-emerald-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
                                     <i data-lucide="check" class="w-4 h-4"></i>
                                 </button>
-                                <button onclick="setPackageStatus('${stop.groupId}', '${pkg.id}', 'Insucesso')" title="Marcar como Insucesso" aria-label="Marcar como Insucesso" class="shadcn-btn h-9 w-9 ${isFailed ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
+                                <button onclick="setPackageStatus(${escapeJsString(stop.groupId)}, ${escapeJsString(pkg.id)}, 'Insucesso')" title="Marcar como Insucesso" aria-label="Marcar como Insucesso" class="shadcn-btn h-9 w-9 ${isFailed ? 'bg-rose-600 text-white' : 'bg-white dark:bg-zinc-900 hover:bg-rose-50 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700'}">
                                     <i data-lucide="x" class="w-4 h-4"></i>
                                 </button>
                             </div>
@@ -3475,32 +4000,96 @@
             lucide.createIcons();
         }
 
-        function setPackageStatus(groupId, pkgId, newStatus) {
+        function applyPackageStatus(groupId, pkgId, newStatus, details = {}) {
             const stop = groupedStops.find(s => s.groupId === groupId);
-            if (!stop) return;
+            if (!stop) return false;
             const pkg = stop.packages.find(p => p.id === pkgId);
-            if (!pkg) return;
-
+            if (!pkg) return false;
             pkg.status = (pkg.status === newStatus) ? "Pendente" : newStatus;
             pkg.deliveredAt = pkg.status !== "Pendente" ? new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : "";
+            if (details.recipient) pkg.recipient = String(details.recipient);
+            if (details.notes) pkg.notes = String(details.notes);
+            if (details.failureReason) pkg.failureReason = String(details.failureReason);
+            if (pkg.status === "Pendente") {
+                delete pkg.failureReason;
+                delete pkg.absentJustification;
+                delete pkg.pod;
+                const retainedPackageIds = stop.packages.filter(item => item.id !== pkgId && item.status !== "Pendente").map(item => item.id);
+                if (window.SPXStore && typeof SPXStore.deleteEvidenceForPackage === 'function') {
+                    SPXStore.deleteEvidenceForPackage(groupId, pkgId, retainedPackageIds).catch(() => {});
+                }
+                stop.podPackageIds = (stop.podPackageIds || []).filter(id => id !== pkgId);
+                if (!stop.podPackageIds.length) {
+                    delete stop.pod;
+                    delete stop.lastPodAt;
+                }
+            } else if (pkg.status === "Entregue") {
+                delete pkg.failureReason;
+                delete pkg.absentJustification;
+            }
             refreshAllViews(false);
+            return true;
         }
 
-        function markEntireStopStatus(groupId, newStatus) {
+        function applyStopStatus(groupId, newStatus, details = {}) {
             const stop = groupedStops.find(s => s.groupId === groupId);
-            if (!stop) return;
+            if (!stop) return false;
             const agg = getStopAggregateStatus(stop);
             const targetStatus = (agg === newStatus) ? "Pendente" : newStatus;
             const nowStr = targetStatus !== "Pendente" ? new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : "";
-
             stop.packages.forEach(pkg => {
                 pkg.status = targetStatus;
                 pkg.deliveredAt = nowStr;
+                if (details.recipient) pkg.recipient = String(details.recipient);
+                if (details.notes) pkg.notes = String(details.notes);
+                if (details.failureReason) pkg.failureReason = String(details.failureReason);
+                if (targetStatus === "Pendente") {
+                    delete pkg.failureReason;
+                    delete pkg.absentJustification;
+                    delete pkg.pod;
+                } else if (targetStatus === "Entregue") {
+                    delete pkg.failureReason;
+                    delete pkg.absentJustification;
+                }
             });
+            if (targetStatus === "Pendente") {
+                delete stop.pod;
+                delete stop.podPackageIds;
+                delete stop.lastPodAt;
+                if (window.SPXStore) SPXStore.deleteEvidenceForStop(groupId).catch(() => {});
+            }
             refreshAllViews(false);
             if (targetStatus !== "Pendente") {
                 showToast(`Stop ${stop.stopLabel} atualizado para ${targetStatus}.`, targetStatus === 'Entregue' ? 'success' : 'error');
             }
+            return true;
+        }
+
+        function setPackageStatus(groupId, pkgId, newStatus) {
+            const stop = groupedStops.find(item => item.groupId === groupId);
+            const pkg = stop && stop.packages.find(item => item.id === pkgId);
+            if (pkg && pkg.status === newStatus) {
+                applyPackageStatus(groupId, pkgId, newStatus);
+                return;
+            }
+            if (window.SPXLogistics && typeof SPXLogistics.openPOD === 'function') {
+                SPXLogistics.openPOD(groupId, [pkgId], newStatus);
+                return;
+            }
+            applyPackageStatus(groupId, pkgId, newStatus);
+        }
+
+        function markEntireStopStatus(groupId, newStatus) {
+            const stop = groupedStops.find(item => item.groupId === groupId);
+            if (stop && getStopAggregateStatus(stop) === newStatus) {
+                applyStopStatus(groupId, newStatus);
+                return;
+            }
+            if (window.SPXLogistics && typeof SPXLogistics.openPOD === 'function') {
+                if (stop) SPXLogistics.openPOD(groupId, stop.packages.map(pkg => pkg.id), newStatus);
+                return;
+            }
+            applyStopStatus(groupId, newStatus);
         }
 
         function copyTrackingCode(code) {
@@ -3520,44 +4109,74 @@
         // ============================================================================
         // EXPORTAÇÃO MODELO & RELATÓRIO FINAL (.XLSX)
         // ============================================================================
-        function downloadTemplateXLSX() {
-            const ws = XLSX.utils.json_to_sheet(REAL_SPX_MANIFEST.slice(0, 5));
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Romaneio_SPX");
-            XLSX.writeFile(wb, "Modelo_Romaneio_Shopee_SPX.xlsx");
-            showToast("Planilha modelo SPX baixada.", "success");
+        async function downloadTemplateXLSX() {
+            try {
+                await ensureSheetJs();
+                const templateRows = REAL_SPX_MANIFEST.slice(0, 5).map(row => Object.assign({}, row, {
+                    "Priority": "Normal",
+                    "Service Minutes": 4,
+                    "Window Start": "",
+                    "Window End": "",
+                    "Window Type": "chegada",
+                    "Recipient": "",
+                    "Phone": "",
+                    "Vehicle Position": "",
+                    "Notes": ""
+                }));
+                const ws = XLSX.utils.json_to_sheet(templateRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Romaneio_SPX");
+                XLSX.writeFile(wb, "Modelo_Romaneio_Shopee_SPX.xlsx");
+                showToast("Planilha modelo SPX baixada.", "success");
+            } catch (error) {
+                showToast("Não foi possível carregar a biblioteca Excel.", "error");
+            }
         }
 
-        function exportFinalReport() {
+        async function exportFinalReport() {
             if (!groupedStops || groupedStops.length === 0) return;
-
-            const exportRows = [];
-            groupedStops.forEach((stop, stopIdx) => {
-                stop.packages.forEach(pkg => {
-                    exportRows.push({
-                        "AT ID": pkg.atId,
-                        "Ordem Otimizada": stopIdx + 1,
-                        "Sequence": pkg.sequence,
-                        "Stop": pkg.stopRaw,
-                        "SPX TN": pkg.spxTn,
-                        "Destination Address": pkg.address,
-                        "Bairro": pkg.bairro,
-                        "City": pkg.city,
-                        "Zipcode/Postal code": pkg.zipcode,
-                        "Latitude": pkg.lat,
-                        "Longitude": pkg.lng,
-                        "Status Entrega": pkg.status,
-                        "Horário Baixa": pkg.deliveredAt || "-"
+            try {
+                await ensureSheetJs();
+                const exportRows = [];
+                groupedStops.forEach((stop, stopIdx) => {
+                    stop.packages.forEach(pkg => {
+                        exportRows.push({
+                            "AT ID": pkg.atId,
+                            "Ordem Otimizada": stopIdx + 1,
+                            "Sequence": pkg.sequence,
+                            "Stop": pkg.stopRaw,
+                            "SPX TN": pkg.spxTn,
+                            "Destination Address": pkg.address,
+                            "Bairro": pkg.bairro,
+                            "City": pkg.city,
+                            "Zipcode/Postal code": pkg.zipcode,
+                            "Latitude": pkg.lat,
+                            "Longitude": pkg.lng,
+                            "Status Entrega": pkg.status,
+                            "Horário Baixa": pkg.deliveredAt || "-",
+                            "Priority": pkg.priority || "Normal",
+                            "Service Minutes": parseDeliveryNumber(pkg.serviceMinutes, 4),
+                            "Window Start": pkg.windowStart || "",
+                            "Window End": pkg.windowEnd || "",
+                            "Window Type": pkg.windowType || "chegada",
+                            "Recipient": pkg.recipient || "",
+                            "Phone": pkg.phone || "",
+                            "Vehicle Position": formatVehiclePosition(pkg.vehiclePosition),
+                            "Notes": pkg.notes || "",
+                            "Motivo Insucesso": pkg.failureReason || ""
+                        });
                     });
                 });
-            });
 
-            const ws = XLSX.utils.json_to_sheet(exportRows);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Relatorio_Entregas");
-            const safeAtId = (activeAtId || "SPX").replace(/[^a-zA-Z0-9_-]/g, "_");
-            XLSX.writeFile(wb, `Relatorio_Rota_${safeAtId}.xlsx`);
-            showToast("Relatório Excel exportado com sucesso.", "success");
+                const ws = XLSX.utils.json_to_sheet(exportRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Relatorio_Entregas");
+                const safeAtId = (activeAtId || "SPX").replace(/[^a-zA-Z0-9_-]/g, "_");
+                XLSX.writeFile(wb, `Relatorio_Rota_${safeAtId}.xlsx`);
+                showToast("Relatório Excel exportado com sucesso.", "success");
+            } catch (error) {
+                showToast("Não foi possível carregar a biblioteca Excel.", "error");
+            }
         }
 
         // ============================================================================
@@ -3617,6 +4236,9 @@
                         label: "Minha Localização Atual (Motorista)"
                     };
                     renderHubMarker();
+                    if (window.SPXLogistics && typeof SPXLogistics.onPosition === 'function') {
+                        SPXLogistics.onPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+                    }
                     if (groupedStops.length > 0) {
                         refreshAllViews(true);
                     } else {
@@ -3754,6 +4376,18 @@
                     driverPos = { lat, lng, acc };
                     drawDriverMarker();
                     reverseGeocodeCurrentLocation(lat, lng, acc);
+                    if (window.SPXLogistics && typeof SPXLogistics.onPosition === 'function') {
+                        SPXLogistics.onPosition({
+                            lat,
+                            lng,
+                            latitude: lat,
+                            longitude: lng,
+                            accuracy: pos.coords.accuracy || acc,
+                            speed: pos.coords.speed,
+                            heading: pos.coords.heading,
+                            timestamp: pos.timestamp || Date.now()
+                        });
+                    }
                 },
                 err => {
                     updateStreetUI("Ative a localização do celular", "GPS Desativado");
@@ -3808,7 +4442,7 @@
         // ============================================================================
         // VERIFICADOR DE ATUALIZAÇÕES AUTOMÁTICO (GITHUB RELEASES)
         // ============================================================================
-        const CURRENT_APP_VERSION = "1.1.4";
+        const CURRENT_APP_VERSION = "1.2.0";
         let latestReleaseData = null;
 
         async function checkForUpdates(isManualCheck = false) {
@@ -4112,6 +4746,17 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
+        }
+
+        function escapeJsString(value) {
+            return "'" + String(value ?? "").replace(/[&<>"'\\\u0000-\u001f\u2028\u2029]/g, function (char) {
+                if (char === "'") return "\\'";
+                if (char === "\\") return "\\\\";
+                const code = char.charCodeAt(0);
+                return code <= 0xff
+                    ? '\\x' + code.toString(16).padStart(2, '0')
+                    : '\\u' + code.toString(16).padStart(4, '0');
+            }) + "'";
         }
     </script>
 </body>

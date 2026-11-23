@@ -34,7 +34,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -620,9 +619,7 @@ public class MainActivity extends Activity {
                 recognizer = textRecognizer;
             } else {
                 if (barcodeScanner == null) {
-                    barcodeScanner = BarcodeScanning.getClient(new BarcodeScannerOptions.Builder()
-                            .setBarcodeFormats(Barcode.FORMAT_ALL)
-                            .build());
+                    barcodeScanner = BarcodeScanning.getClient(new BarcodeScannerOptions.Builder().build());
                 }
                 scanner = barcodeScanner;
             }

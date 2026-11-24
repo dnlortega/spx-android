@@ -66,7 +66,7 @@ jobs:
 
       - name: Compilar APK (assembleRelease)
         env:
-          SPX_KEYSTORE_FILE: ${{ runner.temp }}/spx-release.jks
+          SPX_KEYSTORE_FILE: ${{ steps.signing.outputs.configured == 'true' && format('{0}/spx-release.jks', runner.temp) || '' }}
           SPX_KEYSTORE_PASSWORD: ${{ secrets.SPX_KEYSTORE_PASSWORD }}
           SPX_KEY_ALIAS: ${{ secrets.SPX_KEY_ALIAS }}
           SPX_KEY_PASSWORD: ${{ secrets.SPX_KEY_PASSWORD }}

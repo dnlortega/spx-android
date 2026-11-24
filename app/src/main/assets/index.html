@@ -459,7 +459,7 @@
             </div>
 
             <!-- Bloco Superior: 4 Mini-Cards KPI estilo shadcn Card + Controles de Rota -->
-            <div class="p-3 bg-[#FAFAFA] dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 space-y-2.5">
+            <div id="deliverySummaryPanel" class="p-3 bg-[#FAFAFA] dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 space-y-2.5">
                 
                 <!-- Barra de Título com Botão de Ocultar/Exibir Cards -->
                 <div class="flex items-center justify-between">
@@ -467,10 +467,16 @@
                         <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
                         <span>Resumo das Entregas</span>
                     </div>
-                    <button id="btnToggleKpiCards" onclick="toggleKpiCards()" title="Exibir ou ocultar cards de resumo" aria-label="Exibir ou ocultar cards de resumo" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition cursor-pointer">
-                        <i id="iconToggleKpiCards" data-lucide="chevron-up" class="w-3.5 h-3.5 transition-transform duration-200"></i>
-                        <span id="textToggleKpiCards">Ocultar cards</span>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button id="btnToggleDeliverySummary" onclick="toggleDeliverySummary()" title="Ocultar resumo das entregas" aria-label="Ocultar resumo das entregas" aria-controls="deliverySummaryPanel" aria-expanded="true" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition cursor-pointer">
+                            <i id="iconToggleDeliverySummary" data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                            <span id="textToggleDeliverySummary">Ocultar</span>
+                        </button>
+                        <button id="btnToggleKpiCards" onclick="toggleKpiCards()" title="Exibir ou ocultar cards de resumo" aria-label="Exibir ou ocultar cards de resumo" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition cursor-pointer">
+                            <i id="iconToggleKpiCards" data-lucide="chevron-up" class="w-3.5 h-3.5 transition-transform duration-200"></i>
+                            <span id="textToggleKpiCards">Ocultar cards</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 4 Cards KPI Horizontais (Recolhíveis) -->
@@ -555,6 +561,11 @@
                     </button>
                 </div>
             </div>
+
+            <button id="btnShowDeliverySummary" onclick="showDeliverySummary()" title="Exibir resumo das entregas" aria-label="Exibir resumo das entregas" aria-controls="deliverySummaryPanel" aria-expanded="false" class="hidden w-full h-10 px-3 border-b border-[#E4E4E7] dark:border-zinc-800 bg-[#FAFAFA] dark:bg-zinc-950/60 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-between gap-2 shrink-0">
+                <span class="flex items-center gap-1.5 text-xs font-semibold"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[#EE4D2D]"></i> Resumo das Entregas</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+            </button>
 
             <div id="routeEndpointsBar" class="hidden px-3 py-2 border-b border-[#E4E4E7] dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60">
                 <div class="flex items-center gap-2 text-[11px]">
@@ -1348,6 +1359,7 @@
             restoreSavedState();
             restoreFilterPanelState();
             restoreKpiCardsState();
+            restoreDeliverySummaryState();
             restoreGeminiApiKey();
             startLiveLocationTracking();
             if (window.SPXUpdate) SPXUpdate.init();
@@ -2728,7 +2740,7 @@
             return new Date(Date.now() + minutes * 60000);
         }
 
-        async function optimizePendingFrom(start, firstStopId = selectedFirstStopId, originLabel = "do ponto de partida", silent = false, lastStopId = selectedLastStopId, strategy = 'nearest') {
+        async function optimizePendingFrom(start, firstStopId = selectedFirstStopId, originLabel = "do ponto de partida", silent = false, lastStopId = selectedLastStopId, strategy = 'nearest', matrixProvider = '') {
             if (!window.SPXRouteEngine) {
                 showToast("Motor de rotas indisponível.", "error");
                 return false;
@@ -2761,7 +2773,7 @@
             let matrix;
             try {
                 matrix = await SPXRouteEngine.buildMatrix(points, {
-                    provider: settings.googleRoutesKey && points.length <= 26 ? 'google' : 'osrm',
+                    provider: matrixProvider || (settings.googleRoutesKey && points.length <= 26 ? 'google' : 'osrm'),
                     googleKey: settings.googleRoutesKey || '',
                     departureTime: new Date().toISOString(),
                     request: window.SPXLogistics ? SPXLogistics.googleRequest : undefined
@@ -2868,7 +2880,7 @@
             const isFirst = routeEndpointMode === 'first';
             document.getElementById('routeEndpointModalTitle').textContent = isFirst ? 'Definir 1ª Entrega' : 'Definir Última Entrega';
             document.getElementById('routeEndpointModalSubtitle').textContent = isFirst
-                ? 'O roteiro será recalculado a partir desta parada'
+                ? 'O roteiro será reordenado pelas paradas mais próximas a partir desta parada'
                 : 'Esta parada será reservada para o fim do roteiro';
             const icon = document.getElementById('routeEndpointModalIcon');
             icon.setAttribute('data-lucide', isFirst ? 'flag' : 'map-pin');
@@ -3010,9 +3022,16 @@
                 return;
             }
 
+            if (!isValidLocation(targetStop)) {
+                showToast("Esta parada não tem coordenadas válidas para reordenar o roteiro.", "error");
+                return;
+            }
+
             closeChooseFirstStopModal();
             const previousFirstStopId = selectedFirstStopId;
             const previousLastStopId = selectedLastStopId;
+            const previousOrder = groupedStops.slice();
+            const previousRoutePlan = activeRoutePlan;
             if (isFirst) selectedFirstStopId = targetGroupId;
             else selectedLastStopId = targetGroupId;
 
@@ -3020,15 +3039,25 @@
                 const firstStopId = isFirst ? targetGroupId : selectedFirstStopId;
                 const lastStopId = isFirst ? selectedLastStopId : targetGroupId;
                 const firstStop = groupedStops.find(stop => stop.groupId === firstStopId);
+                let start = getRouteOrigin();
+                if (!isValidLocation(start)) {
+                    start = { lat: Number(targetStop.lat), lng: Number(targetStop.lng), label: 'Primeira entrega' };
+                }
+                if (isFirst) {
+                    const immediateOk = await optimizePendingFrom(start, firstStopId, 'da primeira entrega', true, lastStopId, 'nearest', 'fallback');
+                    if (!immediateOk) throw new Error('Não há entregas pendentes para otimizar.');
+                }
                 const originLabel = firstStop ? `da parada ${firstStop.primaryAddress}` : (isValidLocation(hubLocation) ? "do ponto de partida definido" : "da primeira parada");
-                const ok = await optimizePendingFrom(getRouteOrigin(), firstStopId, originLabel, true, lastStopId);
+                const ok = await optimizePendingFrom(start, firstStopId, originLabel, true, lastStopId);
                 if (!ok) throw new Error('Não há entregas pendentes para otimizar.');
                 showToast(isFirst
-                    ? `Roteiro gerado a partir de: ${targetStop.primaryAddress}`
+                    ? `Roteiro reordenado pelas paradas mais próximas a partir de: ${targetStop.primaryAddress}`
                     : `Última entrega definida: ${targetStop.primaryAddress}`, "success");
             } catch (error) {
                 selectedFirstStopId = previousFirstStopId;
                 selectedLastStopId = previousLastStopId;
+                groupedStops = previousOrder;
+                activeRoutePlan = previousRoutePlan;
                 refreshAllViews(false);
                 showToast("Não foi possível gerar o roteiro agora.", "error");
             }
@@ -4397,6 +4426,40 @@
                     lucide.createIcons();
                 }
             } catch (e) {}
+        }
+
+        function setDeliverySummaryVisible(visible) {
+            const panel = document.getElementById('deliverySummaryPanel');
+            const showButton = document.getElementById('btnShowDeliverySummary');
+            const toggleButton = document.getElementById('btnToggleDeliverySummary');
+            const icon = document.getElementById('iconToggleDeliverySummary');
+            const text = document.getElementById('textToggleDeliverySummary');
+            if (!panel || !showButton || !toggleButton) return;
+            panel.classList.toggle('hidden', !visible);
+            showButton.classList.toggle('hidden', visible);
+            toggleButton.setAttribute('aria-expanded', String(visible));
+            toggleButton.setAttribute('aria-label', visible ? 'Ocultar resumo das entregas' : 'Exibir resumo das entregas');
+            toggleButton.title = visible ? 'Ocultar resumo das entregas' : 'Exibir resumo das entregas';
+            showButton.setAttribute('aria-expanded', String(!visible));
+            if (icon) icon.setAttribute('data-lucide', visible ? 'eye-off' : 'eye');
+            if (text) text.textContent = visible ? 'Ocultar' : 'Exibir';
+            try { localStorage.setItem('spx_delivery_summary_visible', String(visible)); } catch (e) {}
+            lucide.createIcons();
+        }
+
+        function toggleDeliverySummary() {
+            const panel = document.getElementById('deliverySummaryPanel');
+            setDeliverySummaryVisible(!!panel && panel.classList.contains('hidden'));
+        }
+
+        function showDeliverySummary() {
+            setDeliverySummaryVisible(true);
+        }
+
+        function restoreDeliverySummaryState() {
+            let visible = true;
+            try { visible = localStorage.getItem('spx_delivery_summary_visible') !== 'false'; } catch (e) {}
+            setDeliverySummaryVisible(visible);
         }
 
         // ============================================================================

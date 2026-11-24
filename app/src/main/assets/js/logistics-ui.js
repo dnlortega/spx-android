@@ -549,7 +549,7 @@
                                 <div>
                                     <span class="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-200 dark:bg-zinc-900/10 dark:text-orange-700">${icon('route', 'w-3.5 h-3.5')} Centro logístico</span>
                                     <h2 class="text-2xl font-black tracking-tight sm:text-3xl">Entrega, carga e comprovante em um só fluxo.</h2>
-                                    <p class="mt-2 max-w-2xl text-xs leading-relaxed text-zinc-300 dark:text-zinc-600">Cadastre endereços, organize o veículo, navegue pelas paradas pendentes e registre o POD antes de concluir.</p>
+                                    <p class="mt-2 max-w-2xl text-xs leading-relaxed text-zinc-300 dark:text-zinc-600">Cadastre endereços, organize o veículo, navegue pelas paradas pendentes e conclua com ou sem comprovante.</p>
                                 </div>
                                 <button data-action="start-navigation" class="shadcn-btn h-12 shrink-0 bg-[#EE4D2D] px-5 text-sm font-bold text-white hover:bg-[#d63f22]">${icon('navigation', 'w-4 h-4')} Iniciar navegação</button>
                             </div>
@@ -1426,22 +1426,22 @@
                     <label class="block"><span class="mb-1.5 block text-[11px] font-bold">Motivo do insucesso *</span><select name="failureReason" ${isFailure ? 'required' : ''} class="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"><option value="">Selecione o motivo</option>${FAILURE_REASONS.map(function (reason) { return `<option value="${esc(reason)}">${esc(reason)}</option>`; }).join('')}</select></label>
                 </div>
 
-                <label class="block"><span class="mb-1.5 block text-[11px] font-bold">Recebedor</span><input name="recipient" value="${esc(state.recipient || '')}" placeholder="Nome completo de quem recebeu" class="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"></label>
+                <label class="block"><span class="mb-1.5 block text-[11px] font-bold">Recebedor (opcional)</span><input name="recipient" value="${esc(state.recipient || '')}" placeholder="Nome completo de quem recebeu" class="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"></label>
 
                 <div>
-                    <div class="mb-1.5 flex items-center justify-between gap-2"><span class="text-[11px] font-bold">Assinatura</span><button type="button" data-action="clear-signature" class="text-[10px] font-semibold text-zinc-500 hover:text-rose-600">Limpar</button></div>
+                    <div class="mb-1.5 flex items-center justify-between gap-2"><span class="text-[11px] font-bold">Assinatura (opcional)</span><button type="button" data-action="clear-signature" class="text-[10px] font-semibold text-zinc-500 hover:text-rose-600">Limpar</button></div>
                     <div class="relative overflow-hidden rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950">
                         <canvas id="spxSignatureCanvas" width="900" height="320" class="spx-signature block h-40 w-full cursor-crosshair bg-white" aria-label="Área de assinatura"></canvas>
                         <span id="spxSignatureHint" class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-zinc-400">${icon('pen-line', 'w-5 h-5 mr-2')} Assine com o dedo ou ponteiro</span>
                     </div>
-                    <p class="mt-1 text-[10px] text-zinc-500">Na entrega, recebedor e assinatura são obrigatórios. No insucesso, use a justificativa de ausência quando não houver assinatura.</p>
+                    <p class="mt-1 text-[10px] text-zinc-500">Preencha somente se desejar registrar um comprovante. A entrega pode ser concluída sem recebedor, assinatura ou foto.</p>
                 </div>
 
-                <label class="block"><span class="mb-1.5 block text-[11px] font-bold">Justificativa de recebedor ausente</span><textarea name="absentJustification" rows="2" placeholder="Obrigatório no insucesso sem recebedor e assinatura" class="w-full resize-y rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-950">${esc(state.absentJustification || '')}</textarea></label>
+                <label class="block"><span class="mb-1.5 block text-[11px] font-bold">Justificativa de recebedor ausente (opcional)</span><textarea name="absentJustification" rows="2" placeholder="Use quando quiser registrar a ausência do recebedor" class="w-full resize-y rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-950">${esc(state.absentJustification || '')}</textarea></label>
 
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div>
-                        <span class="mb-1.5 block text-[11px] font-bold">Foto do comprovante</span>
+                        <span class="mb-1.5 block text-[11px] font-bold">Foto do comprovante (opcional)</span>
                         <button type="button" data-action="pod-photo" class="shadcn-btn h-11 w-full border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-950">${icon('camera', 'w-4 h-4')} Tirar ou escolher foto</button>
                         <input type="file" accept="image/*" capture="environment" class="hidden" data-purpose="pod-photo">
                         <p class="mt-1 text-[10px] text-zinc-500">JPEG, maior lado até 1280 px.</p>
@@ -1455,10 +1455,10 @@
 
                 <div class="spx-safe-bottom flex flex-col-reverse gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800 sm:flex-row sm:justify-end">
                     <button type="button" data-action="close-pod" class="shadcn-btn h-11 border border-zinc-200 bg-white px-4 text-xs font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-950">Cancelar</button>
-                    <button type="submit" id="spxPodSave" class="shadcn-btn h-11 ${isFailure ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} px-5 text-xs font-bold text-white disabled:opacity-50">${icon('file-check-2', 'w-4 h-4')} Salvar POD e concluir</button>
+                    <button type="submit" id="spxPodSave" class="shadcn-btn h-11 ${isFailure ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} px-5 text-xs font-bold text-white disabled:opacity-50">${icon('file-check-2', 'w-4 h-4')} ${isFailure ? 'Registrar insucesso' : 'Concluir entrega'}</button>
                 </div>
             </form>`;
-        setRootContent(modalShell(isFailure ? 'POD — insucesso' : 'POD — entrega', 'O status só é alterado depois de salvar o comprovante', body), 'auto');
+        setRootContent(modalShell(isFailure ? 'Registrar insucesso' : 'Concluir entrega', 'O comprovante é opcional; o status é alterado ao salvar.', body), 'auto');
     }
 
     function openPOD(groupId, pkgIds, status) {
@@ -1533,16 +1533,8 @@
             showInlineError('spxPodError', 'Selecione o motivo do insucesso.');
             return;
         }
-        if (status === 'Entregue' && (!recipient || !state.signatureData)) {
-            showInlineError('spxPodError', 'A entrega exige recebedor e assinatura. Não é possível marcar como entregue sem POD.');
-            return;
-        }
-        if (status === 'Insucesso' && !((recipient && state.signatureData) || absentJustification)) {
-            showInlineError('spxPodError', 'Informe recebedor e assinatura, ou justifique a ausência do recebedor.');
-            return;
-        }
-        if (!window.SPXStore || typeof window.SPXStore.putEvidence !== 'function') {
-            showInlineError('spxPodError', 'O armazenamento local de comprovantes está indisponível. O status não foi alterado.');
+        if ((state.signatureData || state.photoData) && (!window.SPXStore || typeof window.SPXStore.putEvidence !== 'function')) {
+            showInlineError('spxPodError', 'O armazenamento local de comprovantes está indisponível. Remova a assinatura e a foto ou tente novamente.');
             return;
         }
 
@@ -1634,7 +1626,7 @@
             packages.forEach(function (pkg) {
                 pkg.status = status;
                 pkg.deliveredAt = completedAt;
-                pkg.recipient = recipient || pkg.recipient || '';
+                pkg.recipient = recipient;
                 pkg.pod = clone(metadata);
                 pkg.failureReason = status === 'Insucesso' ? failureReason : '';
                 pkg.absentJustification = status === 'Insucesso' ? absentJustification : '';
@@ -1644,13 +1636,15 @@
             stop.podPackageIds = [...new Set([...(stop.podPackageIds || []), ...state.pkgIds])]
                 .filter(function (id) { return stop.packages.some(function (pkg) { return String(pkg.id) === String(id); }); });
             stop.lastPodAt = completedAt;
-            if (!safeSaveState()) throw new Error('Não foi possível persistir o POD no dispositivo. Libere espaço e tente novamente.');
+            if (!safeSaveState()) throw new Error('Não foi possível salvar a conclusão no dispositivo. Libere espaço e tente novamente.');
             committed = true;
             const retainedEvidenceIds = new Set(stop.packages.reduce(function (ids, pkg) {
                 return ids.concat((pkg.pod && pkg.pod.evidenceIds) || []);
             }, []));
-            await Promise.all([...previousEvidenceIds].filter(function (id) { return !retainedEvidenceIds.has(id); })
-                .map(function (id) { return window.SPXStore.deleteEvidence(id); })).catch(() => {});
+            if (window.SPXStore && typeof window.SPXStore.deleteEvidence === 'function') {
+                await Promise.all([...previousEvidenceIds].filter(function (id) { return !retainedEvidenceIds.has(id); })
+                    .map(function (id) { return window.SPXStore.deleteEvidence(id); })).catch(() => {});
+            }
             refreshExistingViews(false);
             podState = null;
             if (navState.active) {
@@ -1660,7 +1654,7 @@
             } else {
                 renderHub();
             }
-            notify(status === 'Entregue' ? 'POD salvo. Entrega concluída.' : 'POD de insucesso salvo.', 'success');
+            notify(status === 'Entregue' ? 'Entrega concluída.' : 'Insucesso registrado.', 'success');
         } catch (error) {
             if (!committed && rollback) {
                 const { stop, packages, previousPackageData, previousStopData } = rollback;
@@ -1680,8 +1674,8 @@
                 await Promise.all(savedEvidenceIds.map(function (id) { return window.SPXStore.deleteEvidence(id); })).catch(() => {});
                 refreshExistingViews(false);
             }
-            const message = reportError(error, 'Não foi possível salvar o POD');
-            showInlineError('spxPodError', committed ? `${message} O POD foi salvo, mas a tela pode precisar ser atualizada.` : `${message} O status não foi alterado.`);
+            const message = reportError(error, 'Não foi possível salvar a conclusão');
+            showInlineError('spxPodError', committed ? `${message} A conclusão foi salva, mas a tela pode precisar ser atualizada.` : `${message} O status não foi alterado.`);
         } finally {
             if (podState) podState.saving = false;
             const saveButton = byId('spxPodSave');

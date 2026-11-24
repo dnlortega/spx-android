@@ -72,6 +72,7 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades `Urgente`, `Alta` e `Normal`.
 - Remoção da Central da Shopee como origem fixa, inclusive de rotas já salvas; o ponto de partida pode ser GPS, local manual ou primeira parada.
 - Barra de ações da rota com texto visível e layout responsivo para celular.
+- Resumo das entregas pode ser ocultado e reaberto por um botão compacto; a preferência fica salva no dispositivo.
 
 ## Novidades da versão 1.2.0
 
@@ -83,7 +84,7 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 - Importação XLS/XLSX/CSV com coordenadas válidas, UTF-8, fallback Windows-1252 e remoção de BOM.
 - Package Finder por código, destinatário, endereço ou posição no veículo.
 - Posição física do volume com zona, slot e posição unificadas.
-- POD de entrega ou insucesso com recebedor, assinatura digital, fotos e observações.
+- POD opcional de entrega ou insucesso com recebedor, assinatura digital, fotos e observações.
 - Navegação integrada com GPS, manobras, ETA e recálculo após desvio, além de abertura no Google Maps, Waze ou Apple Maps.
 - Transferência offline de paradas por link, QR Code ou arquivo, com validação e deduplicação por SPX TN.
 - Exportação assíncrona de planilhas, preservação de transferências pendentes e ajustes para Android 15.
@@ -127,7 +128,7 @@ Comportamento de reserva:
 - Se os provedores de rede falharem, a estimativa local usa Haversine, fator rodoviário `1,28` e velocidade média de `28 km/h`.
 - O cartão da rota identifica quando o resultado não tem trânsito.
 
-A navegação integrada limita o plano a 25 paradas e informa quantas paradas ficaram fora. O botão **Otimizar** usa a estratégia de vizinho mais próximo: parte da primeira parada fixa, escolhe as próximas por proximidade dentro de cada prioridade e mantém a última parada fixa no final. As escolhas ficam salvas no dispositivo e podem ser limpas para voltar à ordem automática.
+A navegação integrada limita o plano a 25 paradas e informa quantas paradas ficaram fora. O botão **Otimizar** usa a estratégia de vizinho mais próximo: parte da primeira parada fixa, escolhe as próximas por proximidade dentro de cada prioridade e mantém a última parada fixa no final. Ao definir a primeira entrega, o roteiro é reordenado imediatamente pela proximidade e depois refinado com o provedor disponível. As escolhas ficam salvas no dispositivo e podem ser limpas para voltar à ordem automática.
 
 A Central da Shopee não é mais um endereço padrão. A origem usa o GPS ou o ponto de partida definido; na ausência deles, usa a primeira parada válida. Referências antigas à Central são removidas ao restaurar os dados salvos.
 
@@ -142,11 +143,11 @@ A Central da Shopee não é mais um endereço padrão. A origem usa o GPS ou o p
 
 ## POD
 
-O status de entrega ou insucesso só muda depois de salvar o comprovante.
+O comprovante de entrega (POD) é opcional. A entrega pode ser concluída sem recebedor, assinatura, foto ou observação.
 
-- Entrega exige recebedor e assinatura.
-- Insucesso exige motivo válido; recebedor e assinatura também podem ser registrados.
+- Insucesso exige apenas um motivo válido; demais campos do POD são opcionais.
 - Fotos são comprimidas antes de persistir no dispositivo.
+- Sem evidências, a conclusão não depende do IndexedDB.
 - Falhas de gravação desfazem evidências parciais e não concluem o pacote.
 - Reabrir um pacote concluído para correção remove o POD anterior, mas preserva a posição no veículo.
 - A limpeza seletiva não apaga evidências ainda referenciadas por outro pacote.

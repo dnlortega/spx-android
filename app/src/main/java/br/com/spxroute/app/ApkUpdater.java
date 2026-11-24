@@ -297,7 +297,7 @@ final class ApkUpdater {
                     .setTitle("SPX Route OS - Atualização")
                     .setDescription("Baixando e verificando a versão " + versionName)
                     .setMimeType("application/vnd.android.package-archive")
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_COMPLETED)
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                     .setDestinationInExternalFilesDir(activity, Environment.DIRECTORY_DOWNLOADS, fileName);
             request.addRequestHeader("Accept", "application/vnd.android.package-archive");
             long id = downloadManager.enqueue(request);
@@ -512,10 +512,15 @@ final class ApkUpdater {
 
     private boolean recoverInstallSession(long token, long sessionId) {
         if (!isCurrent(token)) return false;
+        if (sessionId <= 0 || sessionId > Integer.MAX_VALUE) {
+            clearInstallSession(token);
+            return true;
+        }
+        int recoveredSessionId = (int) sessionId;
         PackageInstaller installer = activity.getPackageManager().getPackageInstaller();
         boolean active = false;
         for (PackageInstaller.SessionInfo info : installer.getMySessions()) {
-            if (info != null && info.getSessionId() == sessionId) {
+            if (info != null && info.getSessionId() == recoveredSessionId) {
                 active = true;
                 break;
             }
@@ -527,7 +532,7 @@ final class ApkUpdater {
         if (preferences.getBoolean("sessionCommitted", false)) return false;
         PackageInstaller.Session session = null;
         try {
-            session = installer.openSession(sessionId);
+            session = installer.openSession(recoveredSessionId);
             session.abandon();
             clearInstallSession(token);
             return true;
@@ -562,8 +567,8 @@ final class ApkUpdater {
         boolean committed = false;
         try {
             PackageInstaller installer = activity.getPackageManager().getPackageInstaller();
-            PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-                    .setAppPackageName(PACKAGE_NAME);
+            PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+            params.setAppPackageName(PACKAGE_NAME);
             if (Build.VERSION.SDK_INT >= 23) params.setSize(apk.length());
             int sessionId = installer.createSession(params);
             session = installer.openSession(sessionId);
@@ -767,7 +772,7 @@ final class ApkUpdater {
     private String downloadFailureReason(int reason) {
         switch (reason) {
             case DownloadManager.ERROR_INSUFFICIENT_SPACE: return "espaço insuficiente no dispositivo";
-            case DownloadManager.ERROR_HTTP_DATA_ERR: return "falha de rede ou servidor";
+            case DownloadManager.ERROR_HTTP_DATA_ERROR: return "falha de rede ou servidor";
             case DownloadManager.ERROR_TOO_MANY_REDIRECTS: return "excesso de redirecionamentos";
             case DownloadManager.ERROR_UNHANDLED_HTTP_CODE: return "resposta HTTP inesperada";
             case DownloadManager.ERROR_FILE_ALREADY_EXISTS: return "arquivo de atualização já existente";

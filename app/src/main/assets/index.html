@@ -238,21 +238,38 @@
             user-select: text;
             touch-action: manipulation;
         }
-        /* Ajustes mobile: ações opcionais recolhidas e mapa aproveitando a tela */
-        .mobile-map-toggle { display:none; }
+        /* Um único controle para os painéis opcionais da interface */
+        body.interface-compact #deliverySummaryPanel,
+        body.interface-compact #mapControlsRoot,
+        body.interface-compact #headerActions .mobile-header-extra { display:none !important; }
+        #btnToggleInterface[aria-expanded="false"] { background:#E4E4E7; }
+        .dark #btnToggleInterface[aria-expanded="false"] { background:#3F3F46; }
+
+        /* Ajustes mobile: ações extras em painel e mapa aproveitando a tela */
         @media (max-width: 767px) {
             body { height: 100dvh; min-height: 100dvh; }
             #headerActions { gap: 5px; }
-            #headerActions .mobile-header-extra { display:none !important; }
-            #headerActions.mobile-options-open .mobile-header-extra { display:inline-flex !important; }
-            #headerActions .mobile-header-extra { height:36px; width:36px; min-width:36px; padding:0; }
-            #btnHeaderMore { display:inline-flex; }
+            #mobileHeaderExtras { display:none; }
+            #mobileHeaderExtras.mobile-options-open {
+                display:grid;
+                position:absolute;
+                top:calc(100% + 6px);
+                right:12px;
+                z-index:70;
+                grid-template-columns:repeat(4, 36px);
+                gap:6px;
+                padding:8px;
+                background:#FFFFFF;
+                border:1px solid #E4E4E7;
+                border-radius:10px;
+                box-shadow:0 10px 30px rgba(0,0,0,.16);
+            }
+            .dark #mobileHeaderExtras.mobile-options-open { background:#18181B; border-color:#3F3F46; }
+            #mobileHeaderExtras .mobile-header-extra { display:inline-flex !important; height:36px; width:36px; min-width:36px; padding:0; }
+            #mobileHeaderExtras > div.h-4 { display:none; }
             #sidebarPanel, #mapPanel { min-height:0; }
             #mapPanel { height:100%; }
             #map { min-height:100%; }
-            .mobile-map-toggle { display:flex; width:44px; height:44px; }
-            #mapControlsPanel { display:none !important; }
-            #mapControlsRoot.mobile-controls-open #mapControlsPanel { display:flex !important; }
             #nextStopFloatingCard { bottom: max(10px, env(safe-area-inset-bottom)); width:calc(100% - 16px); padding:10px; }
             #nextStopFloatingCard h4 { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
             #nextStopFloatingCard .shadcn-btn { min-height:44px; }
@@ -262,7 +279,7 @@
         }
         @media (max-width: 390px) {
             #headerActions { gap:3px; }
-            #headerActions .mobile-header-extra, #btnHeaderMore { width:34px; min-width:34px; height:34px; }
+            #btnToggleInterface { padding-left:8px; padding-right:8px; }
         }
 
         /* Filtros: exibir/ocultar com animação suave (grid 1fr -> 0fr) */
@@ -270,8 +287,6 @@
         .filter-panel-inner { min-height:0; overflow:hidden; }
         .filter-panel.collapsed { grid-template-rows:0fr; border-bottom-width:0; }
         .filter-panel.collapsed .filter-panel-inner { visibility:hidden; transition:visibility 0s linear .22s; }
-        #btnToggleFilters[aria-expanded="true"] { background:#E4E4E7; }
-        .dark #btnToggleFilters[aria-expanded="true"] { background:#3F3F46; }
         @media (prefers-reduced-motion: reduce) { .filter-panel, .filter-panel.collapsed .filter-panel-inner { transition:none; } }
     </style>
 </head>
@@ -298,7 +313,7 @@
             </div>
         </div>
 
-        <div class="px-4 h-12 md:h-14 flex items-center justify-between gap-3">
+        <div class="relative px-4 h-12 md:h-14 flex items-center justify-between gap-3">
             
             <!-- Esquerda: Brand Mark (em telas desktop/tablet) -->
             <div class="hidden md:flex items-center gap-2.5 min-w-0">
@@ -343,7 +358,6 @@
 
             <!-- Direita: Grupo de Ações com Botões shadcn/ui e Separadores Verticais -->
             <div class="flex items-center gap-1.5 shrink-0" id="headerActions">
-                <button id="btnHeaderMore" onclick="toggleHeaderOptions()" title="Exibir/ocultar opções" aria-label="Exibir/ocultar opções" aria-expanded="false" class="shadcn-btn h-9 w-9 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 md:hidden"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
                 <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0)" />
 
                 <!-- Importar planilha (somente ícone) -->
@@ -355,6 +369,7 @@
                     <i data-lucide="package-plus" class="w-4 h-4"></i>
                 </button>
 
+                <div id="mobileHeaderExtras" class="contents">
                 <!-- Carregar exemplo -->
                 <button onclick="loadSampleRoute()" title="Carregar exemplo" aria-label="Carregar exemplo" class="mobile-header-extra shadcn-btn h-9 w-9 bg-zinc-100 hover:bg-zinc-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border border-transparent">
                     <i data-lucide="flask-conical" class="w-4 h-4 text-[#EE4D2D]"></i>
@@ -394,7 +409,13 @@
                     <i id="themeIconSun" data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
                     <i id="themeIconMoon" data-lucide="moon" class="w-4 h-4 block dark:hidden text-zinc-700"></i>
                 </button>
+                </div>
             </div>
+            <button type="button" id="btnToggleInterface" onclick="toggleInterfacePanels()" title="Ocultar painéis e ações opcionais" aria-label="Ocultar painéis e ações opcionais" aria-controls="deliverySummaryPanel filterPanel mapControlsRoot mobileHeaderExtras" aria-expanded="true" class="shadcn-btn relative h-9 px-2.5 gap-1.5 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs shrink-0">
+                <i id="iconToggleInterface" data-lucide="eye-off" class="w-4 h-4"></i>
+                <span id="textToggleInterface" class="text-[11px] font-semibold">Ocultar</span>
+                <span id="filterActiveDot" class="hidden absolute top-1 right-1 w-2 h-2 rounded-full bg-[#EE4D2D] ring-2 ring-white dark:ring-zinc-900"></span>
+            </button>
         </div>
 
         <!-- Barra de Progresso de Geocodificação (Oculta por padrão) -->
@@ -461,25 +482,12 @@
             <!-- Bloco Superior: 4 Mini-Cards KPI estilo shadcn Card + Controles de Rota -->
             <div id="deliverySummaryPanel" class="p-3 bg-[#FAFAFA] dark:bg-zinc-950/60 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0 space-y-2.5">
                 
-                <!-- Barra de Título com Botão de Ocultar/Exibir Cards -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1.5 text-xs font-semibold text-[#09090B] dark:text-zinc-200">
-                        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
-                        <span>Resumo das Entregas</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <button id="btnToggleDeliverySummary" onclick="toggleDeliverySummary()" title="Ocultar resumo das entregas" aria-label="Ocultar resumo das entregas" aria-controls="deliverySummaryPanel" aria-expanded="true" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition cursor-pointer">
-                            <i id="iconToggleDeliverySummary" data-lucide="eye-off" class="w-3.5 h-3.5"></i>
-                            <span id="textToggleDeliverySummary">Ocultar</span>
-                        </button>
-                        <button id="btnToggleKpiCards" onclick="toggleKpiCards()" title="Exibir ou ocultar cards de resumo" aria-label="Exibir ou ocultar cards de resumo" class="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 px-2 py-0.5 rounded-md hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition cursor-pointer">
-                            <i id="iconToggleKpiCards" data-lucide="chevron-up" class="w-3.5 h-3.5 transition-transform duration-200"></i>
-                            <span id="textToggleKpiCards">Ocultar cards</span>
-                        </button>
-                    </div>
+                <div class="flex items-center gap-1.5 text-xs font-semibold text-[#09090B] dark:text-zinc-200">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[#EE4D2D]"></i>
+                    <span>Resumo das Entregas</span>
                 </div>
 
-                <!-- 4 Cards KPI Horizontais (Recolhíveis) -->
+                <!-- 4 Cards KPI Horizontais -->
                 <div id="kpiCardsContainer" class="grid grid-cols-4 gap-2 transition-all duration-300">
                     <!-- KPI 1: Paradas (Stops) -->
                     <div class="bg-white dark:bg-zinc-900 p-2.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-xs">
@@ -529,7 +537,7 @@
                 </div>
 
                 <!-- Barra de Ações da Rota -->
-                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
                     <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota por proximidade" aria-label="Otimizar rota" class="shadcn-btn h-16 flex-col gap-1.5 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
                         <i data-lucide="sparkles" class="w-4 h-4 text-[#EE4D2D]"></i>
                         <span class="text-[11px] font-semibold">Otimizar</span>
@@ -554,18 +562,8 @@
                         <i data-lucide="locate-fixed" class="w-4 h-4 text-[#EE4D2D]"></i>
                         <span class="text-[11px] font-semibold">Meu GPS</span>
                     </button>
-                    <button id="btnToggleFilters" onclick="toggleFilterPanel()" title="Exibir/ocultar filtros (F)" aria-label="Exibir/ocultar filtros" aria-controls="filterPanel" aria-expanded="true" class="shadcn-btn relative h-16 flex-col gap-1.5 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
-                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                        <span class="text-[11px] font-semibold">Filtros</span>
-                        <span id="filterActiveDot" class="hidden absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[#EE4D2D] ring-2 ring-white dark:ring-zinc-900"></span>
-                    </button>
                 </div>
             </div>
-
-            <button id="btnShowDeliverySummary" onclick="showDeliverySummary()" title="Exibir resumo das entregas" aria-label="Exibir resumo das entregas" aria-controls="deliverySummaryPanel" aria-expanded="false" class="hidden w-full h-10 px-3 border-b border-[#E4E4E7] dark:border-zinc-800 bg-[#FAFAFA] dark:bg-zinc-950/60 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition flex items-center justify-between gap-2 shrink-0">
-                <span class="flex items-center gap-1.5 text-xs font-semibold"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-[#EE4D2D]"></i> Resumo das Entregas</span>
-                <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
-            </button>
 
             <div id="routeEndpointsBar" class="hidden px-3 py-2 border-b border-[#E4E4E7] dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60">
                 <div class="flex items-center gap-2 text-[11px]">
@@ -589,7 +587,7 @@
                 </div>
             </div>
 
-            <!-- Filtros: busca + modo de visualização + status (exibir/ocultar pelo botão de filtros) -->
+            <!-- Filtros: busca + modo de visualização + status -->
             <div id="filterPanel" class="filter-panel bg-white dark:bg-zinc-900 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
                 <div class="filter-panel-inner">
                     <div class="p-3 space-y-2.5">
@@ -649,7 +647,6 @@
 
             <!-- Controles do mapa estilo Google Maps -->
             <div class="absolute top-3.5 right-3.5 z-20 flex flex-col items-end gap-2.5" id="mapControlsRoot">
-                <button id="btnMapControlsToggle" onclick="toggleMapControls()" class="gm-ctl mobile-map-toggle" aria-label="Exibir/ocultar controles do mapa" aria-expanded="false" title="Exibir/ocultar controles do mapa"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i></button>
                 <div id="mapControlsPanel" class="flex flex-col items-end gap-2.5">
                 <button onclick="cycleMapTileLayer()" title="Alternar camada: Mapa / Escuro / Satélite" class="gm-ctl">
                     <i data-lucide="layers" class="w-5 h-5"></i>
@@ -1154,6 +1151,9 @@
         let mapLayerIndex = 0; // 0: Claro (Positron), 1: Escuro (Dark Matter), 2: Satélite (Esri)
         let isPolylineVisible = true;
         let expandedStopIds = new Set();
+        const INTERFACE_VISIBILITY_KEY = 'spx_interface_visible';
+        let interfacePanelsVisible = true;
+        let expandedStopsBeforeCompact = null;
 
         const OSM_OPTS = {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
@@ -1357,9 +1357,7 @@
             setupKeyboardShortcuts();
             setupLongPressHints();
             restoreSavedState();
-            restoreFilterPanelState();
-            restoreKpiCardsState();
-            restoreDeliverySummaryState();
+            restoreInterfaceState();
             restoreGeminiApiKey();
             startLiveLocationTracking();
             if (window.SPXUpdate) SPXUpdate.init();
@@ -1689,11 +1687,11 @@
                 }
                 if (e.key === '/') {
                     e.preventDefault();
-                    if (!isFilterPanelVisible()) setFilterPanelVisible(true);
+                    if (!interfacePanelsVisible) setInterfacePanelsVisible(true);
                     document.getElementById('searchInput')?.focus();
                 } else if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
                     e.preventDefault();
-                    toggleFilterPanel();
+                    toggleInterfacePanels();
                 } else if (e.key.toLowerCase() === 'i') {
                     e.preventDefault();
                     document.getElementById('excelFileInput')?.click();
@@ -3725,46 +3723,25 @@
         }
 
         // ============================================================================
-        // FILTROS: EXIBIR / OCULTAR (estado lembrado entre aberturas do app)
+        // FILTROS
         // ============================================================================
-        const FILTER_PANEL_KEY = 'spx_filters_visible';
-
-        function isFilterPanelVisible() {
-            const panel = document.getElementById('filterPanel');
-            return !!panel && !panel.classList.contains('collapsed');
-        }
-
         function hasActiveFilters() {
             const q = (document.getElementById('searchInput')?.value || '').trim();
             return q !== '' || currentStatusFilter !== 'TODOS';
         }
 
-        // Com o painel oculto, um ponto laranja no botão avisa que a lista continua filtrada
         function updateFilterIndicator() {
             const dot = document.getElementById('filterActiveDot');
-            if (dot) dot.classList.toggle('hidden', isFilterPanelVisible() || !hasActiveFilters());
+            if (dot) dot.classList.toggle('hidden', interfacePanelsVisible || !hasActiveFilters());
         }
 
-        function setFilterPanelVisible(visible, persist = true, animate = true) {
+        function setFilterPanelVisible(visible, animate = true) {
             const panel = document.getElementById('filterPanel');
-            const btn = document.getElementById('btnToggleFilters');
             if (!panel) return;
             if (!animate) panel.style.transition = 'none';
             panel.classList.toggle('collapsed', !visible);
             if (!animate) { void panel.offsetHeight; panel.style.transition = ''; }
-            if (btn) btn.setAttribute('aria-expanded', String(visible));
-            if (persist) { try { localStorage.setItem(FILTER_PANEL_KEY, visible ? '1' : '0'); } catch (e) {} }
             updateFilterIndicator();
-        }
-
-        function toggleFilterPanel() {
-            setFilterPanelVisible(!isFilterPanelVisible());
-        }
-
-        function restoreFilterPanelState() {
-            let visible = true;
-            try { visible = localStorage.getItem(FILTER_PANEL_KEY) !== '0'; } catch (e) {}
-            setFilterPanelVisible(visible, false, false);
         }
 
         // Em tela de toque não existe "hover": segurar o dedo num botão só com ícone mostra o nome dele
@@ -4324,20 +4301,6 @@
             );
         }
 
-        function toggleHeaderOptions() {
-            const root = document.getElementById('headerActions');
-            const btn = document.getElementById('btnHeaderMore');
-            const opened = root.classList.toggle('mobile-options-open');
-            if (btn) btn.setAttribute('aria-expanded', String(opened));
-        }
-
-        function toggleMapControls() {
-            const root = document.getElementById('mapControlsRoot');
-            const btn = document.getElementById('btnMapControlsToggle');
-            const opened = root.classList.toggle('mobile-controls-open');
-            if (btn) btn.setAttribute('aria-expanded', String(opened));
-        }
-
         function switchMobileTab(tab) {
             const sidebar = document.getElementById('sidebarPanel');
             const mapPanel = document.getElementById('mapPanel');
@@ -4391,75 +4354,60 @@
         }
 
         // ============================================================================
-        // EXIBIR / OCULTAR CARDS DE RESUMO (KPIs)
+        // CONTROLE ÚNICO DOS PAINÉIS OPCIONAIS
         // ============================================================================
-        function toggleKpiCards() {
-            const container = document.getElementById('kpiCardsContainer');
-            const icon = document.getElementById('iconToggleKpiCards');
-            const text = document.getElementById('textToggleKpiCards');
-            if (!container) return;
-            const isHidden = container.classList.contains('hidden');
-            if (isHidden) {
-                container.classList.remove('hidden');
-                if (text) text.textContent = 'Ocultar cards';
-                if (icon) icon.setAttribute('data-lucide', 'chevron-up');
-                try { localStorage.setItem('spx_kpi_cards_visible', 'true'); } catch (e) {}
-            } else {
-                container.classList.add('hidden');
-                if (text) text.textContent = 'Exibir cards';
-                if (icon) icon.setAttribute('data-lucide', 'chevron-down');
-                try { localStorage.setItem('spx_kpi_cards_visible', 'false'); } catch (e) {}
+        function setInterfacePanelsVisible(visible, persist = true, animate = true) {
+            const changed = interfacePanelsVisible !== !!visible;
+            interfacePanelsVisible = !!visible;
+
+            document.body.classList.toggle('interface-compact', !interfacePanelsVisible);
+            const summary = document.getElementById('deliverySummaryPanel');
+            if (summary) summary.classList.toggle('hidden', !interfacePanelsVisible);
+            setFilterPanelVisible(interfacePanelsVisible, animate);
+
+            const extras = document.getElementById('mobileHeaderExtras');
+            if (extras) extras.classList.toggle('mobile-options-open', interfacePanelsVisible);
+
+            const button = document.getElementById('btnToggleInterface');
+            const icon = document.getElementById('iconToggleInterface');
+            const text = document.getElementById('textToggleInterface');
+            const label = interfacePanelsVisible ? 'Ocultar painéis e ações opcionais' : 'Exibir painéis e ações opcionais';
+            if (button) {
+                button.setAttribute('aria-expanded', String(interfacePanelsVisible));
+                button.setAttribute('aria-label', label);
+                button.title = label;
             }
-            lucide.createIcons();
-        }
+            if (icon) icon.setAttribute('data-lucide', interfacePanelsVisible ? 'eye-off' : 'eye');
+            if (text) text.textContent = interfacePanelsVisible ? 'Ocultar' : 'Exibir';
 
-        function restoreKpiCardsState() {
-            try {
-                const saved = localStorage.getItem('spx_kpi_cards_visible');
-                if (saved === 'false') {
-                    const container = document.getElementById('kpiCardsContainer');
-                    const icon = document.getElementById('iconToggleKpiCards');
-                    const text = document.getElementById('textToggleKpiCards');
-                    if (container) container.classList.add('hidden');
-                    if (text) text.textContent = 'Exibir cards';
-                    if (icon) icon.setAttribute('data-lucide', 'chevron-down');
-                    lucide.createIcons();
+            if (changed) {
+                if (!interfacePanelsVisible) {
+                    expandedStopsBeforeCompact = new Set(expandedStopIds);
+                    expandedStopIds.clear();
+                } else if (expandedStopsBeforeCompact) {
+                    expandedStopIds = expandedStopsBeforeCompact;
+                    expandedStopsBeforeCompact = null;
                 }
-            } catch (e) {}
-        }
+                renderStopsList();
+            }
 
-        function setDeliverySummaryVisible(visible) {
-            const panel = document.getElementById('deliverySummaryPanel');
-            const showButton = document.getElementById('btnShowDeliverySummary');
-            const toggleButton = document.getElementById('btnToggleDeliverySummary');
-            const icon = document.getElementById('iconToggleDeliverySummary');
-            const text = document.getElementById('textToggleDeliverySummary');
-            if (!panel || !showButton || !toggleButton) return;
-            panel.classList.toggle('hidden', !visible);
-            showButton.classList.toggle('hidden', visible);
-            toggleButton.setAttribute('aria-expanded', String(visible));
-            toggleButton.setAttribute('aria-label', visible ? 'Ocultar resumo das entregas' : 'Exibir resumo das entregas');
-            toggleButton.title = visible ? 'Ocultar resumo das entregas' : 'Exibir resumo das entregas';
-            showButton.setAttribute('aria-expanded', String(!visible));
-            if (icon) icon.setAttribute('data-lucide', visible ? 'eye-off' : 'eye');
-            if (text) text.textContent = visible ? 'Ocultar' : 'Exibir';
-            try { localStorage.setItem('spx_delivery_summary_visible', String(visible)); } catch (e) {}
+            if (persist) { try { localStorage.setItem(INTERFACE_VISIBILITY_KEY, String(interfacePanelsVisible)); } catch (e) {} }
+            updateFilterIndicator();
             lucide.createIcons();
+            requestAnimationFrame(() => { if (map) map.invalidateSize(); });
         }
 
-        function toggleDeliverySummary() {
-            const panel = document.getElementById('deliverySummaryPanel');
-            setDeliverySummaryVisible(!!panel && panel.classList.contains('hidden'));
+        function toggleInterfacePanels() {
+            setInterfacePanelsVisible(!interfacePanelsVisible);
         }
 
-        function showDeliverySummary() {
-            setDeliverySummaryVisible(true);
-        }
-
-        function restoreDeliverySummaryState() {
-            let visible = true;
-            try { visible = localStorage.getItem('spx_delivery_summary_visible') !== 'false'; } catch (e) {}
-            setDeliverySummaryVisible(visible);
+        function restoreInterfaceState() {
+            let visible = !window.matchMedia('(max-width: 767px)').matches;
+            try {
+                const saved = localStorage.getItem(INTERFACE_VISIBILITY_KEY);
+                if (saved === 'true' || saved === 'false') visible = saved === 'true';
+            } catch (e) {}
+            setInterfacePanelsVisible(visible, false, false);
         }
 
         // ============================================================================

@@ -72,7 +72,9 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades `Urgente`, `Alta` e `Normal`.
 - Remoção da Central da Shopee como origem fixa, inclusive de rotas já salvas; o ponto de partida pode ser GPS, local manual ou primeira parada.
 - Barra de ações da rota com texto visível e layout responsivo para celular.
-- Resumo das entregas pode ser ocultado e reaberto por um botão compacto; a preferência fica salva no dispositivo.
+- Um único botão **Ocultar/Exibir** no cabeçalho controla o resumo, os cards, os filtros, os controles do mapa, as ações extras e os detalhes abertos das paradas; a preferência fica salva no dispositivo.
+
+Sem preferência salva, a interface inicia compacta no celular e com os painéis visíveis no desktop. O atalho `F` alterna esse mesmo modo; `/` reabre os painéis e foca a busca.
 
 ## Novidades da versão 1.2.0
 

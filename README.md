@@ -1,4 +1,4 @@
-# SPX Route OS — Aplicativo Android v1.3.1
+# SPX Route OS — Aplicativo Android v1.3.2
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
-| Versão e pacote | `1.3.1`, `versionCode` 9, pacote `br.com.spxroute.app`. |
+| Versão e pacote | `1.3.2`, `versionCode` 10, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -32,7 +32,7 @@ Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas co
 ### Instalar o APK
 
 1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
-2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.1.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.2.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
 3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
 4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
 5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
@@ -63,6 +63,13 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 | Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e se a Release não é uma pré-release de teste. |
 | Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; reinstale manualmente somente após exportar os dados. |
 | Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
+
+## Novidades da versão 1.3.2
+
+- Marcar uma entrega como concluída atualiza o status imediatamente, sem abrir a tela de POD.
+- O POD continua opcional e acessível pelo localizador de pacotes quando o motorista quiser registrar o comprovante.
+- Remoção do banner “Entrega, carga e comprovante em um só fluxo” da tela de operações.
+- Os atalhos de primeira entrega nos cartões e no mapa desaparecem após a definição; é possível limpar a escolha para selecionar outra.
 
 ## Novidades da versão 1.3.1
 
@@ -150,7 +157,7 @@ A Central da Shopee não é mais um endereço padrão. A origem usa o GPS ou o p
 
 ## POD
 
-O comprovante de entrega (POD) é opcional. A entrega pode ser concluída sem recebedor, assinatura, foto ou observação.
+O comprovante de entrega (POD) é opcional. A entrega pode ser concluída sem recebedor, assinatura, foto ou observação. Para registrar um comprovante, abra **Operações de entrega > Localizador de pacotes > POD**; o status só é alterado ao salvar.
 
 - Insucesso exige apenas um motivo válido; demais campos do POD são opcionais.
 - Fotos são comprimidas antes de persistir no dispositivo.

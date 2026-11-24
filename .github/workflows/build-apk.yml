@@ -132,11 +132,11 @@ jobs:
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         with:
           tag_name: v${{ steps.prep.outputs.VERSION }}
-          name: "SPX Route OS v${{ steps.prep.outputs.VERSION }}${{ steps.signing.outputs.configured != 'true' && ' (teste sem assinatura estável)' || '' }}"
+          name: "SPX Route OS v${{ steps.prep.outputs.VERSION }}"
           body: |
             ## SPX Route OS - Versão ${{ steps.prep.outputs.VERSION }}
 
-            ${{ steps.signing.outputs.configured == 'true' && 'Build assinado com o keystore estável de lançamento.' || '> **Atenção:** build de teste sem assinatura estável. Esta pré-release não é oferecida pelo atualizador e deve ser instalada manualmente; ela não preserva a assinatura entre execuções do GitHub Actions.' }}
+            ${{ steps.signing.outputs.configured == 'true' && 'Build assinado com o keystore estável de lançamento.' || '> **Atenção:** esta versão está disponível para instalação manual e não é oferecida pelo atualizador automático. Para atualizar sem desinstalar, use builds com o mesmo keystore de lançamento.' }}
 
             ### Novidades
             - Atualização do APK com progresso, validação de SHA-256, tamanho, versão e assinatura antes da instalação.
@@ -147,6 +147,8 @@ jobs:
             - Um único botão Ocultar/Exibir controla os painéis opcionais e guarda a preferência no dispositivo.
             - Reordenamento imediato da rota pelas paradas mais próximas ao escolher a primeira entrega.
             - POD opcional, sem bloquear a conclusão da entrega por falta de comprovante.
+            - Conclusão imediata da entrega sem abrir a tela de comprovante e remoção do banner promocional do hub.
+            - Atalhos de primeira entrega deixam de aparecer depois que a primeira parada é definida.
 
             ### Instalação
             Requer Android 5.0 (API 21) ou superior e Android System WebView atualizado. Permita localização de alta precisão para GPS e, no Android 8 ou superior, autorize a instalação de apps desconhecidos quando solicitado.

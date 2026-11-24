@@ -494,10 +494,6 @@
     function renderHub() {
         ensurePackageSlotFields();
         const stops = getStops();
-        const packages = allPackages();
-        const pending = pendingStops();
-        const delivered = packages.filter(function (item) { return item.pkg.status === 'Entregue'; }).length;
-        const failed = packages.filter(function (item) { return item.pkg.status === 'Insucesso'; }).length;
         const plan = getRoutePlan();
         const planStops = plan && Array.isArray(plan.points)
             ? plan.points.filter(function (point) { return point.groupId; })
@@ -542,26 +538,6 @@
             <div class="min-h-full overflow-y-auto spx-thin-scroll">
                 ${pageHeader('SPX Logistics', `${atId} · operação local`, `<button data-action="close-root" class="shadcn-btn h-10 px-3 text-xs font-semibold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800">Voltar ao app</button>`)}
                 <main class="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-7">
-                    <section class="mb-5 overflow-hidden rounded-3xl bg-zinc-900 text-white shadow-xl dark:bg-zinc-100 dark:text-zinc-950">
-                        <div class="relative p-5 sm:p-7">
-                            <div class="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[#EE4D2D]/25 blur-2xl"></div>
-                            <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <span class="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-200 dark:bg-zinc-900/10 dark:text-orange-700">${icon('route', 'w-3.5 h-3.5')} Centro logístico</span>
-                                    <h2 class="text-2xl font-black tracking-tight sm:text-3xl">Entrega, carga e comprovante em um só fluxo.</h2>
-                                    <p class="mt-2 max-w-2xl text-xs leading-relaxed text-zinc-300 dark:text-zinc-600">Cadastre endereços, organize o veículo, navegue pelas paradas pendentes e conclua com ou sem comprovante.</p>
-                                </div>
-                                <button data-action="start-navigation" class="shadcn-btn h-12 shrink-0 bg-[#EE4D2D] px-5 text-sm font-bold text-white hover:bg-[#d63f22]">${icon('navigation', 'w-4 h-4')} Iniciar navegação</button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 divide-x divide-white/10 border-t border-white/10 bg-black/10 dark:divide-zinc-900/10 dark:bg-white/10 sm:grid-cols-4">
-                            <div class="p-4"><span class="block text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Paradas pendentes</span><strong class="mt-1 block text-xl">${pending.length}</strong></div>
-                            <div class="p-4"><span class="block text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Pacotes</span><strong class="mt-1 block text-xl">${packages.length}</strong></div>
-                            <div class="p-4"><span class="block text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Entregues</span><strong class="mt-1 block text-xl text-emerald-400 dark:text-emerald-700">${delivered}</strong></div>
-                            <div class="p-4"><span class="block text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Insucessos</span><strong class="mt-1 block text-xl text-rose-400 dark:text-rose-700">${failed}</strong></div>
-                        </div>
-                    </section>
-
                     ${navState.active ? `<button data-action="resume-navigation" class="mb-5 flex w-full items-center gap-3 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-left dark:border-orange-900 dark:bg-orange-950/40">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EE4D2D] text-white">${icon('navigation')}</span>
                         <span class="min-w-0 flex-1"><span class="block text-sm font-bold text-orange-900 dark:text-orange-200">Navegação integrada em andamento</span><span class="block truncate text-[11px] text-orange-700 dark:text-orange-300">Toque para retomar a manobra atual.</span></span>${icon('chevron-right')}
@@ -2450,7 +2426,7 @@
                         </div>
                         ${navState.rerouting ? `<div class="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-700 dark:bg-amber-950 dark:text-amber-300">${icon('refresh-cw', 'w-3.5 h-3.5 animate-spin')} Recalculando rota pelo desvio...</div>` : ''}
                         <div class="mt-3 grid grid-cols-2 gap-2">
-                            <button data-action="nav-pod" class="shadcn-btn h-11 bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700">${icon('check-circle-2', 'w-4 h-4')} Concluir parada</button>
+                            <button data-action="nav-complete" class="shadcn-btn h-11 bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700">${icon('check-circle-2', 'w-4 h-4')} Concluir parada</button>
                             <button data-action="nav-fail" class="shadcn-btn h-11 border border-rose-200 bg-white text-xs font-bold text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:bg-zinc-950 dark:text-rose-300">${icon('x-circle', 'w-4 h-4')} Insucesso</button>
                         </div>
                         <div class="mt-4 flex items-center justify-between"><h3 class="text-xs font-bold">Paradas e ETA</h3><span class="text-[10px] text-zinc-400">${stops.length} no plano</span></div>
@@ -2583,35 +2559,6 @@
         return getRoutePlan();
     }
 
-    function guardLegacyStatusActions() {
-        if (typeof window.setPackageStatus === 'function' && !window.setPackageStatus.__spxPODGuard) {
-            const original = window.setPackageStatus;
-            const guarded = function (groupId, pkgId, newStatus) {
-                const found = findPackage(groupId, pkgId);
-                if ((newStatus === 'Entregue' || newStatus === 'Insucesso') && (!found || found.pkg.status !== newStatus)) {
-                    openPOD(groupId, [pkgId], newStatus);
-                    return;
-                }
-                return original.apply(window, arguments);
-            };
-            guarded.__spxPODGuard = true;
-            window.setPackageStatus = guarded;
-        }
-        if (typeof window.markEntireStopStatus === 'function' && !window.markEntireStopStatus.__spxPODGuard) {
-            const original = window.markEntireStopStatus;
-            const guarded = function (groupId, newStatus) {
-                const stop = getStops().find(function (item) { return String(item.groupId) === String(groupId); });
-                if (stop && (newStatus === 'Entregue' || newStatus === 'Insucesso') && aggregateStatus(stop) !== newStatus) {
-                    openPOD(groupId, (stop.packages || []).map(function (pkg) { return pkg.id; }), newStatus);
-                    return;
-                }
-                return original.apply(window, arguments);
-            };
-            guarded.__spxPODGuard = true;
-            window.markEntireStopStatus = guarded;
-        }
-    }
-
     function openTransfer() {
         if (!window.SPXTransfer || typeof window.SPXTransfer.openModal !== 'function') {
             notify('O módulo de transferência não está disponível.', 'error');
@@ -2687,10 +2634,10 @@
                 }
                 return;
             }
-            if (action === 'nav-pod') {
-                if (!viewDestinationPending()) return notify('Não há parada pendente para concluir.', 'info');
-                const ids = (viewDestinationPending().packages || []).filter(function (pkg) { return pkg.status !== 'Entregue' && pkg.status !== 'Insucesso'; }).map(function (pkg) { return pkg.id; });
-                openPOD(viewDestinationPending().groupId, ids, 'Entregue');
+            if (action === 'nav-complete') {
+                const destination = viewDestinationPending();
+                if (!destination) return notify('Não há parada pendente para concluir.', 'info');
+                window.markEntireStopStatus(destination.groupId, 'Entregue');
                 return;
             }
             if (action === 'nav-fail') {
@@ -2803,7 +2750,6 @@
             root.addEventListener('keydown', handleKeydown);
             root.__spxLogisticsEventsBound = true;
         }
-        guardLegacyStatusActions();
         ensurePackageSlotFields();
         initialized = true;
         refreshIcons();

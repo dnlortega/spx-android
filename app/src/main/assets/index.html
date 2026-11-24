@@ -308,7 +308,7 @@
                     <span class="font-black text-base tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                         <span class="text-[#EE4D2D]">SPX</span> Route OS
                     </span>
-                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.1</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.2</span>
                 </div>
             </div>
         </div>
@@ -330,7 +330,7 @@
                         <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                             <span class="text-[#EE4D2D]">SPX</span> Route OS
                         </span>
-                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.1</span>
+                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.2</span>
                     </div>
                     <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
@@ -931,7 +931,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 p-3 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
+            <div id="routeEndpointTabs" class="grid grid-cols-2 gap-2 p-3 border-b border-[#E4E4E7] dark:border-zinc-800 shrink-0">
                 <button id="firstEndpointTab" onclick="switchRouteEndpointMode('first')" aria-pressed="true" class="h-9 rounded-md text-xs font-semibold bg-amber-500 text-white flex items-center justify-center gap-1.5">
                     <i data-lucide="flag" class="w-3.5 h-3.5"></i>
                     1ª entrega
@@ -2885,8 +2885,11 @@
             const selectedId = isFirst ? selectedFirstStopId : selectedLastStopId;
             const clearButton = document.getElementById('clearRouteEndpointModalBtn');
             clearButton.style.display = selectedId ? '' : 'none';
+            const endpointTabs = document.getElementById('routeEndpointTabs');
             const firstTab = document.getElementById('firstEndpointTab');
             const lastTab = document.getElementById('lastEndpointTab');
+            if (endpointTabs) endpointTabs.classList.toggle('grid-cols-1', !!selectedFirstStopId);
+            if (endpointTabs) endpointTabs.classList.toggle('grid-cols-2', !selectedFirstStopId);
             firstTab.className = isFirst
                 ? 'h-9 rounded-md text-xs font-semibold bg-amber-500 text-white flex items-center justify-center gap-1.5'
                 : 'h-9 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center gap-1.5';
@@ -2895,6 +2898,7 @@
                 : 'h-9 rounded-md text-xs font-semibold bg-blue-600 text-white flex items-center justify-center gap-1.5';
             firstTab.setAttribute('aria-pressed', String(isFirst));
             lastTab.setAttribute('aria-pressed', String(!isFirst));
+            firstTab.classList.toggle('hidden', !!selectedFirstStopId);
             renderRouteEndpointModalList(document.getElementById('firstStopSearchInput').value);
             lucide.createIcons();
         }
@@ -2904,7 +2908,8 @@
                 showToast("Importe um romaneio antes de escolher as entregas extremas.", "info");
                 return;
             }
-            routeEndpointMode = mode === 'last' ? 'last' : 'first';
+            const requestedMode = mode === 'last' ? 'last' : 'first';
+            routeEndpointMode = requestedMode === 'first' && selectedFirstStopId ? 'last' : requestedMode;
             document.getElementById('chooseFirstStopModalOverlay').classList.remove('hidden');
             document.getElementById('firstStopSearchInput').value = '';
             updateRouteEndpointModalContent();
@@ -3013,6 +3018,10 @@
                 return;
             }
             const isFirst = routeEndpointMode === 'first';
+            if (isFirst && selectedFirstStopId) {
+                showToast("A primeira entrega já foi definida. Limpe a seleção para escolher outra.", "info");
+                return;
+            }
             const pendingCount = groupedStops.filter(stop => !['Entregue', 'Insucesso'].includes(getStopAggregateStatus(stop))).length;
             const otherEndpointId = isFirst ? selectedLastStopId : selectedFirstStopId;
             if (pendingCount > 1 && otherEndpointId && String(otherEndpointId) === String(targetGroupId)) {
@@ -3619,12 +3628,12 @@
                                     <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
                                 </a>
                             </div>
-                            <div class="mt-2">
+                            ${!selectedFirstStopId ? `<div class="mt-2">
                                 <button onclick="setAsFirstStopAndRoute(${escapeJsString(stop.groupId)})" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn w-full h-9 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5">
                                     <i data-lucide="flag" class="w-3.5 h-3.5"></i>
                                     Iniciar Roteiro Por Aqui
                                 </button>
-                            </div>
+                            </div>` : ''}
                         </div>
                     </div>
                 `;
@@ -3966,10 +3975,10 @@
                                             <i data-lucide="compass" class="w-4 h-4 text-cyan-500"></i>
                                         </a>
                                     </div>
-                                    <button onclick="setAsFirstStopAndRoute(${escapeJsString(stop.groupId)})" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-8 w-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold flex items-center justify-center gap-1">
+                                    ${!selectedFirstStopId ? `<button onclick="setAsFirstStopAndRoute(${escapeJsString(stop.groupId)})" title="Iniciar roteiro por aqui" aria-label="Iniciar roteiro por aqui" class="shadcn-btn h-8 w-full bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-semibold flex items-center justify-center gap-1">
                                         <i data-lucide="flag" class="w-3 h-3"></i>
                                         1ª entrega
-                                    </button>
+                                    </button>` : ''}
                                 </div>
                             </div>
 
@@ -4119,7 +4128,7 @@
                 applyPackageStatus(groupId, pkgId, newStatus);
                 return;
             }
-            if (window.SPXLogistics && typeof SPXLogistics.openPOD === 'function') {
+            if (newStatus === 'Insucesso' && window.SPXLogistics && typeof SPXLogistics.openPOD === 'function') {
                 SPXLogistics.openPOD(groupId, [pkgId], newStatus);
                 return;
             }
@@ -4132,7 +4141,7 @@
                 applyStopStatus(groupId, newStatus);
                 return;
             }
-            if (window.SPXLogistics && typeof SPXLogistics.openPOD === 'function') {
+            if (newStatus === 'Insucesso' && window.SPXLogistics && typeof SPXLogistics.openPOD === 'function') {
                 if (stop) SPXLogistics.openPOD(groupId, stop.packages.map(pkg => pkg.id), newStatus);
                 return;
             }

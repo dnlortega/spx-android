@@ -68,6 +68,7 @@ final class ApkUpdater {
     private boolean destroyed;
     private boolean polling;
     private boolean permissionPromptPending;
+    private boolean handlingInstallResult;
     private int missingDownloadPolls;
 
     ApkUpdater(Activity activity, Listener listener) {
@@ -88,23 +89,29 @@ final class ApkUpdater {
             emitError("Os dados de verificação da atualização são inválidos.");
             return;
         }
-        if (verifying.get()) {
-            emitError("Aguarde a validação da atualização atual.");
-            return;
-        }
         synchronized (stateLock) {
+            if (verifying.get() || installing.get()) {
+                emitError("Aguarde a validação ou instalação da atualização atual.");
+                return;
+            }
             String stage = preferences.getString("stage", "");
             String normalizedHash = sha256.toLowerCase(Locale.ROOT);
-            if (!stage.isEmpty() && versionCode == preferences.getInt("versionCode", -1)
+            boolean sameCandidate = !stage.isEmpty()
+                    && versionCode == preferences.getInt("versionCode", -1)
                     && versionName.equals(preferences.getString("versionName", ""))
                     && normalizedHash.equals(preferences.getString("sha256", ""))
-                    && url.equals(preferences.getString("url", ""))) {
+                    && url.equals(preferences.getString("url", ""));
+            if (sameCandidate) {
                 permissionPromptPending = false;
                 if (stage.equals("permission_required")) {
                     ensureInstallPermission(preferences.getLong("generation", 0), true);
                 } else {
                     resume();
                 }
+                return;
+            }
+            if ("installing".equals(stage)) {
+                emitError("Conclua ou aguarde a instalação atual antes de escolher outra versão.");
                 return;
             }
             long token = nextGeneration();
@@ -151,21 +158,16 @@ final class ApkUpdater {
                 return;
             }
             if (installing.get()) return;
-            long sessionId = preferences.getLong("sessionId", -1);
-            if (sessionId > 0 && !recoverInstallSession(token, sessionId)) return;
-            File cached = cachedApk();
-            if (cached != null) {
-                saveStage(token, "installing");
-                emitForToken(token, "installing", 95, "Retomando preparação da instalação...");
-                scheduleInstall(cached, token);
-            } else {
-                failForToken(token, "O APK validado não está mais disponível.", true);
-            }
+            scheduleInstallRecovery(token);
         }
     }
 
     private void startVerification(long downloadId, long token) {
-        if (destroyed || downloadId < 0 || !isCurrent(token) || !verifying.compareAndSet(false, true)) return;
+        synchronized (stateLock) {
+            if (destroyed || downloadId < 0 || !isCurrent(token) || installing.get()
+                    || !"validating".equals(preferences.getString("stage", ""))
+                    || !verifying.compareAndSet(false, true)) return;
+        }
         deleteCachedApks();
         String expectedHash = preferences.getString("sha256", "");
         long expectedSize = preferences.getLong("expectedSize", 0);
@@ -195,46 +197,59 @@ final class ApkUpdater {
     void handleInstallResult(Intent intent) {
         if (intent == null || !STATUS_ACTION.equals(intent.getAction())) return;
         long token = intent.getLongExtra(EXTRA_UPDATE_TOKEN, -1);
-        if (!isCurrent(token) || !"installing".equals(preferences.getString("stage", ""))) return;
-        String expectedNonce = preferences.getString("statusNonce", "");
+        int callbackSessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1);
         String receivedNonce = intent.getStringExtra(EXTRA_UPDATE_NONCE);
-        if (!secureEquals(expectedNonce, receivedNonce)) return;
-        int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE);
-        String packageName = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME);
-        String detail = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
-        if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
-            Intent confirmation = intent.getParcelableExtra(Intent.EXTRA_INTENT);
-            if (confirmation == null) {
-                failForToken(token, "O Android não apresentou a confirmação de instalação.", false);
+        synchronized (stateLock) {
+            if (!isCurrent(token) || handlingInstallResult
+                    || !"installing".equals(preferences.getString("stage", ""))) return;
+            if (callbackSessionId <= 0 || callbackSessionId != preferences.getLong("sessionId", -1)) return;
+            String expectedNonce = preferences.getString("statusNonce", "");
+            if (!secureEquals(expectedNonce, receivedNonce)) return;
+            handlingInstallResult = true;
+        }
+        try {
+            int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE);
+            String packageName = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME);
+            String detail = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
+            if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+                Intent confirmation = intent.getParcelableExtra(Intent.EXTRA_INTENT);
+                if (confirmation == null) {
+                    failForToken(token, "O Android não apresentou a confirmação de instalação.", false);
+                    return;
+                }
+                saveStage(token, "installing");
+                emitForToken(token, "installing", 95, "Confirme a instalação no Android.");
+                try {
+                    activity.startActivity(confirmation.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (Exception e) {
+                    failForToken(token, "Não foi possível abrir a confirmação de instalação.", false);
+                }
                 return;
             }
-            saveStage(token, "installing");
-            emitForToken(token, "installing", 95, "Confirme a instalação no Android.");
-            try {
-                activity.startActivity(confirmation.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            } catch (Exception e) {
-                failForToken(token, "Não foi possível abrir a confirmação de instalação.", false);
+            if (packageName != null && !PACKAGE_NAME.equals(packageName)) {
+                failForToken(token, "O pacote instalado não corresponde ao SPX Route OS.", false);
+                return;
             }
-            return;
-        }
-        if (packageName != null && !PACKAGE_NAME.equals(packageName)) {
-            failForToken(token, "O pacote instalado não corresponde ao SPX Route OS.", false);
-            return;
-        }
-        if (status == PackageInstaller.STATUS_SUCCESS) {
-            int expectedCode = preferences.getInt("verifiedVersionCode", preferences.getInt("versionCode", -1));
-            if (!PACKAGE_NAME.equals(packageName) || expectedCode < 1 || installedVersionCode() < expectedCode) {
-                failForToken(token, "O Android não confirmou a instalação da versão esperada.", false);
-            } else {
-                completeInstallation(token);
+            if (status == PackageInstaller.STATUS_SUCCESS) {
+                int expectedCode = preferences.getInt("verifiedVersionCode", preferences.getInt("versionCode", -1));
+                if ((packageName != null && !PACKAGE_NAME.equals(packageName))
+                        || expectedCode < 1 || installedVersionCode() < expectedCode) {
+                    failForToken(token, "O Android não confirmou a instalação da versão esperada.", false);
+                } else {
+                    completeInstallation(token);
+                }
+                return;
             }
-            return;
+            if (status == PackageInstaller.STATUS_FAILURE_ABORTED) {
+                failForToken(token, detail == null || detail.isEmpty() ? "Instalação cancelada." : detail, false);
+                return;
+            }
+            failForToken(token, detail == null || detail.isEmpty() ? "O Android não concluiu a instalação." : detail, false);
+        } finally {
+            synchronized (stateLock) {
+                handlingInstallResult = false;
+            }
         }
-        if (status == PackageInstaller.STATUS_FAILURE_ABORTED) {
-            failForToken(token, detail == null || detail.isEmpty() ? "Instalação cancelada." : detail, false);
-            return;
-        }
-        failForToken(token, detail == null || detail.isEmpty() ? "O Android não concluiu a instalação." : detail, false);
     }
 
     String consumePendingEvent() {
@@ -246,8 +261,10 @@ final class ApkUpdater {
     }
 
     void shutdown() {
-        destroyed = true;
-        generation.incrementAndGet();
+        synchronized (stateLock) {
+            destroyed = true;
+            generation.incrementAndGet();
+        }
         handler.removeCallbacks(pollTask);
         executor.shutdownNow();
     }
@@ -502,44 +519,117 @@ final class ApkUpdater {
     }
 
     private void scheduleInstall(File apk, long token) {
-        if (!isCurrent(token)) return;
+        synchronized (stateLock) {
+            if (!isCurrent(token) || !"installing".equals(preferences.getString("stage", ""))
+                    || !installing.compareAndSet(false, true)) return;
+        }
         try {
             executor.execute(() -> install(apk, token));
         } catch (Exception e) {
+            installing.set(false);
             failForToken(token, "Não foi possível iniciar a preparação da instalação.", false);
         }
     }
 
+    private void scheduleInstallRecovery(long token) {
+        synchronized (stateLock) {
+            if (!isCurrent(token) || !"installing".equals(preferences.getString("stage", ""))
+                    || !installing.compareAndSet(false, true)) return;
+        }
+        try {
+            executor.execute(() -> {
+                try {
+                    if (!isCurrent(token)) {
+                        installing.set(false);
+                        return;
+                    }
+                    long sessionId;
+                    synchronized (stateLock) {
+                        if (!isCurrent(token)) {
+                            installing.set(false);
+                            return;
+                        }
+                        sessionId = preferences.getLong("sessionId", -1);
+                    }
+                    if (sessionId > 0 && !recoverInstallSession(token, sessionId)) return;
+                    File cached = cachedApk();
+                    if (cached == null) {
+                        failForToken(token, "O APK validado não está mais disponível.", true);
+                        return;
+                    }
+                    saveStage(token, "installing");
+                    emitForToken(token, "installing", 95, "Retomando preparação da instalação...");
+                    install(cached, token);
+                } catch (Exception e) {
+                    failForToken(token, "Não foi possível retomar a instalação da atualização.", false);
+                } finally {
+                    installing.set(false);
+                }
+            });
+        } catch (Exception e) {
+            installing.set(false);
+            failForToken(token, "Não foi possível iniciar a recuperação da instalação.", false);
+        }
+    }
+
     private boolean recoverInstallSession(long token, long sessionId) {
-        if (!isCurrent(token)) return false;
+        synchronized (stateLock) {
+            if (!isCurrent(token) || handlingInstallResult) return false;
+        }
         if (sessionId <= 0 || sessionId > Integer.MAX_VALUE) {
             clearInstallSession(token);
             return true;
         }
         int recoveredSessionId = (int) sessionId;
-        PackageInstaller installer = activity.getPackageManager().getPackageInstaller();
-        boolean active = false;
-        for (PackageInstaller.SessionInfo info : installer.getMySessions()) {
-            if (info != null && info.getSessionId() == recoveredSessionId) {
-                active = true;
-                break;
+        PackageInstaller installer;
+        PackageInstaller.SessionInfo matching = null;
+        boolean committed = false;
+        boolean sealed = false;
+        try {
+            installer = activity.getPackageManager().getPackageInstaller();
+            for (PackageInstaller.SessionInfo info : installer.getMySessions()) {
+                if (info != null && info.getSessionId() == recoveredSessionId) {
+                    matching = info;
+                    break;
+                }
             }
+            if (matching != null) {
+                committed = Build.VERSION.SDK_INT >= 29 && matching.isCommitted();
+                sealed = Build.VERSION.SDK_INT >= 26 && matching.isSealed();
+            }
+        } catch (Exception e) {
+            emitForToken(token, "installing", 95, "Aguardando a confirmação do Android.");
+            return false;
         }
-        if (!active) {
+        if (matching == null) {
+            int expectedCode = preferences.getInt("verifiedVersionCode", preferences.getInt("versionCode", -1));
+            if (expectedCode > 0 && installedVersionCode() >= expectedCode) {
+                completeInstallation(token);
+                return false;
+            }
             clearInstallSession(token);
             return true;
         }
-        if (preferences.getBoolean("sessionCommitted", false)) return false;
+        boolean sessionCommitted;
+        synchronized (stateLock) {
+            if (!isCurrent(token)) return false;
+            sessionCommitted = preferences.getBoolean("sessionCommitted", false);
+        }
+        if (committed || sealed || sessionCommitted) return false;
+        synchronized (stateLock) {
+            if (!isCurrent(token) || handlingInstallResult) return false;
+        }
         PackageInstaller.Session session = null;
         try {
             session = installer.openSession(recoveredSessionId);
+            synchronized (stateLock) {
+                if (!isCurrent(token) || handlingInstallResult) return false;
+            }
+            if (Build.VERSION.SDK_INT < 26 && isLegacySessionSealed(session)) return false;
             session.abandon();
             clearInstallSession(token);
             return true;
         } catch (Exception e) {
-            synchronized (stateLock) {
-                if (isCurrent(token)) preferences.edit().putBoolean("sessionCommitted", true).apply();
-            }
             return false;
         } finally {
             if (session != null) {
@@ -548,33 +638,67 @@ final class ApkUpdater {
         }
     }
 
+    private boolean isLegacySessionSealed(PackageInstaller.Session session) throws IOException {
+        try {
+            session.getNames();
+            return false;
+        } catch (SecurityException e) {
+            return true;
+        }
+    }
+
     private void clearInstallSession(long token) {
         synchronized (stateLock) {
-            if (isCurrent(token)) {
-                preferences.edit().remove("sessionId").putBoolean("sessionCommitted", false).apply();
+            if (isCurrent(token) && !handlingInstallResult) {
+                preferences.edit().remove("sessionId")
+                        .putBoolean("sessionCommitted", false)
+                        .putBoolean("commitAttempted", false)
+                        .apply();
             }
         }
     }
 
     private void install(File apk, long token) {
-        if (!isCurrent(token) || !apk.isFile()) {
+        synchronized (stateLock) {
+            if (!isCurrent(token) || handlingInstallResult) {
+                installing.set(false);
+                return;
+            }
+        }
+        if (!apk.isFile()) {
             if (apk.exists()) apk.delete();
             failForToken(token, "O APK validado não está mais disponível.", true);
             return;
         }
-        if (!installing.compareAndSet(false, true)) return;
+        final String statusNonce;
+        final int requestCode;
+        synchronized (stateLock) {
+            if (!isCurrent(token) || handlingInstallResult) {
+                installing.set(false);
+                return;
+            }
+            statusNonce = preferences.getString("statusNonce", "");
+            requestCode = preferences.getInt("installRequestCode", INSTALL_REQUEST_CODE);
+        }
         PackageInstaller.Session session = null;
+        int sessionId = -1;
         boolean committed = false;
+        boolean commitAttempted = false;
         try {
             PackageInstaller installer = activity.getPackageManager().getPackageInstaller();
             PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
             params.setAppPackageName(PACKAGE_NAME);
             if (Build.VERSION.SDK_INT >= 23) params.setSize(apk.length());
-            int sessionId = installer.createSession(params);
+            sessionId = installer.createSession(params);
             session = installer.openSession(sessionId);
             synchronized (stateLock) {
-                if (!isCurrent(token)) throw new IOException("Atualização substituída.");
-                preferences.edit().putLong("sessionId", sessionId).putBoolean("sessionCommitted", false).apply();
+                if (!isCurrent(token) || handlingInstallResult) throw new IOException("Atualização substituída.");
+                if (!preferences.edit().putLong("sessionId", sessionId)
+                        .putBoolean("sessionCommitted", false)
+                        .putBoolean("commitAttempted", false)
+                        .commit()) {
+                    throw new IOException("Não foi possível salvar a sessão de instalação.");
+                }
             }
             try (OutputStream output = session.openWrite("base.apk", 0, apk.length());
                  InputStream input = new FileInputStream(apk)) {
@@ -586,15 +710,22 @@ final class ApkUpdater {
                 }
                 session.fsync(output);
             }
+            if (!isCurrent(token)) throw new IOException("Atualização substituída.");
             Intent statusIntent = new Intent(activity, MainActivity.class)
                     .setAction(STATUS_ACTION)
                     .putExtra(EXTRA_UPDATE_TOKEN, token)
-                    .putExtra(EXTRA_UPDATE_NONCE, preferences.getString("statusNonce", ""));
+                    .putExtra(EXTRA_UPDATE_NONCE, statusNonce);
             int flags = PendingIntent.FLAG_UPDATE_CURRENT;
             if (Build.VERSION.SDK_INT >= 31) flags |= PendingIntent.FLAG_MUTABLE;
-            int requestCode = preferences.getInt("installRequestCode", INSTALL_REQUEST_CODE);
             PendingIntent callback = PendingIntent.getActivity(activity, requestCode, statusIntent, flags);
             emitForToken(token, "installing", 95, "Aguardando confirmação de instalação...");
+            synchronized (stateLock) {
+                if (!isCurrent(token) || handlingInstallResult) throw new IOException("Atualização substituída.");
+                if (!preferences.edit().putBoolean("commitAttempted", true).commit()) {
+                    throw new IOException("Não foi possível preparar a confirmação da instalação.");
+                }
+                commitAttempted = true;
+            }
             session.commit(callback.getIntentSender());
             committed = true;
             synchronized (stateLock) {
@@ -603,21 +734,56 @@ final class ApkUpdater {
                 }
             }
         } catch (Exception e) {
-            if (session != null && !committed) {
+            boolean callbackHandling;
+            synchronized (stateLock) {
+                callbackHandling = handlingInstallResult;
+            }
+            if (callbackHandling) {
+                if (session != null && !committed && !commitAttempted) {
+                    try { session.abandon(); } catch (Exception ignored) {}
+                }
+                return;
+            }
+            boolean mayAbandon = canAbandonAfterCommitAttempt(sessionId, session, commitAttempted);
+            if (session != null && !committed && mayAbandon) {
                 try { session.abandon(); } catch (Exception ignored) {}
             }
-            clearInstallSession(token);
-            if (Build.VERSION.SDK_INT >= 26 && !activity.getPackageManager().canRequestPackageInstalls() && isCurrent(token)) {
-                saveStage(token, "permission_required");
-                emitForToken(token, "permission_required", 0, "Autorize novamente a instalação de aplicativos.");
+            if (mayAbandon) {
+                clearInstallSession(token);
+                if (Build.VERSION.SDK_INT >= 26 && !activity.getPackageManager().canRequestPackageInstalls() && isCurrent(token)) {
+                    installing.set(false);
+                    saveStage(token, "permission_required");
+                    emitForToken(token, "permission_required", 0, "Autorize novamente a instalação de aplicativos.");
+                } else {
+                    failForToken(token, "Não foi possível preparar a instalação da atualização.", false);
+                }
             } else {
-                failForToken(token, "Não foi possível preparar a instalação da atualização.", false);
+                emitForToken(token, "installing", 95, "Aguardando a confirmação do Android.");
             }
         } finally {
             installing.set(false);
             if (session != null) {
                 try { session.close(); } catch (Exception ignored) {}
             }
+        }
+    }
+
+    private boolean canAbandonAfterCommitAttempt(int sessionId, PackageInstaller.Session session,
+                                                  boolean commitAttempted) {
+        if (!commitAttempted) return true;
+        try {
+            PackageInstaller installer = activity.getPackageManager().getPackageInstaller();
+            for (PackageInstaller.SessionInfo info : installer.getMySessions()) {
+                if (info == null || info.getSessionId() != sessionId) continue;
+                if (Build.VERSION.SDK_INT < 26) {
+                    return session != null && !isLegacySessionSealed(session);
+                }
+                if (Build.VERSION.SDK_INT >= 29 && info.isCommitted()) return false;
+                return !info.isSealed();
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -628,16 +794,18 @@ final class ApkUpdater {
             failForToken(token, "O Android não confirmou a versão instalada.", false);
             return;
         }
-        deleteCachedApks();
         synchronized (stateLock) {
             if (!isCurrent(token)) return;
+            installing.set(false);
+            int requestCode = preferences.getInt("installRequestCode", INSTALL_REQUEST_CODE);
+            deleteCachedApks();
             preferences.edit().clear()
                     .putLong("lastGeneration", token)
-                    .putLong("generation", token)
-                    .putInt("lastRequestCode", preferences.getInt("installRequestCode", INSTALL_REQUEST_CODE))
+                    .putInt("lastRequestCode", requestCode)
                     .apply();
+            generation.set(0);
         }
-        emitForToken(token, "installed", 100, "Atualização instalada com sucesso.");
+        emit("installed", 100, "Atualização instalada com sucesso.");
     }
 
     private void failForToken(long token, String message, boolean retryDownload) {
@@ -645,6 +813,7 @@ final class ApkUpdater {
         polling = false;
         synchronized (stateLock) {
             if (!isCurrent(token)) return;
+            installing.set(false);
             if (retryDownload) {
                 long id = preferences.getLong("downloadId", -1);
                 if (id >= 0 && downloadManager != null) {
@@ -654,19 +823,26 @@ final class ApkUpdater {
                         .putLong("downloadId", -1)
                         .remove("cachedApk")
                         .remove("verifiedVersionCode")
+                        .remove("sessionId")
                         .putBoolean("sessionCommitted", false)
+                        .putBoolean("commitAttempted", false)
                         .putString("stage", "permission_required")
                         .apply();
             } else {
+                int requestCode = preferences.getInt("installRequestCode", INSTALL_REQUEST_CODE);
                 deleteCachedApks();
                 preferences.edit().clear()
                         .putLong("lastGeneration", token)
-                        .putLong("generation", token)
-                        .putInt("lastRequestCode", preferences.getInt("installRequestCode", INSTALL_REQUEST_CODE))
+                        .putInt("lastRequestCode", requestCode)
                         .apply();
+                generation.set(0);
             }
         }
-        emitForToken(token, "error", 0, message);
+        if (retryDownload) {
+            emitForToken(token, "error", 0, message);
+        } else {
+            emit("error", 0, message);
+        }
     }
 
     private void cancelPendingDownload() {

@@ -144,6 +144,9 @@ jobs:
             - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades.
             - Remoção da Central da Shopee como origem fixa; use GPS, ponto de partida manual ou a primeira parada.
             - Botões da barra de rota agora exibem texto e têm layout responsivo para celular.
+            - Um único botão Ocultar/Exibir controla os painéis opcionais e guarda a preferência no dispositivo.
+            - Reordenamento imediato da rota pelas paradas mais próximas ao escolher a primeira entrega.
+            - POD opcional, sem bloquear a conclusão da entrega por falta de comprovante.
 
             ### Instalação
             Requer Android 5.0 (API 21) ou superior e Android System WebView atualizado. Permita localização de alta precisão para GPS e, no Android 8 ou superior, autorize a instalação de apps desconhecidos quando solicitado.

@@ -1,4 +1,4 @@
-# SPX Route OS — Aplicativo Android v1.3.0
+# SPX Route OS — Aplicativo Android v1.3.1
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
-| Versão e pacote | `1.3.0`, `versionCode` 8, pacote `br.com.spxroute.app`. |
+| Versão e pacote | `1.3.1`, `versionCode` 9, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -32,7 +32,7 @@ Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas co
 ### Instalar o APK
 
 1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
-2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.0.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.1.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
 3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
 4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
 5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
@@ -64,6 +64,15 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 | Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; reinstale manualmente somente após exportar os dados. |
 | Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
 
+## Novidades da versão 1.3.1
+
+- Um único botão **Ocultar/Exibir** no cabeçalho controla o resumo, os cards, os filtros, os controles do mapa, as ações extras e os detalhes abertos das paradas.
+- A preferência de visibilidade fica salva no dispositivo. Sem preferência salva, o celular inicia compacto e o desktop inicia com os painéis visíveis.
+- Reordenamento imediato do roteiro pelas paradas mais próximas ao definir a primeira entrega.
+- POD opcional, sem exigir assinatura, foto ou recebedor para concluir a entrega.
+
+O atalho `F` alterna o botão único; `/` reabre os painéis e foca a busca.
+
 ## Novidades da versão 1.3.0
 
 - Atualização do APK com seleção da versão correta, progresso, tentativas, permissão de instalação e retomada após interrupções.
@@ -72,10 +81,6 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades `Urgente`, `Alta` e `Normal`.
 - Remoção da Central da Shopee como origem fixa, inclusive de rotas já salvas; o ponto de partida pode ser GPS, local manual ou primeira parada.
 - Barra de ações da rota com texto visível e layout responsivo para celular.
-- Um único botão **Ocultar/Exibir** no cabeçalho controla o resumo, os cards, os filtros, os controles do mapa, as ações extras e os detalhes abertos das paradas; a preferência fica salva no dispositivo.
-
-Sem preferência salva, a interface inicia compacta no celular e com os painéis visíveis no desktop. O atalho `F` alterna esse mesmo modo; `/` reabre os painéis e foca a busca.
-
 ## Novidades da versão 1.2.0
 
 - Otimização rodoviária com Google Routes, OSRM e estimativa local de reserva.

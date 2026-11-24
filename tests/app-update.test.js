@@ -75,7 +75,7 @@ function metadata() {
         tagName: 'v1.3.0',
         versionName: '1.3.0',
         versionCode: 8,
-        apk: { name: 'SPX-Route-OS-v1.3.0.apk', size: 2048, sha256: 'a'.repeat(64) }
+        apk: { name: 'SPX-Route-OS-v1.3.0.apk', size: 2048, sha256: 'a'.repeat(64), signerSha256: 'c'.repeat(64) }
     };
 }
 
@@ -138,6 +138,8 @@ test('resolução lê metadados e rejeita release em rascunho', async function (
     assert.equal(candidate.downloadUrl, data.assets[2].browser_download_url);
     assert.equal(fetches.length, 1);
     await assert.rejects(() => update.resolveCandidate({ ...data, draft: true }), /indisponível/);
+    const prerelease = await update.resolveCandidate({ ...data, prerelease: true });
+    assert.equal(prerelease.versionCode, 8);
 });
 
 test('resolução exige checksum e tamanho mesmo sem metadados', async function () {
@@ -158,7 +160,7 @@ test('notas da Release são inseridas como texto sem HTML executável', function
     const candidate = { release: data, tag: '1.3.0', versionName: '1.3.0', size: 2048, sha256: 'a'.repeat(64) };
     sandbox.checkForUpdates = update.check;
     sandbox.fetch = async url => {
-        if (url.includes('/releases/latest')) return { ok: true, status: 200, text: async () => JSON.stringify(data) };
+        if (url.includes('/releases?')) return { ok: true, status: 200, text: async () => JSON.stringify([data]) };
         return { ok: true, text: async () => JSON.stringify(metadata()) };
     };
     sandbox.SPXAndroid = { getAppVersion: () => '1.2.0', getAppVersionCode: () => 7 };
@@ -177,17 +179,23 @@ test('atualização pendente pode ser retomada após recarregar a página', func
         sha256: 'a'.repeat(64),
         versionCode: 8,
         versionName: '1.3.0',
+        signerSha256: 'c'.repeat(64),
         size: 2048,
         tag: '1.3.0',
         notes: '<script>alert(1)</script>'
     }));
     let request;
+    let restarted = false;
     sandbox.SPXAndroid = {
         getAppVersion: () => '1.2.0',
         getAppVersionCode: () => 7,
-        installApk: (...args) => { request = args; }
+        getAppSignerSha256: () => 'c'.repeat(64),
+        installApk: (...args) => { request = args; },
+        restartApp: () => { restarted = true; }
     };
     update.init();
+    assert.equal(element('mobileAppVersion').textContent, 'v1.2.0');
+    assert.equal(element('desktopAppVersion').textContent, 'v1.2.0');
     update.handleNativeEvent({ stage: 'error', percent: 0, message: 'Falha de rede.' });
     assert.equal(element('updateModalNotes').textContent, '<script>alert(1)</script>');
     assert.equal(element('updateModalTag').textContent, 'v1.3.0');
@@ -199,4 +207,55 @@ test('atualização pendente pode ser retomada após recarregar a página', func
     assert.equal(request[4], 2048);
     update.handleNativeEvent({ stage: 'installed', percent: 100, message: 'Instalada.' });
     assert.equal(storage.get('spx_update_pending'), '');
+    assert.equal(element('mobileAppVersion').textContent, 'v1.3.0');
+    assert.equal(element('desktopAppVersion').textContent, 'v1.3.0');
+    assert.match(element('updateActionButton').innerHTML, /Reiniciar agora/);
+    sandbox.triggerAppUpdate();
+    assert.equal(restarted, true);
+});
+
+test('seleção ignora Release mais nova com assinatura incompatível', async function () {
+    const data = release();
+    const blocked = release();
+    blocked.tag_name = 'v1.4.0';
+    blocked.prerelease = true;
+    blocked.assets = blocked.assets.map(asset => ({
+        ...asset,
+        name: asset.name.replace('v1.3.0', 'v1.4.0'),
+        browser_download_url: asset.browser_download_url.replace('v1.3.0', 'v1.4.0')
+    }));
+    const blockedMetadata = metadata();
+    blockedMetadata.tagName = 'v1.4.0';
+    blockedMetadata.versionName = '1.4.0';
+    blockedMetadata.versionCode = 12;
+    blockedMetadata.apk.name = 'SPX-Route-OS-v1.4.0.apk';
+    blockedMetadata.apk.signerSha256 = 'd'.repeat(64);
+    sandbox.fetch = async url => {
+        if (url.includes('v1.4.0')) return { ok: true, text: async () => JSON.stringify(blockedMetadata) };
+        return { ok: true, text: async () => JSON.stringify(metadata()) };
+    };
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.2.0',
+        getAppVersionCode: () => 7,
+        getAppSignerSha256: () => 'c'.repeat(64)
+    };
+    update.init();
+    const result = await update.findLatestCompatibleCandidate([blocked, data]);
+    assert.equal(result.candidate.versionName, '1.3.0');
+    assert.equal(result.newestBlocked.release.tag_name, 'v1.4.0');
+    assert.match(result.newestBlocked.error.message, /assinatura diferente/);
+});
+
+test('versão do certificado ausente bloqueia atualização automática', async function () {
+    const data = release();
+    const withoutSigner = metadata();
+    delete withoutSigner.apk.signerSha256;
+    sandbox.fetch = async () => ({ ok: true, text: async () => JSON.stringify(withoutSigner) });
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.2.0',
+        getAppVersionCode: () => 7,
+        getAppSignerSha256: () => 'c'.repeat(64)
+    };
+    update.init();
+    await assert.rejects(() => update.resolveCandidate(data), /não informa o certificado/);
 });

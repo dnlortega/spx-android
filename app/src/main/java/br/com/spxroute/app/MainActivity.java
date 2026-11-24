@@ -200,6 +200,24 @@ public class MainActivity extends Activity {
                 }
             }
 
+            @JavascriptInterface public String getAppSignerSha256() {
+                return apkUpdater.getInstalledSignerSha256();
+            }
+
+            @JavascriptInterface public void restartApp() {
+                postUi(() -> {
+                    try {
+                        Intent launch = getPackageManager().getLaunchIntentForPackage(getPackageName());
+                        if (launch == null) throw new IllegalStateException("Atalho de abertura indisponível");
+                        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(launch);
+                        finishAffinity();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Feche e abra o SPX Route OS para carregar a nova versão.", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
             @JavascriptInterface public void startVoiceInput(String callbackName) {
                 if (!isValidCallback(callbackName)) return;
                 postUi(() -> startVoiceInputOnUi(callbackName));

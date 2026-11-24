@@ -1,4 +1,4 @@
-# SPX Route OS — Aplicativo Android v1.3.2
+# SPX Route OS — Aplicativo Android v1.3.3
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
-| Versão e pacote | `1.3.2`, `versionCode` 10, pacote `br.com.spxroute.app`. |
+| Versão e pacote | `1.3.3`, `versionCode` 11, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -32,7 +32,7 @@ Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas co
 ### Instalar o APK
 
 1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
-2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.2.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.3.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
 3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
 4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
 5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
@@ -41,10 +41,13 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 
 ### Atualizar pelo aplicativo
 
-- O aplicativo consulta somente a Release estável mais recente de `dnlortega/spx-android`.
+- O aplicativo consulta as Releases recentes de `dnlortega/spx-android`, inclusive pré-releases, e oferece a versão mais nova compatível com o certificado instalado.
+- A versão e o `versionCode` exibidos vêm diretamente do Android; não dependem de um número fixo na interface.
+- Os metadados incluem o SHA-256 do APK e do certificado de assinatura. Uma assinatura diferente é bloqueada antes do download.
 - O download mostra progresso, pode ser retomado e valida tamanho, SHA-256, pacote, versão e assinatura antes da instalação.
 - Use Wi-Fi e mantenha espaço livre. Depois de validado, confirme a instalação na tela do Android.
-- Builds de teste sem keystore estável são publicados como **pré-release** e não são oferecidos pelo atualizador; instale-os manualmente apenas para teste.
+- Após instalar, toque em **Reiniciar agora**. O aplicativo reabre e carrega os arquivos da nova versão.
+- Builds sem keystore estável continuam sendo **pré-release**. Só são oferecidos se o certificado for igual ao da versão instalada.
 - Se aparecer **assinatura diferente**, não force a atualização. Publique a próxima versão com o keystore estável correto ou reinstale manualmente após exportar os dados.
 
 ### Rede, GPS e provedores de rota
@@ -60,9 +63,18 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 | --- | --- |
 | Mapa em branco ou endereço não encontrado | Conexão com a internet e localização do navegador/WebView. |
 | GPS impreciso ou navegação sem posição | GPS ativado, permissão de localização, precisão e economia de bateria. |
-| Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e se a Release não é uma pré-release de teste. |
+| Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e se existe Release mais nova com o mesmo certificado. |
+| Instalou, mas a interface continuou antiga | Toque em **Reiniciar agora** no modal; o processo aberto ainda estava com os arquivos antigos. |
 | Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; reinstale manualmente somente após exportar os dados. |
 | Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
+
+## Novidades da versão 1.3.3
+
+- Atualizador consulta as Releases recentes e seleciona a versão mais nova compatível, inclusive pré-releases assinadas pela mesma chave.
+- Bloqueio antes do download quando o certificado de assinatura é diferente ou não foi informado nos metadados.
+- Versão exibida no cabeçalho e no modal é lida do pacote instalado no Android.
+- Botão **Reiniciar agora** após a instalação para carregar imediatamente os novos arquivos.
+- Metadados da Release passam a publicar o SHA-256 do certificado de assinatura.
 
 ## Novidades da versão 1.3.2
 
@@ -235,7 +247,7 @@ Configure estes secrets nas configurações do repositório GitHub, em **Setting
 
 Não versione o keystore nem as senhas. O workflow decodifica a chave somente em `RUNNER_TEMP`, usa `assembleRelease` e não imprime os secrets. Sem os quatro secrets, o build usa a chave de depuração somente para testes e é publicado como pré-release; essa chave pode mudar entre execuções do GitHub Actions. O APK continua disponível no artefato para instalação manual, mas não deve ser usado como atualização automática.
 
-O aplicativo aceita apenas Releases de `dnlortega/spx-android` e exige o mesmo certificado de assinatura da versão instalada. Um APK antigo de depuração assinado por outra chave não pode ser atualizado diretamente: reinstale uma vez uma versão assinada pela chave estável e conserve essa chave nos próximos lançamentos. O aplicativo informa essa divergência em vez de abrir um download não validado.
+O aplicativo aceita apenas Releases de `dnlortega/spx-android` e exige o mesmo certificado de assinatura da versão instalada. Um APK antigo de depuração assinado por outra chave não pode ser atualizado diretamente: reinstale uma vez uma versão assinada pela chave estável e conserve essa chave nos próximos lançamentos. O aplicativo compara o certificado informado nos metadados com o instalado e informa essa divergência antes do download; a validação nativa repete a checagem antes de abrir o instalador.
 
 ## Gerar o APK localmente
 

@@ -8,8 +8,8 @@ android {
         applicationId 'br.com.spxroute.app'
         minSdk 21
         targetSdk 35
-        versionCode 10
-        versionName '1.3.2'
+        versionCode 11
+        versionName '1.3.3'
     }
 
     def releaseStoreFile = System.getenv('SPX_KEYSTORE_FILE') ?: ''

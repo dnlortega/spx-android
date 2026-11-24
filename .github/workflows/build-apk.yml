@@ -85,13 +85,18 @@ jobs:
           mkdir -p release-assets
           cp app/build/outputs/apk/release/app-release.apk "release-assets/${APK_NAME}"
           cp "release-assets/${APK_NAME}" release-assets/SPX-Route-OS.apk
-          python3 - "$APK_NAME" "$VERSION" "$VERSION_CODE" <<'PY'
+          SIGNER_SHA256=$(keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk 2>/dev/null | sed -n 's/.*SHA256: //p' | head -n1 | tr '[:upper:]' '[:lower:]')
+          if ! printf '%s' "$SIGNER_SHA256" | grep -Eq '^[a-f0-9]{64}$'; then
+            echo "Não foi possível identificar o certificado de assinatura do APK" >&2
+            exit 1
+          fi
+          python3 - "$APK_NAME" "$VERSION" "$VERSION_CODE" "$SIGNER_SHA256" <<'PY'
           import hashlib
           import json
           import os
           import sys
 
-          apk_name, version, version_code = sys.argv[1:]
+          apk_name, version, version_code, signer_sha256 = sys.argv[1:]
           apk_path = os.path.join("release-assets", apk_name)
           digest = hashlib.sha256()
           size = 0
@@ -108,7 +113,8 @@ jobs:
               "apk": {
                   "name": apk_name,
                   "size": size,
-                  "sha256": digest.hexdigest()
+                  "sha256": digest.hexdigest(),
+                  "signerSha256": signer_sha256
               }
           }
           with open("release-assets/release-metadata.json", "w", encoding="utf-8") as output:
@@ -139,6 +145,9 @@ jobs:
             ${{ steps.signing.outputs.configured == 'true' && 'Build assinado com o keystore estável de lançamento.' || '> **Atenção:** esta versão está disponível para instalação manual e não é oferecida pelo atualizador automático. Para atualizar sem desinstalar, use builds com o mesmo keystore de lançamento.' }}
 
             ### Novidades
+            - Atualizador consulta as Releases recentes, inclusive pré-releases compatíveis, e bloqueia antes do download APKs com certificado diferente.
+            - Metadados passam a informar o SHA-256 do certificado de assinatura; a versão instalada é lida diretamente do Android.
+            - Após instalar, o botão Reiniciar agora reabre o aplicativo para carregar os novos arquivos e exibir a versão correta.
             - Atualização do APK com progresso, validação de SHA-256, tamanho, versão e assinatura antes da instalação.
             - Retomada do download após interrupções e mensagens claras para permissão, falha de rede e assinatura incompatível.
             - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades.

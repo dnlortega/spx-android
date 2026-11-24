@@ -139,6 +139,23 @@ final class ApkUpdater {
         }
     }
 
+    String getInstalledSignerSha256() {
+        try {
+            int flags = Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
+            PackageInfo installed = activity.getPackageManager().getPackageInfo(PACKAGE_NAME, flags);
+            if (Build.VERSION.SDK_INT >= 28) {
+                SigningInfo signingInfo = installed.signingInfo;
+                Signature[] signatures = signingInfo == null ? null : signingInfo.getApkContentsSigners();
+                if (signatures != null && signatures.length > 0) {
+                    return bytesToHex(sha256(signatures[0].toByteArray()));
+                }
+            } else if (installed.signatures != null && installed.signatures.length > 0) {
+                return bytesToHex(sha256(installed.signatures[0].toByteArray()));
+            }
+        } catch (Exception ignored) {}
+        return "";
+    }
+
     void resume() {
         if (destroyed) return;
         permissionPromptPending = false;

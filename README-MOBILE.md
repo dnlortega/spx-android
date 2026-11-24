@@ -20,10 +20,11 @@ O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocu
 ## Requisitos e observações
 
 - Android 5.0 (API 21) ou superior.
-- Versão atual: 1.3.2 (`versionCode` 10).
+- Versão atual: 1.3.3 (`versionCode` 11).
 - A compilação acontece nos servidores do GitHub Actions; não exige SDK no telefone.
 - O código pode ficar privado, mas a Release e seus assets precisam estar públicos para o atualizador nativo conseguir baixá-los.
 - O workflow executa os testes JavaScript e gera `app-release.apk`, o APK versionado e `release-metadata.json` com tamanho e SHA-256.
 - O verificador do aplicativo aceita apenas Releases do repositório `dnlortega/spx-android`, valida o arquivo e a assinatura antes da instalação. Em uma cópia publicada em outro repositório, baixe e instale o artefato manualmente.
 - Para atualizar sem desinstalar, configure no repositório os secrets `SPX_KEYSTORE_BASE64`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD`. Não envie o keystore junto ao código.
-- Sem os secrets, o build usa a chave de depuração apenas para testes e é publicado como pré-release. O atualizador não oferece essa pré-release; baixe o artefato e instale manualmente somente para teste. Para atualizações automáticas sem desinstalar, configure e conserve o mesmo keystore estável.
+- Sem os secrets, o build usa a chave de depuração apenas para testes e é publicado como pré-release. O atualizador só oferece a pré-release se o certificado for igual ao da versão instalada; caso contrário, avisa antes do download. Para atualizações automáticas sem desinstalar, configure e conserve o mesmo keystore estável.
+- Depois de instalar uma atualização pelo aplicativo, toque em **Reiniciar agora** para carregar a nova versão.

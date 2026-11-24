@@ -85,7 +85,7 @@ jobs:
           mkdir -p release-assets
           cp app/build/outputs/apk/release/app-release.apk "release-assets/${APK_NAME}"
           cp "release-assets/${APK_NAME}" release-assets/SPX-Route-OS.apk
-          SIGNER_SHA256=$(keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk 2>/dev/null | sed -n 's/.*SHA256: //p' | head -n1 | tr '[:upper:]' '[:lower:]')
+          SIGNER_SHA256=$(keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk 2>/dev/null | sed -n 's/.*SHA256: //p' | head -n1 | tr -d '[:space:]:' | tr '[:upper:]' '[:lower:]')
           if ! printf '%s' "$SIGNER_SHA256" | grep -Eq '^[a-f0-9]{64}$'; then
             echo "Não foi possível identificar o certificado de assinatura do APK" >&2
             exit 1

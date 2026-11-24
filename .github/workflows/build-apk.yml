@@ -44,63 +44,121 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Compilar APK (assembleDebug)
-        run: gradle assembleDebug
+      - name: Configurar assinatura de lançamento
+        id: signing
+        env:
+          SPX_KEYSTORE_BASE64: ${{ secrets.SPX_KEYSTORE_BASE64 }}
+          SPX_KEYSTORE_PASSWORD: ${{ secrets.SPX_KEYSTORE_PASSWORD }}
+          SPX_KEY_ALIAS: ${{ secrets.SPX_KEY_ALIAS }}
+          SPX_KEY_PASSWORD: ${{ secrets.SPX_KEY_PASSWORD }}
+        run: |
+          if [ -n "$SPX_KEYSTORE_BASE64" ] && [ -n "$SPX_KEYSTORE_PASSWORD" ] && [ -n "$SPX_KEY_ALIAS" ] && [ -n "$SPX_KEY_PASSWORD" ]; then
+            printf '%s' "$SPX_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/spx-release.jks"
+            chmod 600 "$RUNNER_TEMP/spx-release.jks"
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Assinatura estável não configurada; o build usará a chave de depuração apenas para testes."
+          fi
 
-      - name: Preparar arquivo APK para distribuição
+      - name: Executar testes JavaScript
+        run: node --test tests/*.test.js
+
+      - name: Compilar APK (assembleRelease)
+        env:
+          SPX_KEYSTORE_FILE: ${{ runner.temp }}/spx-release.jks
+          SPX_KEYSTORE_PASSWORD: ${{ secrets.SPX_KEYSTORE_PASSWORD }}
+          SPX_KEY_ALIAS: ${{ secrets.SPX_KEY_ALIAS }}
+          SPX_KEY_PASSWORD: ${{ secrets.SPX_KEY_PASSWORD }}
+        run: gradle assembleRelease
+
+      - name: Preparar APK e metadados de atualização
         id: prep
         run: |
           VERSION=$(grep "versionName" app/build.gradle | head -n1 | sed -E "s/.*'([^']+)'.*/\1/")
-          if [ -z "$VERSION" ]; then
-            VERSION="1.2.0"
+          VERSION_CODE=$(grep "versionCode" app/build.gradle | head -n1 | sed -E "s/.*versionCode ([0-9]+).*/\1/")
+          if [ -z "$VERSION" ] || [ -z "$VERSION_CODE" ]; then
+            echo "Versão inválida em app/build.gradle" >&2
+            exit 1
           fi
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-          
+          APK_NAME="SPX-Route-OS-v${VERSION}.apk"
           mkdir -p release-assets
-          cp app/build/outputs/apk/debug/app-debug.apk release-assets/SPX-Route-OS.apk
-          cp app/build/outputs/apk/debug/app-debug.apk release-assets/SPX-Route-OS-v${VERSION}.apk
-          echo "APK preparado para versão ${VERSION}"
+          cp app/build/outputs/apk/release/app-release.apk "release-assets/${APK_NAME}"
+          cp "release-assets/${APK_NAME}" release-assets/SPX-Route-OS.apk
+          python3 - "$APK_NAME" "$VERSION" "$VERSION_CODE" <<'PY'
+          import hashlib
+          import json
+          import os
+          import sys
 
-      - name: Salvar Artefato do APK (Backup)
+          apk_name, version, version_code = sys.argv[1:]
+          apk_path = os.path.join("release-assets", apk_name)
+          digest = hashlib.sha256()
+          size = 0
+          with open(apk_path, "rb") as apk:
+              for chunk in iter(lambda: apk.read(1024 * 1024), b""):
+                  size += len(chunk)
+                  digest.update(chunk)
+          metadata = {
+              "schemaVersion": 1,
+              "repository": "dnlortega/spx-android",
+              "tagName": "v" + version,
+              "versionName": version,
+              "versionCode": int(version_code),
+              "apk": {
+                  "name": apk_name,
+                  "size": size,
+                  "sha256": digest.hexdigest()
+              }
+          }
+          with open("release-assets/release-metadata.json", "w", encoding="utf-8") as output:
+              json.dump(metadata, output, indent=2)
+              output.write("\n")
+          PY
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "APK_NAME=${APK_NAME}" >> "$GITHUB_OUTPUT"
+          echo "APK e metadados preparados para versão ${VERSION}"
+
+      - name: Salvar artefatos do APK
         uses: actions/upload-artifact@v4
         with:
           name: SPX-Route-OS-APK
-          path: release-assets/SPX-Route-OS.apk
+          path: release-assets/*
           if-no-files-found: error
           retention-days: 30
 
-      - name: Publicar Release Automático no GitHub
+      - name: Publicar Release automático no GitHub
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
         with:
           tag_name: v${{ steps.prep.outputs.VERSION }}
-          name: "SPX Route OS v${{ steps.prep.outputs.VERSION }}"
+          name: "SPX Route OS v${{ steps.prep.outputs.VERSION }}${{ steps.signing.outputs.configured != 'true' && ' (teste sem assinatura estável)' || '' }}"
           body: |
-            ## 🚀 SPX Route OS - Versão ${{ steps.prep.outputs.VERSION }}
-            
-            Atualização automática compilada pelo GitHub Actions.
-            
-            ### 📱 Como instalar:
-            1. Baixe o arquivo **`SPX-Route-OS.apk`** abaixo.
-            2. Toque no arquivo baixado no seu celular Android para instalar ou atualizar.
-            3. Caso o Android pergunte, autorize a instalação de fontes desconhecidas.
+            ## SPX Route OS - Versão ${{ steps.prep.outputs.VERSION }}
 
-            ### Novidades da versão:
-            - **Rotas com trânsito**: Google Routes com OSRM e estimativa local como reserva.
-            - **Primeira e última entrega**: Escolha as extremidades da rota e mantenha ambas fixas ao reotimizar.
-            - **Prioridade, janelas e ETA**: Urgentes primeiro, horários de chegada/conclusão, serviço por parada e previsão de término.
-            - **Entrada multimodal de endereços**: Digitação com autocomplete, voz, OCR, código de barras e planilhas XLS/XLSX/CSV.
-            - **Package Finder**: Localização exata do volume por zona e posição no veículo.
-            - **POD completo**: Assinatura digital, fotos, observações e registro de insucessos.
-            - **Navegação integrada**: GPS, manobras, ETA, recálculo de desvio e opções externas Google Maps, Waze e Apple Maps.
-            - **Transferência offline**: Paradas por link, QR Code ou arquivo, com validação e deduplicação.
-            - **App local primeiro**: Dados no dispositivo; painel Equipes, rastreamento remoto e notificações ao cliente serão uma fase futura com backend.
-            - **Mais leve**: CSS estático e biblioteca Excel carregada somente sob demanda.
+            ${{ steps.signing.outputs.configured == 'true' && 'Build assinado com o keystore estável de lançamento.' || '> **Atenção:** build de teste sem assinatura estável. Esta pré-release não é oferecida pelo atualizador e deve ser instalada manualmente; ela não preserva a assinatura entre execuções do GitHub Actions.' }}
+
+            ### Novidades
+            - Atualização do APK com progresso, validação de SHA-256, tamanho, versão e assinatura antes da instalação.
+            - Retomada do download após interrupções e mensagens claras para permissão, falha de rede e assinatura incompatível.
+            - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades.
+            - Remoção da Central da Shopee como origem fixa; use GPS, ponto de partida manual ou a primeira parada.
+            - Botões da barra de rota agora exibem texto e têm layout responsivo para celular.
+
+            ### Instalação
+            Requer Android 5.0 (API 21) ou superior e Android System WebView atualizado. Permita localização de alta precisão para GPS e, no Android 8 ou superior, autorize a instalação de apps desconhecidos quando solicitado.
+
+            1. Baixe `${{ steps.prep.outputs.APK_NAME }}` abaixo.
+            2. Toque no arquivo e autorize a instalação de fontes desconhecidas, se solicitado.
+            3. Pelo aplicativo, a atualização é baixada e validada automaticamente antes de abrir o instalador.
+
+            Para atualizar sem desinstalar, todos os builds precisam usar o mesmo keystore de lançamento. O verificador aceita somente Releases de `dnlortega/spx-android`.
           files: |
             release-assets/SPX-Route-OS.apk
-            release-assets/SPX-Route-OS-v${{ steps.prep.outputs.VERSION }}.apk
+            release-assets/${{ steps.prep.outputs.APK_NAME }}
+            release-assets/release-metadata.json
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.signing.outputs.configured != 'true' }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

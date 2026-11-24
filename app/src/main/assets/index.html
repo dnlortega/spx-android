@@ -293,7 +293,7 @@
                     <span class="font-black text-base tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                         <span class="text-[#EE4D2D]">SPX</span> Route OS
                     </span>
-                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.2.0</span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.0</span>
                 </div>
             </div>
         </div>
@@ -315,7 +315,7 @@
                         <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                             <span class="text-[#EE4D2D]">SPX</span> Route OS
                         </span>
-                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.2.0</span>
+                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.0</span>
                     </div>
                     <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
@@ -522,28 +522,35 @@
                     </div>
                 </div>
 
-                <!-- Barra de Ações da Rota (somente ícones) -->
-                <div class="flex items-center gap-1.5">
-                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota por proximidade" aria-label="Otimizar rota" class="shadcn-btn flex-1 h-10 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
+                <!-- Barra de Ações da Rota -->
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+                    <button id="btnOptimizeRoute" onclick="optimizeRouteNearestNeighbor()" disabled title="Otimizar rota por proximidade" aria-label="Otimizar rota" class="shadcn-btn h-16 flex-col gap-1.5 bg-[#18181B] hover:bg-[#27272A] dark:bg-zinc-50 dark:hover:bg-zinc-200 text-[#FAFAFA] dark:text-zinc-950 shadow-shadcn-xs">
                         <i data-lucide="sparkles" class="w-4 h-4 text-[#EE4D2D]"></i>
+                        <span class="text-[11px] font-semibold">Otimizar</span>
                     </button>
-                    <button id="btnStreetCluster" onclick="openStreetClusterModal()" disabled title="Organizar por Rua (Teste) - Finaliza uma rua antes de ir para outra" aria-label="Organizar por Rua (Teste)" class="shadcn-btn flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white shadow-shadcn-xs">
+                    <button id="btnStreetCluster" onclick="openStreetClusterModal()" disabled title="Organizar por Rua (Teste) - Finaliza uma rua antes de ir para outra" aria-label="Organizar por Rua (Teste)" class="shadcn-btn h-16 flex-col gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-shadcn-xs">
                         <i data-lucide="milestone" class="w-4 h-4 text-white"></i>
+                        <span class="text-[11px] font-semibold">Por rua</span>
                     </button>
-                    <button id="btnChooseRouteEndpoints" onclick="openRouteEndpointModal('first')" disabled title="Definir 1ª e última entrega e reotimizar a rota" aria-label="Definir 1ª e última entrega" class="shadcn-btn flex-1 h-10 bg-violet-600 hover:bg-violet-700 text-white shadow-shadcn-xs">
+                    <button id="btnChooseRouteEndpoints" onclick="openRouteEndpointModal('first')" disabled title="Definir 1ª e última entrega e reotimizar a rota" aria-label="Definir 1ª e última entrega" class="shadcn-btn h-16 flex-col gap-1.5 bg-violet-600 hover:bg-violet-700 text-white shadow-shadcn-xs">
                         <i data-lucide="route" class="w-4 h-4"></i>
+                        <span class="text-[11px] font-semibold whitespace-nowrap">1ª / Última</span>
                     </button>
-                    <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganizar entregas (só o que falta entregar, a partir de onde você está)" aria-label="Reorganizar entregas" class="shadcn-btn flex-1 h-10 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
+                    <button id="btnReorganize" onclick="reorganizeDeliveries()" disabled title="Reorganizar entregas (só o que falta entregar, a partir de onde você está)" aria-label="Reorganizar entregas" class="shadcn-btn h-16 flex-col gap-1.5 bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs">
                         <i data-lucide="list-ordered" class="w-4 h-4"></i>
+                        <span class="text-[11px] font-semibold">Reorganizar</span>
                     </button>
-                    <button id="btnRestoreOriginal" onclick="restoreOriginalStopOrder()" disabled title="Restaurar ordem original do SPX" aria-label="Restaurar ordem original do SPX" class="shadcn-btn flex-1 h-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <button id="btnRestoreOriginal" onclick="restoreOriginalStopOrder()" disabled title="Restaurar ordem original do SPX" aria-label="Restaurar ordem original do SPX" class="shadcn-btn h-16 flex-col gap-1.5 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
                         <i data-lucide="rotate-ccw" class="w-4 h-4 text-zinc-500"></i>
+                        <span class="text-[11px] font-semibold">Restaurar</span>
                     </button>
-                    <button onclick="useMyGPSLocation()" title="Usar meu GPS como ponto de partida (Hub)" aria-label="Usar meu GPS como ponto de partida" class="shadcn-btn flex-1 h-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <button onclick="useMyGPSLocation()" title="Usar meu GPS como ponto de partida" aria-label="Usar meu GPS como ponto de partida" class="shadcn-btn h-16 flex-col gap-1.5 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
                         <i data-lucide="locate-fixed" class="w-4 h-4 text-[#EE4D2D]"></i>
+                        <span class="text-[11px] font-semibold">Meu GPS</span>
                     </button>
-                    <button id="btnToggleFilters" onclick="toggleFilterPanel()" title="Exibir/ocultar filtros (F)" aria-label="Exibir/ocultar filtros" aria-controls="filterPanel" aria-expanded="true" class="shadcn-btn relative flex-1 h-10 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
+                    <button id="btnToggleFilters" onclick="toggleFilterPanel()" title="Exibir/ocultar filtros (F)" aria-label="Exibir/ocultar filtros" aria-controls="filterPanel" aria-expanded="true" class="shadcn-btn relative h-16 flex-col gap-1.5 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-[#E4E4E7] dark:border-zinc-700 shadow-shadcn-xs">
                         <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                        <span class="text-[11px] font-semibold">Filtros</span>
                         <span id="filterActiveDot" class="hidden absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[#EE4D2D] ring-2 ring-white dark:ring-zinc-900"></span>
                     </button>
                 </div>
@@ -663,7 +670,7 @@
             <div class="hidden sm:flex absolute top-3.5 left-3.5 z-20 items-center gap-3 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#E4E4E7] dark:border-zinc-800 shadow-shadcn-sm text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
                 <div class="flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-zinc-950 border border-[#EE4D2D] inline-block"></span>
-                    <span>CD Hub</span>
+                    <span>Partida</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-[#EE4D2D] inline-block"></span>
@@ -748,7 +755,7 @@
                             <h3 class="text-base font-bold text-[#09090B] dark:text-zinc-50">Nova Versão Disponível!</h3>
                             <span id="updateModalTag" class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400">v1.1.3</span>
                         </div>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Versão instalada: <span id="updateModalCurrentTag" class="font-mono font-medium">v1.0.0</span></p>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Versão instalada: <span id="updateModalCurrentTag" class="font-mono font-medium">v1.0.0</span><span id="updateModalSize" class="font-mono"></span></p>
                     </div>
                 </div>
 
@@ -762,13 +769,23 @@
                     </div>
                 </div>
 
+                <div id="updateProgressSection" class="hidden mb-5 rounded-lg border border-zinc-200 bg-zinc-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-950">
+                    <div class="mb-2 flex items-center justify-between gap-3 text-xs">
+                        <span id="updateStatusText" class="font-medium text-zinc-700 dark:text-zinc-300">Pronto para atualizar.</span>
+                        <span id="updateProgressPercent" class="font-mono font-semibold text-[#EE4D2D]">0%</span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                        <div id="updateProgressBar" class="h-full rounded-full bg-[#EE4D2D] transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end gap-2.5">
-                    <button onclick="closeUpdateModal()" class="shadcn-btn h-10 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                    <button id="updateCloseButton" onclick="closeUpdateModal()" class="shadcn-btn h-10 px-4 text-xs font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
                         Lembrar mais tarde
                     </button>
-                    <button onclick="triggerAppUpdate()" class="shadcn-btn h-10 px-4 text-xs font-bold bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs flex items-center gap-2">
+                    <button id="updateActionButton" onclick="triggerAppUpdate()" class="shadcn-btn h-10 px-4 text-xs font-bold bg-[#EE4D2D] hover:bg-[#D73211] text-white shadow-shadcn-xs flex items-center gap-2">
                         <i data-lucide="download" class="w-4 h-4"></i>
-                        Atualizar Agora
+                        Atualizar agora
                     </button>
                 </div>
             </div>
@@ -1108,6 +1125,7 @@
     <script src="js/route-engine.js"></script>
     <script src="js/transfer.js"></script>
     <script src="js/logistics-ui.js"></script>
+    <script src="js/app-update.js"></script>
 
     <script>
         window.addEventListener('error', (e) => { try { showToast('Erro: ' + (e.message || 'falha inesperada'), 'error'); } catch (_) {} });
@@ -1155,12 +1173,27 @@
         ];
         let showStreetNames = true;
 
-        // Ponto de partida padrão: CD Shopee Express Bauru - SP (Rodovia Marechal Rondon, SP-300, km 348, Gasparini - Business Park)
-        let hubLocation = {
-            lat: -22.27608,
-            lng: -49.09304,
-            label: "CD Shopee Express - Bauru (SP-300 km 348, Gasparini)"
-        };
+        const DEFAULT_MAP_CENTER = { lat: -22.33, lng: -49.09 };
+        let hubLocation = null;
+
+        function isValidLocation(location) {
+            return !!location && Number.isFinite(Number(location.lat)) && Number.isFinite(Number(location.lng)) &&
+                Math.abs(Number(location.lat)) <= 90 && Math.abs(Number(location.lng)) <= 180;
+        }
+
+        function isLegacyShopeeHub(location) {
+            if (!isValidLocation(location)) return true;
+            const label = String(location.label || '').toLowerCase();
+            const sameCoordinates = Math.abs(Number(location.lat) + 22.27608) < 0.00001 &&
+                Math.abs(Number(location.lng) + 49.09304) < 0.00001;
+            return sameCoordinates || /central da shopee|cd shopee|sp-300 km 348|gasparini/.test(label);
+        }
+
+        function getRouteOrigin() {
+            if (isValidLocation(hubLocation)) return hubLocation;
+            const firstStop = groupedStops.find(isValidLocation);
+            return firstStop ? { lat: Number(firstStop.lat), lng: Number(firstStop.lng), label: 'Primeira parada da rota' } : null;
+        }
 
         let activeAtId = "";
         let groupedStops = [];
@@ -1317,6 +1350,7 @@
             restoreKpiCardsState();
             restoreGeminiApiKey();
             startLiveLocationTracking();
+            if (window.SPXUpdate) SPXUpdate.init();
             setTimeout(() => checkForUpdates(false), 2500);
             window.addEventListener('resize', () => { if (map) map.invalidateSize({ debounceMoveend: true }); });
         });
@@ -1432,9 +1466,11 @@
                 groupedStops = st.groupedStops.map(normalizeStopDeliveryFields);
                 originalStopsSnapshot = (st.originalStopsSnapshot || JSON.parse(JSON.stringify(st.groupedStops))).map(normalizeStopDeliveryFields);
                 activeRoutePlan = st.activeRoutePlan || null;
+                if (activeRoutePlan && isLegacyShopeeHub(activeRoutePlan.start)) activeRoutePlan = null;
                 selectedFirstStopId = typeof st.selectedFirstStopId === 'string' ? st.selectedFirstStopId : null;
                 selectedLastStopId = typeof st.selectedLastStopId === 'string' ? st.selectedLastStopId : null;
-                if (st.hubLocation) { hubLocation = st.hubLocation; renderHubMarker(); }
+                hubLocation = st.hubLocation && !isLegacyShopeeHub(st.hubLocation) ? st.hubLocation : null;
+                renderHubMarker();
                 activeAtId = st.activeAtId || "ROMANEIO SPX";
                 document.getElementById('activeAtIdValue').textContent = activeAtId;
                 const mobAtVal = document.getElementById('mobileAtIdValue');
@@ -1443,6 +1479,7 @@
                 refreshAllViews(true);
                 updateHeaderImportPill('success', `${groupedStops.length} paradas • restaurado`);
                 showToast("Rota anterior restaurada.", "info");
+                saveState();
                 backgroundGeocode();
             } catch (e) { console.warn("Falha ao restaurar estado", e); }
         }
@@ -1453,7 +1490,11 @@
         let roadRoute = null, roadRouteSig = '', roadReqId = 0, roadTimer = null;
 
         function currentRouteSig() {
-            return [hubLocation, ...groupedStops].map(p => p.lat.toFixed(5) + ',' + p.lng.toFixed(5)).join(';');
+            const origin = getRouteOrigin();
+            return (origin ? [origin, ...groupedStops] : groupedStops)
+                .filter(isValidLocation)
+                .map(p => Number(p.lat).toFixed(5) + ',' + Number(p.lng).toFixed(5))
+                .join(';');
         }
         function getValidRoadRoute() {
             return (roadRoute && roadRouteSig === currentRouteSig()) ? roadRoute : null;
@@ -1483,7 +1524,8 @@
             if (sig === roadRouteSig && roadRoute) return;
             const id = ++roadReqId;
             const settings = getRoutingSettings();
-            const pts = [hubLocation, ...groupedStops];
+            const origin = getRouteOrigin();
+            const pts = origin ? [origin, ...groupedStops] : groupedStops;
             const provider = settings.googleRoutesKey && pts.length <= 26 ? 'auto' : 'osrm';
             try {
                 const route = await SPXRouteEngine.computeRoute(pts, {
@@ -1506,9 +1548,10 @@
             } catch (e) { /* offline: mantém estimativa em linha reta */ }
         }
 
-        // 2-opt: remove cruzamentos da rota (CD fixo no início)
+        // 2-opt: remove cruzamentos sem alterar o ponto de partida
         function twoOptImprove(route, start) {
-            const st0 = start || hubLocation;
+            const st0 = isValidLocation(start) ? start : getRouteOrigin() || route[0];
+            if (!st0) return route;
             const pts = [{ lat: st0.lat, lng: st0.lng }, ...route];
             const d = (a, b) => haversineDistanceKm(pts[a].lat, pts[a].lng, pts[b].lat, pts[b].lng);
             let improved = true, guard = 0;
@@ -1602,12 +1645,13 @@
                 return;
             }
 
-            // 3) Ponto de partida: GPS > última entrega concluída > CD
+            // 3) Ponto de partida: GPS > última entrega concluída > base definida > primeira parada
             let start, origem;
             const gps = await getQuickPosition(4000);
             if (gps) { start = gps; origem = "da sua localização atual"; }
             else if (done.length) { start = done[done.length - 1]; origem = "da última entrega concluída"; }
-            else { start = hubLocation; origem = "do CD"; }
+            else if (isValidLocation(hubLocation)) { start = hubLocation; origem = "do ponto de partida definido"; }
+            else { start = pending[0]; origem = "da primeira parada"; }
 
             // 4) Matriz rodoviária + prioridade/janelas + duração de serviço
             groupedStops = [...done, ...pending];
@@ -1666,7 +1710,7 @@
                 zoomSnap: 0.5,
                 zoomDelta: 0.5,
                 wheelPxPerZoomLevel: 90
-            }).setView([hubLocation.lat, hubLocation.lng], 13);
+            }).setView([DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], 13);
 
             applyMapTileLayer();
             L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
@@ -1727,10 +1771,12 @@
         function renderHubMarker() {
             if (hubMarker) {
                 map.removeLayer(hubMarker);
+                hubMarker = null;
             }
+            if (!map || !isValidLocation(hubLocation)) return;
             const hubIcon = L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div class="custom-pin pin-hub w-8 h-8 text-[11px]">CD</div>`,
+                html: `<div class="custom-pin pin-hub w-8 h-8 text-[11px]">P</div>`,
                 iconSize: [32, 32],
                 iconAnchor: [16, 16]
             });
@@ -2344,35 +2390,11 @@
             selectedLastStopId = null;
             expandedStopIds.clear();
 
-            // ── AUTO-OTIMIZAÇÃO: Vizinho Mais Próximo a partir do CD ──
-            // Sempre que importar uma planilha, otimiza automaticamente
-            // os pontos mais próximos sequencialmente para evitar rotas em ziguezague
-            if (groupedStops.length >= 2) {
-                const hasRealCoords = groupedStops.filter(s => Number.isFinite(s.lat)).length;
-                if (hasRealCoords > 0) {
-                    const startLat = hubLocation.lat;
-                    const startLng = hubLocation.lng;
-                    const unvisited = [...groupedStops];
-                    const optimized = [];
-                    let curLat = startLat, curLng = startLng;
-                    while (unvisited.length > 0) {
-                        let bestIdx = 0, bestDist = Infinity;
-                        for (let i = 0; i < unvisited.length; i++) {
-                            const c = unvisited[i];
-                            if (!Number.isFinite(c.lat)) { bestIdx = i; break; }
-                            const d = haversineDistanceKm(curLat, curLng, c.lat, c.lng);
-                            if (d < bestDist) { bestDist = d; bestIdx = i; }
-                        }
-                        const chosen = unvisited.splice(bestIdx, 1)[0];
-                        optimized.push(chosen);
-                        if (Number.isFinite(chosen.lat)) { curLat = chosen.lat; curLng = chosen.lng; }
-                    }
-                    groupedStops = optimized;
-                }
-            }
+            const start = getRouteOrigin();
+            const originLabel = isValidLocation(hubLocation) ? "do ponto de partida definido" : "da primeira parada";
 
             try {
-                if (groupedStops.length >= 2) await optimizePendingFrom(hubLocation, undefined, "do CD", true);
+                if (groupedStops.length >= 2 && start) await optimizePendingFrom(start, undefined, originLabel, true);
                 else refreshAllViews(true);
             } catch (error) {
                 console.warn("Auto-otimização indisponível:", error);
@@ -2545,7 +2567,10 @@
             wrap.classList.add('hidden');
             refreshAllViews(false);
             if (shouldReoptimize && fixed > 0 && groupedStops.length >= 2) {
-                try { await optimizePendingFrom(hubLocation, undefined, "do CD", true); } catch (error) {}
+                try {
+                    const start = getRouteOrigin();
+                    if (start) await optimizePendingFrom(start, undefined, isValidLocation(hubLocation) ? "do ponto de partida definido" : "da primeira parada", true);
+                } catch (error) {}
             }
             const left = groupedStops.filter(g => g.approx).length;
             if (left > 0) showToast(`${fixed} endereços localizados via Endereço/CEP; ${left} ficaram aprox.`, "info");
@@ -2562,8 +2587,8 @@
             const angle = (Math.abs(hash) % 360) * (Math.PI / 180);
             const radius = 0.008 + ((Math.abs(hash >> 4) % 35) / 1000);
             return {
-                lat: Number((hubLocation.lat + Math.cos(angle) * radius).toFixed(6)),
-                lng: Number((hubLocation.lng + Math.sin(angle) * radius).toFixed(6))
+                lat: Number((DEFAULT_MAP_CENTER.lat + Math.cos(angle) * radius).toFixed(6)),
+                lng: Number((DEFAULT_MAP_CENTER.lng + Math.sin(angle) * radius).toFixed(6))
             };
         }
 
@@ -2703,9 +2728,14 @@
             return new Date(Date.now() + minutes * 60000);
         }
 
-        async function optimizePendingFrom(start, firstStopId = selectedFirstStopId, originLabel = "do CD", silent = false, lastStopId = selectedLastStopId) {
+        async function optimizePendingFrom(start, firstStopId = selectedFirstStopId, originLabel = "do ponto de partida", silent = false, lastStopId = selectedLastStopId, strategy = 'nearest') {
             if (!window.SPXRouteEngine) {
                 showToast("Motor de rotas indisponível.", "error");
+                return false;
+            }
+            if (!isValidLocation(start)) start = getRouteOrigin();
+            if (!isValidLocation(start)) {
+                if (!silent) showToast("Defina o ponto de partida ou importe uma parada com coordenadas.", "error");
                 return false;
             }
             const done = groupedStops.filter(stop => ['Entregue', 'Insucesso'].includes(getStopAggregateStatus(stop)));
@@ -2748,7 +2778,8 @@
                 matrix,
                 departureTime: new Date().toISOString(),
                 firstStopId: validFirstStopId,
-                lastStopId: validLastStopId
+                lastStopId: validLastStopId,
+                strategy
             });
             const ordered = result.stops.map(stop => pending.find(item => item.groupId === stop.groupId) || stop);
             groupedStops = [...done, ...ordered];
@@ -2781,7 +2812,8 @@
             const btn = document.getElementById('btnOptimizeRoute');
             if (btn) btn.disabled = true;
             try {
-                await optimizePendingFrom(hubLocation, null, "do CD", !!options.silent);
+                const start = getRouteOrigin();
+                await optimizePendingFrom(start, selectedFirstStopId, isValidLocation(hubLocation) ? "do ponto de partida definido" : "da primeira parada", !!options.silent);
             } catch (error) {
                 showToast("Não foi possível otimizar agora. Verifique a conexão e tente novamente.", "error");
             } finally {
@@ -2988,8 +3020,8 @@
                 const firstStopId = isFirst ? targetGroupId : selectedFirstStopId;
                 const lastStopId = isFirst ? selectedLastStopId : targetGroupId;
                 const firstStop = groupedStops.find(stop => stop.groupId === firstStopId);
-                const originLabel = firstStop ? `da parada ${firstStop.primaryAddress}` : "do CD";
-                const ok = await optimizePendingFrom(hubLocation, firstStopId, originLabel, true, lastStopId);
+                const originLabel = firstStop ? `da parada ${firstStop.primaryAddress}` : (isValidLocation(hubLocation) ? "do ponto de partida definido" : "da primeira parada");
+                const ok = await optimizePendingFrom(getRouteOrigin(), firstStopId, originLabel, true, lastStopId);
                 if (!ok) throw new Error('Não há entregas pendentes para otimizar.');
                 showToast(isFirst
                     ? `Roteiro gerado a partir de: ${targetStop.primaryAddress}`
@@ -3110,6 +3142,8 @@
                 streetMap.get(key).stops.push(stop);
             });
 
+            const fallbackOrigin = isValidLocation(startPoint) ? startPoint : getRouteOrigin() || DEFAULT_MAP_CENTER;
+
             // 2. Ordenar paradas dentro de cada rua pelo número da casa
             streetMap.forEach(group => {
                 group.stops.sort((a, b) => {
@@ -3127,8 +3161,8 @@
                         validCoords++;
                     }
                 });
-                group.centerLat = validCoords > 0 ? sumLat / validCoords : hubLocation.lat;
-                group.centerLng = validCoords > 0 ? sumLng / validCoords : hubLocation.lng;
+                group.centerLat = validCoords > 0 ? sumLat / validCoords : fallbackOrigin.lat;
+                group.centerLng = validCoords > 0 ? sumLng / validCoords : fallbackOrigin.lng;
             });
 
             // 3. Ordenar as RUAS sequencialmente pelo Vizinho Mais Próximo
@@ -3136,8 +3170,8 @@
             const orderedStreets = [];
             const finalStopsSequence = [];
 
-            let curLat = startPoint && Number.isFinite(startPoint.lat) ? startPoint.lat : hubLocation.lat;
-            let curLng = startPoint && Number.isFinite(startPoint.lng) ? startPoint.lng : hubLocation.lng;
+            let curLat = fallbackOrigin.lat;
+            let curLng = fallbackOrigin.lng;
 
             while (unvisitedGroups.length > 0) {
                 let bestIdx = 0;
@@ -3327,11 +3361,14 @@
             let totalDistanceKm = 0;
             let serviceMinutes = 0;
 
-            let prevLat = hubLocation.lat;
-            let prevLng = hubLocation.lng;
+            const origin = getRouteOrigin();
+            let prevLat = origin ? origin.lat : null;
+            let prevLng = origin ? origin.lng : null;
 
             groupedStops.forEach(stop => {
-                totalDistanceKm += haversineDistanceKm(prevLat, prevLng, stop.lat, stop.lng);
+                if (prevLat !== null && isValidLocation(stop)) {
+                    totalDistanceKm += haversineDistanceKm(prevLat, prevLng, stop.lat, stop.lng);
+                }
                 prevLat = stop.lat;
                 prevLng = stop.lng;
                 if (['Pendente', 'Parcial'].includes(getStopAggregateStatus(stop))) {
@@ -3476,7 +3513,8 @@
             if (groupedStops.length === 0) return;
 
             const nextPendingIdx = getFirstPendingStopIndex();
-            const routeCoordinates = [[hubLocation.lat, hubLocation.lng]];
+            const origin = getRouteOrigin();
+            const routeCoordinates = origin ? [[origin.lat, origin.lng]] : [];
 
             groupedStops.forEach((stop, index) => {
                 const routeOrder = index + 1;
@@ -3588,9 +3626,12 @@
 
         function fitMapToBounds() {
             if (!map) return;
-            const points = [[hubLocation.lat, hubLocation.lng]];
-            groupedStops.forEach(s => points.push([s.lat, s.lng]));
-            if (points.length === 1) {
+            const origin = getRouteOrigin();
+            const points = origin ? [[origin.lat, origin.lng]] : [];
+            groupedStops.filter(isValidLocation).forEach(s => points.push([s.lat, s.lng]));
+            if (points.length === 0) {
+                map.setView([DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], 13);
+            } else if (points.length === 1) {
                 map.setView(points[0], 14);
             } else {
                 const bounds = L.latLngBounds(points);
@@ -4236,6 +4277,7 @@
                         label: "Minha Localização Atual (Motorista)"
                     };
                     renderHubMarker();
+                    saveState();
                     if (window.SPXLogistics && typeof SPXLogistics.onPosition === 'function') {
                         SPXLogistics.onPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
                     }
@@ -4437,77 +4479,6 @@
             }
             if (badgeEl && badgeText) badgeEl.textContent = badgeText;
             if (mapStreetEl) mapStreetEl.textContent = streetText;
-        }
-
-        // ============================================================================
-        // VERIFICADOR DE ATUALIZAÇÕES AUTOMÁTICO (GITHUB RELEASES)
-        // ============================================================================
-        const CURRENT_APP_VERSION = "1.2.0";
-        let latestReleaseData = null;
-
-        async function checkForUpdates(isManualCheck = false) {
-            try {
-                if (isManualCheck) showToast("Buscando atualizações...", "info");
-                const resp = await fetch("https://api.github.com/repos/dnlortega/spx-android/releases/latest", {
-                    headers: { "Accept": "application/vnd.github.v3+json" }
-                });
-                if (!resp.ok) {
-                    if (isManualCheck) showToast("Nenhuma atualização publicada ainda.", "info");
-                    return;
-                }
-                const release = await resp.json();
-                const remoteTag = String(release.tag_name || "").replace(/^v/i, "").trim();
-                latestReleaseData = release;
-
-                if (isNewerVersion(remoteTag, CURRENT_APP_VERSION)) {
-                    showUpdateModal(release, remoteTag);
-                } else if (isManualCheck) {
-                    showToast(`Seu SPX Route OS já está na versão mais recente (${CURRENT_APP_VERSION})!`, "success");
-                }
-            } catch (e) {
-                if (isManualCheck) showToast("Não foi possível checar atualizações. Verifique sua conexão.", "error");
-            }
-        }
-
-        function isNewerVersion(remote, current) {
-            const r = remote.split('.').map(n => parseInt(n, 10) || 0);
-            const c = current.split('.').map(n => parseInt(n, 10) || 0);
-            for (let i = 0; i < Math.max(r.length, c.length); i++) {
-                const rv = r[i] || 0;
-                const cv = c[i] || 0;
-                if (rv > cv) return true;
-                if (rv < cv) return false;
-            }
-            return false;
-        }
-
-        function showUpdateModal(release, tag) {
-            const modal = document.getElementById('updateModalOverlay');
-            if (!modal) return;
-            document.getElementById('updateModalTag').textContent = `v${tag}`;
-            document.getElementById('updateModalCurrentTag').textContent = `v${CURRENT_APP_VERSION}`;
-            document.getElementById('updateModalNotes').textContent = release.body || "Correções e melhorias de rota.";
-            modal.classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        function closeUpdateModal() {
-            const modal = document.getElementById('updateModalOverlay');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function triggerAppUpdate() {
-            if (!latestReleaseData) return;
-            let apkAsset = (latestReleaseData.assets || []).find(a => a.name.toLowerCase().endsWith('.apk'));
-            let downloadUrl = apkAsset ? apkAsset.browser_download_url : latestReleaseData.html_url;
-
-            if (window.SPXAndroid && typeof window.SPXAndroid.installApk === 'function') {
-                showToast("Iniciando download e instalação automática...", "info");
-                window.SPXAndroid.installApk(downloadUrl);
-            } else {
-                window.open(downloadUrl, '_blank');
-            }
-            closeUpdateModal();
         }
 
         // ============================================================================

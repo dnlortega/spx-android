@@ -1086,7 +1086,8 @@
             activeRoutePlan = null;
             if (getStops().length >= 2 && typeof window.optimizePendingFrom === 'function') {
                 try {
-                    await window.optimizePendingFrom(hubLocation, null, 'do CD', true);
+                    const start = typeof window.getRouteOrigin === 'function' ? window.getRouteOrigin() : hubLocation;
+                    await window.optimizePendingFrom(start, undefined, 'do ponto de partida', true);
                 } catch (error) {
                     optimizationWarning = ' A otimização automática falhou; use Reorganizar para tentar novamente.';
                 }
@@ -2300,8 +2301,9 @@
         let origin = validCoords(driverPos) ? driverPos : null;
         if (!origin && typeof window.getQuickPosition === 'function') origin = normalizePosition(await window.getQuickPosition(8000));
         if (!validCoords(origin) && validCoords(hubLocation)) origin = hubLocation;
+        if (!validCoords(origin) && typeof window.getRouteOrigin === 'function') origin = window.getRouteOrigin();
         if (!validCoords(origin)) {
-            notify('Não foi possível obter o GPS e o hub não tem coordenadas válidas.', 'error');
+            notify('Não foi possível obter o GPS ou um ponto de partida válido.', 'error');
             return;
         }
         const token = ++navigationRequestToken;

@@ -221,6 +221,56 @@ test('primeira e última paradas permanecem fixas durante a otimização', funct
     assert.equal(new Set(result.stops.map(function (item) { return item.id; })).size, stops.length);
 });
 
+test('estratégia nearest segue a parada mais próxima e preserva primeira e última', function () {
+    const durations = Array.from({ length: 6 }, function (_, from) {
+        return Array.from({ length: 6 }, function (_, to) {
+            return from === to ? 0 : 999;
+        });
+    });
+    durations[0][2] = 0;
+    durations[2][1] = 1;
+    durations[2][3] = 100;
+    durations[2][5] = 50;
+    durations[1][3] = 1;
+    durations[1][5] = 100;
+    durations[3][5] = 1;
+    durations[5][4] = 1;
+    const stops = [
+        stop('A', 0.01, 0),
+        stop('B', 0.02, 0),
+        stop('C', 0.03, 0),
+        stop('D', 0.04, 0),
+        stop('E', 0.05, 0)
+    ];
+    const result = optimizeStops({
+        stops,
+        start: point(0, 0),
+        matrix: matrix(durations),
+        departureTime: '2025-01-15T08:00:00.000Z',
+        firstStopId: 'B',
+        lastStopId: 'D',
+        strategy: 'nearest'
+    });
+
+    assert.deepEqual(result.stops.map(function (item) { return item.id; }), ['B', 'A', 'C', 'E', 'D']);
+    assert.equal(result.metrics.durationSec, 4);
+});
+
+test('estratégia nearest mantém entregas urgentes antes das demais', function () {
+    const stops = [
+        stop('N', 0.01, 0, { priority: 'Normal' }),
+        stop('U', 0.05, 0, { priority: 'Urgente' })
+    ];
+    const result = optimizeStops({
+        stops,
+        start: point(0, 0),
+        matrix: matrix(completeMatrix(3, 10, 10)),
+        strategy: 'nearest'
+    });
+
+    assert.deepEqual(result.stops.map(function (item) { return item.id; }), ['U', 'N']);
+});
+
 test('última parada normal escolhida fica depois das entregas urgentes', function () {
     const stops = [
         stop('N', 0.01, 0, { priority: 'Normal' }),

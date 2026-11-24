@@ -1062,8 +1062,13 @@
             departureMs: departureMs,
             legs: prepareLegs(entries, start, settings.matrix)
         };
-        var route = greedyInsertion(entries, firstEntry, lastEntry, context);
-        if (route.length <= TWO_OPT_LIMIT) route = twoOpt(route, firstEntry, lastEntry, context);
+        var route;
+        if (settings.strategy === 'nearest') {
+            route = nearestNeighborByTier(entries, firstEntry, lastEntry, context);
+        } else {
+            route = greedyInsertion(entries, firstEntry, lastEntry, context);
+            if (route.length <= TWO_OPT_LIMIT) route = twoOpt(route, firstEntry, lastEntry, context);
+        }
         var result = scheduleOrder(route, context);
         return {
             stops: route.map(function (entry) { return entry.stop; }),

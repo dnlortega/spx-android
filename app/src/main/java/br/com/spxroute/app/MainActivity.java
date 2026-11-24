@@ -112,7 +112,8 @@ public class MainActivity extends Activity {
     private String barcodeCallback;
     private String pendingTransferLink;
     private boolean pageReady;
-    private BroadcastReceiver updateReceiver;
+    private ApkUpdater apkUpdater;
+    private BroadcastReceiver downloadReceiver;
     private TextRecognizer textRecognizer;
     private BarcodeScanner barcodeScanner;
     private int notificationSequence = (int) System.currentTimeMillis();
@@ -122,6 +123,18 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         restorePendingState(state);
+        apkUpdater = new ApkUpdater(this, (stage, percent, message) -> dispatchUpdateEvent(stage, percent, message));
+        downloadReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                apkUpdater.onDownloadNotification(intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1));
+            }
+        };
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        }
+        apkUpdater.handleInstallResult(getIntent());
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         getWindow().setStatusBarColor(android.graphics.Color.rgb(248,249,250));
         getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
@@ -175,7 +188,15 @@ public class MainActivity extends Activity {
                 try {
                     return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
                 } catch (Exception e) {
-                    return "1.2.0";
+                    return "0.0.0";
+                }
+            }
+
+            @JavascriptInterface public int getAppVersionCode() {
+                try {
+                    return getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+                } catch (Exception e) {
+                    return 0;
                 }
             }
 
@@ -245,63 +266,9 @@ public class MainActivity extends Activity {
                 });
             }
 
-            @JavascriptInterface public void installApk(String downloadUrl) {
-                if (!isAllowedApkDownloadUrl(downloadUrl)) {
-                    postUi(() -> Toast.makeText(MainActivity.this, "URL de atualização não confiável", Toast.LENGTH_SHORT).show());
-                    return;
-                }
-                postUi(() -> {
-                    try {
-                        Toast.makeText(MainActivity.this, "Baixando atualização do SPX...", Toast.LENGTH_LONG).show();
-                        DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                        Uri uri = Uri.parse(downloadUrl);
-                        DownloadManager.Request request = new DownloadManager.Request(uri);
-                        request.setTitle("SPX Route OS - Atualização");
-                        request.setDescription("Baixando nova versão do aplicativo");
-                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "SPX-Route-OS-update.apk");
-                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                        request.setMimeType("application/vnd.android.package-archive");
-                        long enqueueId = dm.enqueue(request);
-
-                        unregisterUpdateReceiver();
-                        BroadcastReceiver onComplete = new BroadcastReceiver() {
-                            @Override public void onReceive(Context ctxt, Intent intent) {
-                                long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                                if (id == enqueueId) {
-                                    if (updateReceiver == this) updateReceiver = null;
-                                    try {
-                                        Uri apkUri = dm.getUriForDownloadedFile(enqueueId);
-                                        Intent installIntent = new Intent(Intent.ACTION_VIEW);
-                                        installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-                                        installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                        startActivity(installIntent);
-                                    } catch (Exception ex) {
-                                        try {
-                                            Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
-                                            fallback.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                            startActivity(fallback);
-                                        } catch (Exception ignored) {}
-                                    }
-                                    try { unregisterReceiver(this); } catch (Exception ignored) {}
-                                }
-                            }
-                        };
-                        updateReceiver = onComplete;
-                        if (android.os.Build.VERSION.SDK_INT >= 33) {
-                            registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
-                        } else {
-                            registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-                        }
-                    } catch (Exception e) {
-                        unregisterUpdateReceiver();
-                        try {
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
-                            startActivity(browserIntent);
-                        } catch (Exception ex) {
-                            Toast.makeText(MainActivity.this, "Erro ao iniciar download da atualização", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+            @JavascriptInterface public void installApk(String downloadUrl, String sha256, int versionCode,
+                                                       String versionName, long expectedSize) {
+                postUi(() -> apkUpdater.start(downloadUrl, sha256, versionCode, versionName, expectedSize));
             }
 
             @JavascriptInterface public void openExternalUrl(String url) {
@@ -331,6 +298,15 @@ public class MainActivity extends Activity {
                 pageReady = true;
                 installBlobDownloadBridge();
                 deliverPendingTransferLink();
+                String pendingUpdate = apkUpdater.consumePendingEvent();
+                if (pendingUpdate != null) {
+                    String[] parts = pendingUpdate.split("\\|", 3);
+                    if (parts.length == 3) {
+                        try {
+                            dispatchUpdateEvent(parts[0], Integer.parseInt(parts[1]), parts[2]);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -377,12 +353,14 @@ public class MainActivity extends Activity {
     @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        apkUpdater.handleInstallResult(intent);
         handleDeepLinkIntent(intent);
         deliverPendingTransferLink();
     }
 
     @Override protected void onResume() {
         super.onResume();
+        apkUpdater.resume();
         if (webView != null) {
             webView.onResume();
             webView.resumeTimers();
@@ -565,6 +543,12 @@ public class MainActivity extends Activity {
     private String jsQuote(String value) {
         String quoted = JSONObject.quote(value == null ? "" : value);
         return quoted.replace("\u2028", "\\u2028").replace("\u2029", "\\u2029");
+    }
+
+    private void dispatchUpdateEvent(String stage, int percent, String message) {
+        if (!canUseWebView()) return;
+        String event = "{\"stage\":" + jsQuote(stage) + ",\"percent\":" + percent + ",\"message\":" + jsQuote(message) + "}";
+        evaluateJavascriptSafely("(function(){if(window.SPXUpdate&&typeof window.SPXUpdate.handleNativeEvent==='function'){window.SPXUpdate.handleNativeEvent(" + event + ");}})();");
     }
 
     private void dispatchCallback(String callbackName, String value) {
@@ -882,15 +866,6 @@ public class MainActivity extends Activity {
         return port == -1 || port == 443;
     }
 
-    private boolean isAllowedApkDownloadUrl(String value) {
-        if (!isSafeExternalNavigationUrl(value)) return false;
-        Uri uri = Uri.parse(value);
-        String path = uri.getPath();
-        return "github.com".equalsIgnoreCase(uri.getHost()) && uri.getQuery() == null && uri.getFragment() == null &&
-                path != null && path.startsWith("/dnlortega/spx-android/releases/download/") &&
-                path.length() > 4 && path.regionMatches(true, path.length() - 4, ".apk", 0, 4);
-    }
-
     private boolean isAllowedExternalUrl(String value) {
         if (value == null || value.length() > MAX_EXTERNAL_URL_LENGTH || containsControlCharacters(value)) return false;
         Uri uri;
@@ -909,14 +884,6 @@ public class MainActivity extends Activity {
         }
         if ("waze.com".equalsIgnoreCase(host) || "www.waze.com".equalsIgnoreCase(host)) return true;
         return "maps.apple.com".equalsIgnoreCase(host);
-    }
-
-    private void unregisterUpdateReceiver() {
-        BroadcastReceiver receiver = updateReceiver;
-        updateReceiver = null;
-        if (receiver != null) {
-            try { unregisterReceiver(receiver); } catch (Exception ignored) {}
-        }
     }
 
     private boolean isValidCallback(String callbackName) {
@@ -1026,7 +993,11 @@ public class MainActivity extends Activity {
             geoCallback = null;
             geoOrigin = null;
         }
-        unregisterUpdateReceiver();
+        if (downloadReceiver != null) {
+            try { unregisterReceiver(downloadReceiver); } catch (Exception ignored) {}
+            downloadReceiver = null;
+        }
+        apkUpdater.shutdown();
         backgroundExecutor.shutdownNow();
         if (textRecognizer != null) {
             try { textRecognizer.close(); } catch (Exception ignored) {}

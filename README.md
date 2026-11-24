@@ -1,8 +1,77 @@
-# SPX Route OS — Aplicativo Android v1.2.0
+# SPX Route OS — Aplicativo Android v1.3.0
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
 Aplicativo Android nativo com WebView para roteirização, carga e entregas Shopee Express (SPX). A versão atual funciona primeiro no dispositivo: cadastro, otimização, navegação, transferência e POD não dependem de um servidor próprio.
+
+## Requisitos mínimos e instalação
+
+| Item | Requisito |
+| --- | --- |
+| Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
+| Versão e pacote | `1.3.0`, `versionCode` 8, pacote `br.com.spxroute.app`. |
+| WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
+| Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
+| Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
+| GPS | GPS ativado e localização de alta precisão para navegação integrada, origem da rota e posição do motorista. |
+| Aplicativos externos | Google Maps, Waze ou Apple Maps instalados somente se você quiser abrir a navegação nesses aplicativos. |
+
+A compatibilidade mínima é definida pelo projeto, mas cada aparelho, ROM e versão do WebView deve ser validado antes do uso operacional. O aplicativo não exige conta Shopee nem servidor próprio para as funções locais.
+
+### Permissões do Android
+
+| Permissão | Para que serve |
+| --- | --- |
+| Internet e estado da rede | Carregar mapas, buscar endereços, consultar provedores de rota e verificar Releases. |
+| Localização precisa e aproximada | Usar GPS, definir a origem, acompanhar desvios e calcular distância/ETA da navegação. |
+| Notificações no Android 13 ou superior | Mostrar avisos locais de andamento, paradas e atualização. Não são notificações ao cliente. |
+| Instalar aplicativos desconhecidos | Necessária no Android 8 ou superior para o atualizador abrir o instalador do APK validado. |
+
+Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas configurações do sistema. Para uso prolongado, verifique se a economia de bateria do fabricante não está limitando GPS e atualizações em segundo plano. Negar notificações não impede cadastro ou entregas; negar localização limita os recursos que dependem de GPS.
+
+### Instalar o APK
+
+1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.0.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
+4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
+5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
+
+Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com assinatura diferente pode exigir desinstalação e apagar os dados locais. Faça exportações antes de trocar de certificado ou limpar os dados.
+
+### Atualizar pelo aplicativo
+
+- O aplicativo consulta somente a Release estável mais recente de `dnlortega/spx-android`.
+- O download mostra progresso, pode ser retomado e valida tamanho, SHA-256, pacote, versão e assinatura antes da instalação.
+- Use Wi-Fi e mantenha espaço livre. Depois de validado, confirme a instalação na tela do Android.
+- Builds de teste sem keystore estável são publicados como **pré-release** e não são oferecidos pelo atualizador; instale-os manualmente apenas para teste.
+- Se aparecer **assinatura diferente**, não force a atualização. Publique a próxima versão com o keystore estável correto ou reinstale manualmente após exportar os dados.
+
+### Rede, GPS e provedores de rota
+
+- Sem internet, cadastro, dados já salvos, Package Finder, POD e transferência por arquivo ou link já recebido continuam locais.
+- Mapas, autocomplete, geocodificação e navegação integrada precisam de conexão.
+- O Google Routes é opcional. Sem chave válida, o aplicativo usa OSRM ou estimativa local e informa quando não há trânsito em tempo real.
+- A estimativa local não substitui condições reais da via. Mantenha o GPS ativado e revise a rota antes de dirigir.
+
+### Problemas comuns
+
+| Sintoma | O que verificar |
+| --- | --- |
+| Mapa em branco ou endereço não encontrado | Conexão com a internet e localização do navegador/WebView. |
+| GPS impreciso ou navegação sem posição | GPS ativado, permissão de localização, precisão e economia de bateria. |
+| Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e se a Release não é uma pré-release de teste. |
+| Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; reinstale manualmente somente após exportar os dados. |
+| Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
+
+## Novidades da versão 1.3.0
+
+- Atualização do APK com seleção da versão correta, progresso, tentativas, permissão de instalação e retomada após interrupções.
+- Validação nativa de tamanho, SHA-256, pacote, `versionCode`, `versionName` e assinatura antes de usar o instalador do Android.
+- Metadados `release-metadata.json` publicados junto ao APK; o aplicativo não baixa APKs de outros caminhos ou repositórios.
+- Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades `Urgente`, `Alta` e `Normal`.
+- Remoção da Central da Shopee como origem fixa, inclusive de rotas já salvas; o ponto de partida pode ser GPS, local manual ou primeira parada.
+- Barra de ações da rota com texto visível e layout responsivo para celular.
 
 ## Novidades da versão 1.2.0
 
@@ -58,7 +127,9 @@ Comportamento de reserva:
 - Se os provedores de rede falharem, a estimativa local usa Haversine, fator rodoviário `1,28` e velocidade média de `28 km/h`.
 - O cartão da rota identifica quando o resultado não tem trânsito.
 
-A navegação integrada limita o plano a 25 paradas e informa quantas paradas ficaram fora. A otimização respeita a primeira e a última paradas fixas, ordena as demais por prioridade e usa algoritmos diferentes para rotas pequenas e grandes. As escolhas ficam salvas no dispositivo e podem ser limpas para voltar à ordem automática.
+A navegação integrada limita o plano a 25 paradas e informa quantas paradas ficaram fora. O botão **Otimizar** usa a estratégia de vizinho mais próximo: parte da primeira parada fixa, escolhe as próximas por proximidade dentro de cada prioridade e mantém a última parada fixa no final. As escolhas ficam salvas no dispositivo e podem ser limpas para voltar à ordem automática.
+
+A Central da Shopee não é mais um endereço padrão. A origem usa o GPS ou o ponto de partida definido; na ausência deles, usa a primeira parada válida. Referências antigas à Central são removidas ao restaurar os dados salvos.
 
 ## Endereços, planilhas e carga
 
@@ -132,11 +203,24 @@ Localização deve incluir `lat`, `lng`, `accuracyMeters` e `recordedAt`. Reatri
 ## Gerar o APK pelo GitHub Actions
 
 1. Envie o projeto ao repositório GitHub.
-2. O workflow `.github/workflows/build-apk.yml` compila com Java 17, Android SDK 35 e Gradle 8.7.
+2. O workflow `.github/workflows/build-apk.yml` executa os testes JavaScript e compila com Java 17, Android SDK 35 e Gradle 8.7.
 3. A execução salva o artefato `SPX-Route-OS-APK` por 30 dias.
-4. No branch `main` ou em tags `v*`, o APK é publicado no Release `SPX-Route-OS-v1.2.0`.
+4. No branch `main` ou em tags `v*`, são publicados o APK genérico, o APK versionado e `release-metadata.json` no Release correspondente. Sem assinatura estável, a publicação é marcada como pré-release de teste e não é oferecida pelo atualizador.
 
-O arquivo distribuído é `SPX-Route-OS.apk`. A versão atual é de depuração; distribuição pública requer assinatura de lançamento. O verificador do aplicativo aceita apenas Releases de `dnlortega/spx-android`. Para atualizar sem desinstalar, configure um keystore estável; sem ele, o Android pode exigir a desinstalação do APK anterior.
+### Assinatura estável para atualizar sem desinstalar
+
+Configure estes secrets nas configurações do repositório GitHub, em **Settings > Secrets and variables > Actions**:
+
+| Secret | Conteúdo |
+| --- | --- |
+| `SPX_KEYSTORE_BASE64` | Keystore de lançamento codificado em Base64 |
+| `SPX_KEYSTORE_PASSWORD` | Senha do keystore |
+| `SPX_KEY_ALIAS` | Alias da chave |
+| `SPX_KEY_PASSWORD` | Senha da chave |
+
+Não versione o keystore nem as senhas. O workflow decodifica a chave somente em `RUNNER_TEMP`, usa `assembleRelease` e não imprime os secrets. Sem os quatro secrets, o build usa a chave de depuração somente para testes e é publicado como pré-release; essa chave pode mudar entre execuções do GitHub Actions. O APK continua disponível no artefato para instalação manual, mas não deve ser usado como atualização automática.
+
+O aplicativo aceita apenas Releases de `dnlortega/spx-android` e exige o mesmo certificado de assinatura da versão instalada. Um APK antigo de depuração assinado por outra chave não pode ser atualizado diretamente: reinstale uma vez uma versão assinada pela chave estável e conserve essa chave nos próximos lançamentos. O aplicativo informa essa divergência em vez de abrir um download não validado.
 
 ## Gerar o APK localmente
 
@@ -144,6 +228,8 @@ O arquivo distribuído é `SPX-Route-OS.apk`. A versão atual é de depuração;
 2. Use JDK 17 e instale Android SDK Platform 35 e Build Tools 35.0.0.
 3. Sincronize o Gradle e execute **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
 4. O APK ficará em `app/build/outputs/apk/debug/app-debug.apk`.
+
+Para compilar uma versão `release` assinada localmente, configure as variáveis de ambiente `SPX_KEYSTORE_FILE`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD` e execute `gradle assembleRelease`. Sem as quatro variáveis, o build de release usa a chave de depuração e serve apenas para teste. O APK ficará em `app/build/outputs/apk/release/app-release.apk`.
 
 Requisitos do aplicativo: Android 5.0 (API 21) ou superior.
 
@@ -159,10 +245,11 @@ npx --yes tailwindcss@3.4.17 -c tools/tailwind.config.js -i tools/tailwind-input
 
 ```bash
 node --test tests/*.test.js
+node --check app/src/main/assets/js/app-update.js
 node --check app/src/main/assets/js/route-engine.js
 node --check app/src/main/assets/js/logistics-ui.js
 node --check app/src/main/assets/js/transfer.js
 node --check app/src/main/assets/js/store.js
 ```
 
-Os testes cobrem fallback rodoviário, prioridades, janelas, ETA, primeira e última paradas fixas, rotas grandes, Google Routes, OSRM, decodificação de polilinhas e transferência offline. A compilação Android deve ser validada no GitHub Actions ou em uma máquina com JDK e SDK configurados.
+Os testes cobrem fallback rodoviário, prioridades, janelas, ETA, primeira e última paradas fixas, otimização por proximidade, rotas grandes, Google Routes, OSRM, decodificação de polilinhas, transferência offline e validação das Releases/APKs. A compilação Android deve ser validada no GitHub Actions ou em uma máquina com JDK e SDK configurados.

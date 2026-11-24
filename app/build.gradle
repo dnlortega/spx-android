@@ -8,8 +8,32 @@ android {
         applicationId 'br.com.spxroute.app'
         minSdk 21
         targetSdk 35
-        versionCode 7
-        versionName '1.2.0'
+        versionCode 8
+        versionName '1.3.0'
+    }
+
+    def releaseStoreFile = System.getenv('SPX_KEYSTORE_FILE') ?: ''
+    def releaseStorePassword = System.getenv('SPX_KEYSTORE_PASSWORD') ?: ''
+    def releaseKeyAlias = System.getenv('SPX_KEY_ALIAS') ?: ''
+    def releaseKeyPassword = System.getenv('SPX_KEY_PASSWORD') ?: ''
+    def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
+        }
     }
 }
 

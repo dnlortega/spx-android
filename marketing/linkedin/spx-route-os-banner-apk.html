@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1792, initial-scale=1">
+  <title>SPX Route OS — Banner LinkedIn</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1792px; height: 1024px; overflow: hidden; }
+    body {
+      font-family: Arial, "Segoe UI", sans-serif;
+      color: #fff;
+      background: #0b0e11;
+      -webkit-font-smoothing: antialiased;
+    }
+    .banner {
+      position: relative;
+      width: 1792px;
+      height: 1024px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 82% 18%, rgba(238,77,45,.24), transparent 38%),
+        radial-gradient(circle at 8% 100%, rgba(238,77,45,.12), transparent 34%),
+        linear-gradient(125deg, #1a2025 0%, #111519 48%, #090c0f 100%);
+    }
+    .grid {
+      position: absolute;
+      inset: 0;
+      opacity: .42;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 96px 96px;
+      mask-image: linear-gradient(90deg, transparent, #000 48%, #000);
+    }
+    .route-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .glow {
+      position: absolute;
+      width: 390px;
+      height: 390px;
+      right: 50px;
+      top: -120px;
+      border-radius: 50%;
+      background: rgba(255,106,61,.16);
+      filter: blur(70px);
+    }
+    .brand {
+      position: absolute;
+      left: 92px;
+      top: 78px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .app-icon {
+      width: 82px;
+      height: 82px;
+      border-radius: 23px;
+      background: linear-gradient(135deg, #ff6a3d, #ee4d2d 55%, #c93416);
+      box-shadow: 0 18px 42px rgba(238,77,45,.24), inset 0 0 0 2px rgba(255,255,255,.14);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+    .app-icon svg { width: 54px; height: 54px; }
+    .brand-name { font-size: 31px; font-weight: 900; letter-spacing: 2px; }
+    .brand-name span { color: #ff6a3d; }
+    .brand-sub { margin-top: 8px; color: #9ca6af; font-size: 17px; font-weight: 700; letter-spacing: 5px; }
+    .copy { position: absolute; left: 92px; top: 254px; width: 910px; }
+    h1 {
+      margin: 0;
+      font-size: 94px;
+      line-height: 1.02;
+      letter-spacing: -4px;
+      font-weight: 900;
+    }
+    h1 .accent { color: #ff6a3d; }
+    .lead {
+      margin-top: 42px;
+      font-size: 58px;
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: -2px;
+    }
+    .support {
+      margin-top: 22px;
+      width: 780px;
+      color: #b6bfc7;
+      font-size: 29px;
+      line-height: 1.45;
+    }
+    .actions { display: flex; align-items: center; gap: 24px; margin-top: 48px; }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      height: 76px;
+      padding: 0 34px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ff6a3d, #ee4d2d);
+      box-shadow: 0 20px 48px rgba(238,77,45,.24);
+      font-size: 27px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .cta svg { width: 31px; height: 31px; }
+    .android-badge {
+      height: 58px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 22px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 17px;
+      background: rgba(255,255,255,.05);
+      color: #dce2e7;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .android-badge i { width: 10px; height: 10px; border-radius: 50%; background: #61d38a; box-shadow: 0 0 18px rgba(97,211,138,.55); }
+    .footer {
+      position: absolute;
+      left: 92px;
+      bottom: 55px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: #7f8a94;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: .5px;
+    }
+    .footer .line { width: 72px; height: 2px; background: #ff6a3d; }
+    .phone-wrap { position: absolute; right: 105px; top: 84px; width: 438px; height: 858px; }
+    .phone {
+      position: relative;
+      width: 438px;
+      height: 858px;
+      padding: 13px;
+      border-radius: 62px;
+      transform: rotate(-5deg);
+      background: linear-gradient(145deg, #535d65 0%, #171c21 18%, #050708 72%, #3c454d 100%);
+      box-shadow: 0 58px 100px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.09), 28px 36px 80px rgba(238,77,45,.1);
+    }
+    .phone::before {
+      content: "";
+      position: absolute;
+      left: -4px;
+      top: 180px;
+      width: 5px;
+      height: 92px;
+      border-radius: 4px;
+      background: #3b444b;
+    }
+    .phone::after {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 220px;
+      width: 5px;
+      height: 118px;
+      border-radius: 4px;
+      background: #3b444b;
+    }
+    .screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 49px; background: #15191e; }
+    .screen-header {
+      position: absolute;
+      z-index: 3;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 104px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 32px 18px 14px;
+      background: linear-gradient(180deg, #1d2228, #171c21);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .mini-icon { width: 48px; height: 48px; border-radius: 14px; background: #ee4d2d; display: grid; place-items: center; flex: 0 0 auto; }
+    .mini-icon svg { width: 32px; height: 32px; }
+    .screen-title { font-size: 19px; font-weight: 900; letter-spacing: .3px; }
+    .screen-version { margin-top: 5px; color: #9ca6af; font-size: 13px; font-weight: 700; letter-spacing: 1.2px; }
+    .screen-body { position: absolute; left: 0; top: 104px; width: 100%; height: calc(100% - 104px); overflow: hidden; }
+    .screen-body img { position: absolute; left: -4%; top: -88px; width: 108%; height: auto; display: block; }
+    .screen-body::after { content: ""; position: absolute; inset: auto 0 0; height: 100px; background: linear-gradient(transparent, #15191e); pointer-events: none; }
+    .notch { position: absolute; z-index: 5; left: 50%; top: 10px; width: 80px; height: 18px; transform: translateX(-50%); border-radius: 14px; background: #050708; }
+    .apk-card {
+      position: absolute;
+      z-index: 8;
+      left: 890px;
+      top: 688px;
+      width: 540px;
+      height: 166px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 24px 26px;
+      border-radius: 30px;
+      background: linear-gradient(145deg, #ffffff, #f1f3f5);
+      color: #141a1f;
+      box-shadow: 0 34px 70px rgba(0,0,0,.38), 0 0 0 1px rgba(255,255,255,.45);
+      transform: rotate(2deg);
+    }
+    .apk-icon { width: 104px; height: 104px; border-radius: 27px; display: grid; place-items: center; background: linear-gradient(135deg, #ff6a3d, #ee4d2d 55%, #c93416); box-shadow: 0 14px 26px rgba(238,77,45,.24); flex: 0 0 auto; }
+    .apk-icon svg { width: 68px; height: 68px; }
+    .apk-info { min-width: 0; }
+    .apk-label { color: #6a747d; font-size: 15px; font-weight: 900; letter-spacing: 2px; }
+    .apk-name { margin-top: 8px; font-size: 23px; line-height: 1.15; font-weight: 900; letter-spacing: -.4px; }
+    .apk-meta { margin-top: 12px; display: flex; align-items: center; gap: 10px; color: #5d6871; font-size: 18px; font-weight: 700; }
+    .check { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: #fff; background: #28a765; }
+    .check svg { width: 15px; height: 15px; }
+    .apk-version { position: absolute; right: 22px; top: 18px; padding: 7px 11px; border-radius: 10px; background: #e7eaed; color: #55606a; font-size: 13px; font-weight: 900; letter-spacing: .6px; }
+  </style>
+</head>
+<body>
+  <main class="banner">
+    <div class="grid"></div>
+    <div class="glow"></div>
+    <svg class="route-art" viewBox="0 0 1792 1024" fill="none" aria-hidden="true">
+      <path d="M1010 1024C1120 872 1100 764 1260 704S1510 590 1508 440 1680 250 1818 176" stroke="#EE4D2D" stroke-opacity=".2" stroke-width="18" stroke-linecap="round"/>
+      <path d="M960 1060C1090 900 1160 844 1290 782S1518 650 1570 500 1740 330 1836 282" stroke="#FFFFFF" stroke-opacity=".08" stroke-width="4" stroke-linecap="round"/>
+      <path d="M1230 0C1180 170 1310 230 1286 378S1110 536 1200 690 1360 820 1300 1024" stroke="#FFFFFF" stroke-opacity=".055" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="1260" cy="704" r="15" fill="#FF6A3D"/>
+      <circle cx="1508" cy="440" r="15" fill="#FF6A3D"/>
+      <circle cx="1260" cy="704" r="31" stroke="#FF6A3D" stroke-opacity=".28" stroke-width="3"/>
+      <circle cx="1508" cy="440" r="31" stroke="#FF6A3D" stroke-opacity=".28" stroke-width="3"/>
+    </svg>
+
+    <header class="brand">
+      <div class="app-icon">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M50 13c-20.4 0-37 16.4-37 36.6C13 86.6 50 98 50 98s37-11.4 37-48.4C87 29.4 70.4 13 50 13z" fill="#fff"/>
+          <circle cx="50" cy="49.5" r="13" fill="#EE4D2D"/>
+          <path d="M40 61c4-6 6-16 10-26 4 10 7 20 11 26" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">SPX <span>ROUTE OS</span></div>
+        <div class="brand-sub">APLICATIVO MOTORISTA</div>
+      </div>
+    </header>
+
+    <section class="copy">
+      <h1>Quer otimizar<br>o tempo nas<br><span class="accent">entregas?</span></h1>
+      <div class="lead">Use nosso sistema.</div>
+      <div class="support">Rotas organizadas, paradas priorizadas e entregas mais ágeis para o motorista.</div>
+      <div class="actions">
+        <div class="cta">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0 5-5m-5 5-5-5M4 17v3h16v-3" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Baixar APK v1.3.6
+        </div>
+        <div class="android-badge"><i></i> Android 5.0+</div>
+      </div>
+    </section>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="screen-header">
+            <div class="mini-icon">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M50 13c-20.4 0-37 16.4-37 36.6C13 86.6 50 98 50 98s37-11.4 37-48.4C87 29.4 70.4 13 50 13z" fill="#fff"/>
+                <circle cx="50" cy="49.5" r="13" fill="#EE4D2D"/>
+              </svg>
+            </div>
+            <div>
+              <div class="screen-title">SPX Route OS</div>
+              <div class="screen-version">VERSÃO 1.3.6 • MOTORISTA</div>
+            </div>
+          </div>
+          <div class="screen-body"><img src="./assets/spx-app-mobile.png" alt="Tela do aplicativo SPX Route OS"></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="apk-card">
+      <div class="apk-version">v1.3.6</div>
+      <div class="apk-icon">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M50 13c-20.4 0-37 16.4-37 36.6C13 86.6 50 98 50 98s37-11.4 37-48.4C87 29.4 70.4 13 50 13z" fill="#fff"/>
+          <circle cx="50" cy="49.5" r="13" fill="#EE4D2D"/>
+          <path d="M40 61c4-6 6-16 10-26 4 10 7 20 11 26" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="apk-info">
+        <div class="apk-label">APK PRONTO PARA INSTALAR</div>
+        <div class="apk-name">SPX-Route-OS-v1.3.6.apk</div>
+        <div class="apk-meta">
+          <span class="check"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          APK validado • 32,1 MB
+        </div>
+      </div>
+    </aside>
+
+    <footer class="footer"><span class="line"></span> github.com/dnlortega/spx-android</footer>
+  </main>
+</body>
+</html>

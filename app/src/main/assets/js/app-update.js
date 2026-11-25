@@ -267,7 +267,7 @@
     }
 
     function showUpdateModal(candidate) {
-        if (updateSessionActive) return;
+        if (updateSessionActive || reinstallReady) return;
         const modal = document.getElementById('updateModalOverlay');
         if (!modal) return;
         latestCandidate = candidate;

@@ -472,6 +472,29 @@ test('checagem de atualizações não substitui APK de reinstalação já valida
     assert.equal(toasts.some(message => message.includes('Aguarde a atualização em andamento')), true);
 });
 
+test('consulta em andamento não substitui candidato quando o APK fica pronto', async function () {
+    await presentUpdate({
+        version: '1.4.0',
+        versionCode: 12,
+        signer: 'd'.repeat(64),
+        bridge: { reinstallApk: () => {} }
+    });
+    let resolveReleases;
+    sandbox.fetch = async url => {
+        if (url.includes('/releases?')) {
+            return new Promise(resolve => { resolveReleases = resolve; });
+        }
+        return { ok: true, status: 200, text: async () => JSON.stringify(metadata('1.5.0', 13)) };
+    };
+    const checking = update.check(true);
+    sandbox.triggerAppUpdate();
+    update.handleNativeEvent({ stage: 'reinstall_ready', percent: 100, message: 'APK salvo.' });
+    resolveReleases({ ok: true, status: 200, text: async () => JSON.stringify([release('1.5.0')]) });
+    await checking;
+    assert.match(element('updateModalTag').textContent, /1\.4\.0/);
+    assert.match(element('updateActionButton').innerHTML, /Confirmar desinstalação/);
+});
+
 test('aviso de perda de dados é restaurado com o evento nativo de reinstalação', function () {
     const data = release('1.4.0');
     storage.set('spx_update_pending', JSON.stringify({

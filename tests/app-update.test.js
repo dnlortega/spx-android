@@ -363,7 +363,8 @@ test('APK pronto habilita confirmação e segundo clique solicita desinstalaçã
     });
     assert.match(element('updateActionButton').innerHTML, /Confirmar desinstalação/);
     assert.equal(element('updateActionButton').disabled, false);
-    assert.equal(element('updateCloseButton').disabled, false);
+    assert.equal(element('updateCloseButton').disabled, true);
+    assert.equal(element('updateCloseButton').textContent, 'APK validado');
     assert.match(element('updateStatusText').textContent, /SPX-Route-OS-v1\.4\.0-instalar\.apk/);
     sandbox.triggerAppUpdate();
     sandbox.triggerAppUpdate();
@@ -377,6 +378,21 @@ test('APK pronto habilita confirmação e segundo clique solicita desinstalaçã
     assert.match(element('updateActionButton').innerHTML, /Aguardando desinstalação/);
     assert.equal(element('updateCloseButton').disabled, true);
     assert.match(element('updateStatusText').textContent, /abra Downloads/);
+});
+
+test('modal com APK validado não pode ser fechado nem adiado', async function () {
+    await presentUpdate({
+        version: '1.4.0',
+        versionCode: 12,
+        signer: 'd'.repeat(64),
+        bridge: { reinstallApk: () => {} }
+    });
+    sandbox.triggerAppUpdate();
+    update.handleNativeEvent({ stage: 'reinstall_ready', percent: 100, message: 'APK salvo.' });
+    sandbox.closeUpdateModal();
+    assert.equal(element('updateModalOverlay').classList.contains('hidden'), false);
+    assert.equal(storage.has('spx_update_snoozed_tag'), false);
+    assert.match(element('updateActionButton').innerHTML, /Confirmar desinstalação/);
 });
 
 test('mesmo certificado continua usando instalação normal', async function () {

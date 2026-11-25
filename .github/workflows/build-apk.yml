@@ -152,6 +152,7 @@ jobs:
             - Metadados informam o SHA-256 do certificado de assinatura; a versão instalada é lida diretamente do Android.
             - Após instalar normalmente, o botão Reiniciar agora reabre o aplicativo para carregar os novos arquivos e exibir a versão correta.
             - Retomada do download após interrupções e mensagens claras para permissão, falha de rede e certificado ausente.
+            - O modal de reinstalação permanece aberto depois que o APK é validado, evitando que o usuário fique sem acesso à confirmação.
             - Otimização por proximidade a partir da primeira entrega, mantendo a última entrega fixa e as prioridades.
             - Remoção da Central da Shopee como origem fixa; use GPS, ponto de partida manual ou a primeira parada.
             - Botões da barra de rota agora exibem texto e têm layout responsivo para celular.

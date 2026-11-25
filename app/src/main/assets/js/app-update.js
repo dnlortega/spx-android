@@ -306,7 +306,7 @@
     }
 
     function closeUpdateModal() {
-        if (updateSessionActive) return;
+        if (updateSessionActive || reinstallReady) return;
         const modal = document.getElementById('updateModalOverlay');
         if (modal) modal.classList.add('hidden');
         if (!installed && latestCandidate) {
@@ -445,8 +445,8 @@
             }
             const close = document.getElementById('updateCloseButton');
             if (close) {
-                close.disabled = false;
-                close.textContent = 'Cancelar';
+                close.disabled = true;
+                close.textContent = 'APK validado';
             }
             if (global.showToast) global.showToast('A nova versão está pronta. Seus dados locais serão apagados ao desinstalar.', 'info');
             return;

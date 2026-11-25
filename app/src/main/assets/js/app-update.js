@@ -16,6 +16,7 @@
     let updateInProgress = false;
     let updateSessionActive = false;
     let installed = false;
+    let reinstallReady = false;
 
     function storageGet(key) {
         try { return global.localStorage.getItem(key); } catch (_) { return null; }
@@ -159,6 +160,19 @@
         }
     }
 
+    function requiresReinstallForSigner(signerSha256, previouslyFlagged) {
+        if (!currentSignerSha256) return false;
+        const bridge = global.SPXAndroid;
+        if (bridge && typeof bridge.canInstallWithSigner === 'function') {
+            try {
+                return !bridge.canInstallWithSigner(signerSha256);
+            } catch (_) {
+                return true;
+            }
+        }
+        return !!previouslyFlagged || signerSha256 !== currentSignerSha256;
+    }
+
     async function resolveCandidate(release) {
         if (!release || release.draft) throw new Error('Release indisponível.');
         const tag = String(release.tag_name || '').replace(/^v/i, '').trim();
@@ -176,10 +190,8 @@
             if (currentSignerSha256 && !verified.signerSha256) {
                 throw new Error('A atualização disponível não informa o certificado de assinatura do APK. A atualização automática foi bloqueada por segurança.');
             }
-            if (currentSignerSha256 && verified.signerSha256 !== currentSignerSha256) {
-                throw new Error('A atualização disponível usa uma assinatura diferente da versão instalada. Para atualizar sem desinstalar, o APK precisa ser assinado pela mesma chave de lançamento.');
-            }
-            return { release, tag, ...verified, downloadUrl: verified.asset.browser_download_url };
+            const requiresReinstall = requiresReinstallForSigner(verified.signerSha256, false);
+            return { release, tag, ...verified, requiresReinstall, downloadUrl: verified.asset.browser_download_url };
         }
         const asset = selectApkAsset(release, tag);
         if (!asset) throw new Error('A Release não contém um APK compatível.');
@@ -199,6 +211,7 @@
             versionName: tag,
             sha256,
             signerSha256: '',
+            requiresReinstall: false,
             size,
             downloadUrl: asset.browser_download_url
         };
@@ -235,7 +248,7 @@
                 if (!newestBlocked) newestBlocked = { release, error };
             }
         }
-        compatible.sort((left, right) => compareReleases(left.release, right.release));
+        compatible.sort((left, right) => compareReleases(right.release, left.release));
         return { candidate: compatible[0] || null, newestBlocked };
     }
 
@@ -259,22 +272,29 @@
         if (!modal) return;
         latestCandidate = candidate;
         installed = false;
+        reinstallReady = false;
         updateInProgress = false;
         updateSessionActive = false;
         setElementText('updateModalTag', `v${candidate.versionName}`);
         setElementText('updateModalCurrentTag', `v${currentVersion}`);
         setElementText('updateModalSize', formatBytes(candidate.size) ? ` · ${formatBytes(candidate.size)}` : '');
         setElementText('updateModalNotes', candidate.release.body || 'Correções e melhorias de rota.');
-        setElementText('updateStatusText', 'Pronto para baixar e instalar.');
+        setElementText('updateStatusText', candidate.requiresReinstall
+            ? 'Baixe a nova versão para reinstalar o aplicativo.'
+            : 'Pronto para baixar e instalar.');
         setElementText('updateProgressPercent', '0%');
         const progress = document.getElementById('updateProgressBar');
         if (progress) progress.style.width = '0%';
         const progressBox = document.getElementById('updateProgressSection');
         if (progressBox) progressBox.classList.add('hidden');
+        const warning = document.getElementById('updateReinstallWarning');
+        if (warning) warning.classList.toggle('hidden', !candidate.requiresReinstall);
         const action = document.getElementById('updateActionButton');
         if (action) {
             action.disabled = false;
-            action.innerHTML = '<i data-lucide="download" class="w-4 h-4"></i> Atualizar agora';
+            action.innerHTML = candidate.requiresReinstall
+                ? '<i data-lucide="refresh-cw" class="w-4 h-4"></i> Reinstalar atualização'
+                : '<i data-lucide="download" class="w-4 h-4"></i> Atualizar agora';
         }
         const close = document.getElementById('updateCloseButton');
         if (close) {
@@ -302,6 +322,7 @@
             versionCode: candidate.versionCode,
             versionName: candidate.versionName,
             signerSha256: candidate.signerSha256,
+            requiresReinstall: !!candidate.requiresReinstall,
             size: candidate.size,
             tag: candidate.tag,
             notes: String(candidate.release.body || '').slice(0, 64 * 1024)
@@ -316,13 +337,15 @@
                 !Number.isSafeInteger(candidate.size) || candidate.size < 1 || candidate.size > MAX_APK_BYTES ||
                 !normalizeSha256(candidate.sha256)) return;
             const signerSha256 = normalizeSha256(candidate.signerSha256);
-            if (currentSignerSha256 && signerSha256 !== currentSignerSha256) return;
+            if (currentSignerSha256 && !signerSha256) return;
+            const requiresReinstall = requiresReinstallForSigner(signerSha256, candidate.requiresReinstall);
             latestCandidate = {
                 downloadUrl: candidate.downloadUrl,
                 sha256: normalizeSha256(candidate.sha256),
                 versionCode: candidate.versionCode,
                 versionName: candidate.versionName,
                 signerSha256,
+                requiresReinstall,
                 size: candidate.size,
                 tag: candidate.tag,
                 release: { body: String(candidate.notes || '') }
@@ -331,7 +354,7 @@
     }
 
     async function checkForUpdates(isManualCheck) {
-        if (checkInProgress || updateSessionActive) {
+        if (checkInProgress || updateSessionActive || reinstallReady) {
             if (isManualCheck && global.showToast) global.showToast('Aguarde a atualização em andamento.', 'info');
             return;
         }
@@ -403,8 +426,51 @@
             setElementText('updateModalSize', formatBytes(latestCandidate.size) ? ` · ${formatBytes(latestCandidate.size)}` : '');
             setElementText('updateModalNotes', latestCandidate.release.body || 'Correções e melhorias de rota.');
         }
+        const warning = document.getElementById('updateReinstallWarning');
+        if (warning) {
+            warning.classList.toggle('hidden', !(event.stage === 'reinstall_ready' ||
+                event.stage === 'reinstall_opened' || (latestCandidate && latestCandidate.requiresReinstall)));
+        }
+        if (event.stage === 'reinstall_ready') {
+            installed = false;
+            reinstallReady = true;
+            updateInProgress = false;
+            updateSessionActive = false;
+            setUpdateProgress('reinstall_ready', 100, event.message ||
+                'APK validado e salvo em Downloads. Confirme para desinstalar a versão atual.');
+            const action = document.getElementById('updateActionButton');
+            if (action) {
+                action.disabled = false;
+                action.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i> Confirmar desinstalação';
+            }
+            const close = document.getElementById('updateCloseButton');
+            if (close) {
+                close.disabled = false;
+                close.textContent = 'Cancelar';
+            }
+            if (global.showToast) global.showToast('A nova versão está pronta. Seus dados locais serão apagados ao desinstalar.', 'info');
+            return;
+        }
+        if (event.stage === 'reinstall_opened') {
+            updateInProgress = false;
+            updateSessionActive = true;
+            setUpdateProgress('reinstall_opened', 100, event.message ||
+                'Confirme a desinstalação no Android. Depois abra Downloads e toque no APK salvo para instalar.');
+            const action = document.getElementById('updateActionButton');
+            if (action) {
+                action.disabled = true;
+                action.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i> Aguardando desinstalação';
+            }
+            const close = document.getElementById('updateCloseButton');
+            if (close) {
+                close.disabled = true;
+                close.textContent = 'Aguardando Android';
+            }
+            return;
+        }
         if (event.stage === 'installed') {
             installed = true;
+            reinstallReady = false;
             updateInProgress = false;
             updateSessionActive = false;
             if (latestCandidate) {
@@ -413,6 +479,7 @@
                 currentSignerSha256 = latestCandidate.signerSha256 || currentSignerSha256;
                 setElementText('mobileAppVersion', `v${currentVersion}`);
                 setElementText('desktopAppVersion', `v${currentVersion}`);
+                setElementText('updateModalCurrentTag', `v${currentVersion}`);
             }
             storageSet('spx_update_pending', '');
             setUpdateProgress('installed', 100, 'Atualização instalada. Reinicie o aplicativo para carregar a nova versão.');
@@ -432,6 +499,7 @@
         if (event.stage === 'already_current') {
             updateInProgress = false;
             updateSessionActive = false;
+            reinstallReady = false;
             storageSet('spx_update_pending', '');
             closeUpdateModal();
             if (global.showToast) global.showToast(event.message || 'O aplicativo já está atualizado.', 'info');
@@ -439,6 +507,7 @@
         }
         updateSessionActive = ['permission_required', 'downloading', 'validating', 'installing'].includes(event.stage);
         updateInProgress = ['downloading', 'validating', 'installing'].includes(event.stage);
+        if (event.stage === 'error' || event.stage === 'permission_required') reinstallReady = false;
         setUpdateProgress(event.stage, event.percent, event.message);
         const action = document.getElementById('updateActionButton');
         if (action) {
@@ -446,7 +515,9 @@
             action.innerHTML = updateInProgress
                 ? '<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Atualizando...'
                 : event.stage === 'permission_required'
-                    ? '<i data-lucide="settings" class="w-4 h-4"></i> Autorizar instalação'
+                    ? (latestCandidate && latestCandidate.requiresReinstall
+                        ? '<i data-lucide="settings" class="w-4 h-4"></i> Autorizar armazenamento'
+                        : '<i data-lucide="settings" class="w-4 h-4"></i> Autorizar instalação')
                     : '<i data-lucide="refresh-cw" class="w-4 h-4"></i> Tentar novamente';
         }
         const close = document.getElementById('updateCloseButton');
@@ -471,7 +542,27 @@
         if (installed) { restartApp(); return; }
         if (!latestCandidate) return;
         const bridge = global.SPXAndroid;
-        if (bridge && typeof bridge.installApk === 'function') {
+        if (reinstallReady) {
+            if (bridge && typeof bridge.confirmReinstall === 'function') {
+                updateInProgress = true;
+                updateSessionActive = true;
+                const action = document.getElementById('updateActionButton');
+                if (action) action.disabled = true;
+                const close = document.getElementById('updateCloseButton');
+                if (close) close.disabled = true;
+                setUpdateProgress('reinstall_opened', 100, 'Verificando o APK salvo antes de desinstalar...');
+                try {
+                    bridge.confirmReinstall();
+                } catch (_) {
+                    handleNativeEvent({ stage: 'error', percent: 0, message: 'Não foi possível abrir a desinstalação.' });
+                }
+            }
+            return;
+        }
+        const canStart = latestCandidate.requiresReinstall
+            ? !!(bridge && typeof bridge.reinstallApk === 'function')
+            : !!(bridge && typeof bridge.installApk === 'function');
+        if (canStart) {
             rememberCandidate(latestCandidate);
             updateInProgress = true;
             updateSessionActive = true;
@@ -482,15 +573,26 @@
                 close.disabled = true;
                 close.textContent = 'Atualização em andamento';
             }
-            setUpdateProgress('downloading', 0, 'Preparando atualização...');
+            const reinstalling = !!latestCandidate.requiresReinstall;
+            setUpdateProgress('downloading', 0, reinstalling ? 'Baixando APK para reinstalação...' : 'Preparando atualização...');
             try {
-                bridge.installApk(
-                    latestCandidate.downloadUrl,
-                    latestCandidate.sha256,
-                    latestCandidate.versionCode,
-                    latestCandidate.versionName,
-                    latestCandidate.size
-                );
+                if (reinstalling) {
+                    bridge.reinstallApk(
+                        latestCandidate.downloadUrl,
+                        latestCandidate.sha256,
+                        latestCandidate.versionCode,
+                        latestCandidate.versionName,
+                        latestCandidate.size
+                    );
+                } else {
+                    bridge.installApk(
+                        latestCandidate.downloadUrl,
+                        latestCandidate.sha256,
+                        latestCandidate.versionCode,
+                        latestCandidate.versionName,
+                        latestCandidate.size
+                    );
+                }
             } catch (_) {
                 handleNativeEvent({ stage: 'error', percent: 0, message: 'Não foi possível iniciar a atualização.' });
             }

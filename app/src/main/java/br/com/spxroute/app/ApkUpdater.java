@@ -1,8 +1,10 @@
 package br.com.spxroute.app;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,11 +13,13 @@ import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.provider.Settings;
 
 import java.io.File;
@@ -48,6 +52,8 @@ final class ApkUpdater {
     private static final long MAX_APK_BYTES = 150L * 1024 * 1024;
     private static final long POLL_INTERVAL_MS = 900;
     private static final int INSTALL_REQUEST_CODE = 4101;
+    private static final int STORAGE_PERMISSION_REQUEST_CODE = 4102;
+    private static final int UNINSTALL_REQUEST_CODE = 4103;
     private static final int MAX_MISSING_DOWNLOAD_POLLS = 3;
 
     interface Listener {
@@ -65,6 +71,7 @@ final class ApkUpdater {
     private final AtomicLong generation = new AtomicLong();
     private final AtomicBoolean verifying = new AtomicBoolean(false);
     private final AtomicBoolean installing = new AtomicBoolean(false);
+    private final AtomicBoolean confirmingReinstall = new AtomicBoolean(false);
     private boolean destroyed;
     private boolean polling;
     private boolean permissionPromptPending;
@@ -80,6 +87,15 @@ final class ApkUpdater {
     }
 
     void start(String url, String sha256, int versionCode, String versionName, long expectedSize) {
+        start(url, sha256, versionCode, versionName, expectedSize, false);
+    }
+
+    void startReinstall(String url, String sha256, int versionCode, String versionName, long expectedSize) {
+        start(url, sha256, versionCode, versionName, expectedSize, true);
+    }
+
+    private void start(String url, String sha256, int versionCode, String versionName, long expectedSize,
+                       boolean reinstall) {
         if (destroyed || !isAllowedApkDownloadUrl(url)) {
             emitError("URL de atualização não confiável.");
             return;
@@ -90,7 +106,7 @@ final class ApkUpdater {
             return;
         }
         synchronized (stateLock) {
-            if (verifying.get() || installing.get()) {
+            if (verifying.get() || installing.get() || confirmingReinstall.get()) {
                 emitError("Aguarde a validação ou instalação da atualização atual.");
                 return;
             }
@@ -100,11 +116,15 @@ final class ApkUpdater {
                     && versionCode == preferences.getInt("versionCode", -1)
                     && versionName.equals(preferences.getString("versionName", ""))
                     && normalizedHash.equals(preferences.getString("sha256", ""))
-                    && url.equals(preferences.getString("url", ""));
+                    && url.equals(preferences.getString("url", ""))
+                    && reinstall == preferences.getBoolean("reinstall", false);
             if (sameCandidate) {
                 permissionPromptPending = false;
-                if (stage.equals("permission_required")) {
-                    ensureInstallPermission(preferences.getLong("generation", 0), true);
+                long token = preferences.getLong("generation", 0);
+                if (reinstall && stage.equals("reinstall_ready")) {
+                    emitForToken(token, "reinstall_ready", 100, reinstallReadyMessage());
+                } else if (stage.equals("permission_required")) {
+                    ensureInstallPermission(token, true);
                 } else {
                     resume();
                 }
@@ -114,11 +134,17 @@ final class ApkUpdater {
                 emitError("Conclua ou aguarde a instalação atual antes de escolher outra versão.");
                 return;
             }
+            if ("reinstall_ready".equals(stage) || "reinstall_opened".equals(stage)) {
+                emitError("Conclua a reinstalação preparada antes de escolher outra versão. O APK validado continua salvo em Downloads.");
+                return;
+            }
             long token = nextGeneration();
             int requestCode = nextRequestCode();
             String nonce = randomNonce();
             cancelPendingDownload();
             deleteCachedApks();
+            deleteSavedReinstallApk();
+            confirmingReinstall.set(false);
             missingDownloadPolls = 0;
             preferences.edit().clear()
                     .putLong("lastGeneration", token)
@@ -130,6 +156,7 @@ final class ApkUpdater {
                     .putString("sha256", normalizedHash)
                     .putInt("versionCode", versionCode)
                     .putString("versionName", versionName)
+                    .putBoolean("reinstall", reinstall)
                     .putLong("expectedSize", expectedSize)
                     .putLong("downloadId", -1)
                     .putString("stage", "permission_required")
@@ -156,6 +183,122 @@ final class ApkUpdater {
         return "";
     }
 
+    boolean canInstallWithSigner(String signerSha256) {
+        if (!isValidSha256(signerSha256)) return false;
+        try {
+            int flags = Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
+            PackageInfo installed = activity.getPackageManager().getPackageInfo(PACKAGE_NAME, flags);
+            return signerHashes(installed).contains(signerSha256.toLowerCase(Locale.ROOT));
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    void onStoragePermissionResult(int requestCode, int[] results) {
+        if (requestCode != STORAGE_PERMISSION_REQUEST_CODE) return;
+        permissionPromptPending = false;
+        long token = preferences.getLong("generation", 0);
+        if (!isCurrent(token) || !preferences.getBoolean("reinstall", false)) return;
+        boolean granted = false;
+        for (int result : results) if (result == PackageManager.PERMISSION_GRANTED) granted = true;
+        if (granted) {
+            resume();
+        } else {
+            saveStage(token, "permission_required");
+            emitForToken(token, "permission_required", 0,
+                    "Autorize o armazenamento para salvar o APK da reinstalação.");
+        }
+    }
+
+    void handleUninstallResult(int requestCode, int resultCode) {
+        if (requestCode != UNINSTALL_REQUEST_CODE) return;
+        confirmingReinstall.set(false);
+        long token = preferences.getLong("generation", 0);
+        if (!isCurrent(token) || !preferences.getBoolean("reinstall", false)
+                || !"reinstall_opened".equals(preferences.getString("stage", ""))) return;
+        if (resultCode != Activity.RESULT_OK) {
+            saveStage(token, "reinstall_ready");
+            String fileName = preferences.getString("reinstallFileName", "");
+            String location = fileName.isEmpty() ? "Downloads" : "Downloads (" + fileName + ")";
+            emitForToken(token, "reinstall_ready", 100,
+                    "Desinstalação cancelada. O APK continua salvo em " + location + ".");
+        }
+    }
+
+    void confirmReinstall() {
+        if (!confirmingReinstall.compareAndSet(false, true)) return;
+        long token = preferences.getLong("generation", 0);
+        if (!isCurrent(token) || !preferences.getBoolean("reinstall", false)
+                || !"reinstall_ready".equals(preferences.getString("stage", ""))) {
+            confirmingReinstall.set(false);
+            emitError("A nova versão ainda não está pronta para reinstalação.");
+            return;
+        }
+        try {
+            executor.execute(() -> {
+                try {
+                    if (!isCurrent(token)) {
+                        confirmingReinstall.set(false);
+                        return;
+                    }
+                    if (!"reinstall_ready".equals(preferences.getString("stage", ""))) {
+                        confirmingReinstall.set(false);
+                        return;
+                    }
+                    if (!verifySavedReinstallApk()) {
+                        failForToken(token,
+                                "O APK salvo em Downloads foi alterado ou removido. Baixe a atualização novamente.",
+                                true);
+                        return;
+                    }
+                    if (!isCurrent(token)) return;
+                    saveStage(token, "reinstall_opened");
+                    emitForToken(token, "reinstall_opened", 100, reinstallOpenedMessage());
+                    handler.post(() -> openUninstall(token));
+                } catch (Exception e) {
+                    failForToken(token,
+                            "Não foi possível verificar o APK salvo em Downloads. Baixe a atualização novamente.",
+                            true);
+                }
+            });
+        } catch (Exception e) {
+            confirmingReinstall.set(false);
+            emitError("Não foi possível iniciar a verificação do APK salvo.");
+        }
+    }
+
+    private void openUninstall(long token) {
+        if (!isCurrent(token) || !"reinstall_opened".equals(preferences.getString("stage", ""))) {
+            confirmingReinstall.set(false);
+            return;
+        }
+        try {
+            Intent uninstall = new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + PACKAGE_NAME));
+            uninstall.putExtra(Intent.EXTRA_RETURN_RESULT, true);
+            activity.startActivityForResult(uninstall, UNINSTALL_REQUEST_CODE);
+        } catch (Exception e) {
+            confirmingReinstall.set(false);
+            saveStage(token, "reinstall_ready");
+            emitForToken(token, "reinstall_ready", 100, reinstallReadyMessage());
+        }
+    }
+
+    private String reinstallReadyMessage() {
+        String fileName = preferences.getString("reinstallFileName", "");
+        return fileName.isEmpty()
+                ? "APK validado e salvo em Downloads. Confirme para desinstalar a versão atual."
+                : "APK validado e salvo em Downloads como " + fileName
+                        + ". Confirme para desinstalar a versão atual.";
+    }
+
+    private String reinstallOpenedMessage() {
+        String fileName = preferences.getString("reinstallFileName", "");
+        String instruction = fileName.isEmpty()
+                ? "toque no APK baixado"
+                : "abra Downloads e toque em " + fileName;
+        return "Confirme a desinstalação no Android. Depois " + instruction + " para instalar.";
+    }
+
     void resume() {
         if (destroyed) return;
         permissionPromptPending = false;
@@ -168,6 +311,16 @@ final class ApkUpdater {
             beginPoll();
         } else if (stage.equals("validating")) {
             startVerification(preferences.getLong("downloadId", -1), token);
+        } else if (stage.equals("reinstall_ready")) {
+            emitForToken(token, "reinstall_ready", 100, reinstallReadyMessage());
+        } else if (stage.equals("reinstall_opened")) {
+            if (installedVersionCode() > 0) {
+                confirmingReinstall.set(false);
+                saveStage(token, "reinstall_ready");
+                emitForToken(token, "reinstall_ready", 100, reinstallReadyMessage());
+            } else {
+                emitForToken(token, "reinstall_opened", 100, reinstallOpenedMessage());
+            }
         } else if (stage.equals("installing")) {
             int expectedCode = preferences.getInt("verifiedVersionCode", preferences.getInt("versionCode", -1));
             if (expectedCode > 0 && installedVersionCode() >= expectedCode) {
@@ -190,10 +343,11 @@ final class ApkUpdater {
         long expectedSize = preferences.getLong("expectedSize", 0);
         int expectedCode = preferences.getInt("versionCode", 0);
         String expectedVersion = preferences.getString("versionName", "");
+        boolean reinstall = preferences.getBoolean("reinstall", false);
         try {
             executor.execute(() -> {
                 try {
-                    verifyDownload(downloadId, token, expectedHash, expectedSize, expectedCode, expectedVersion);
+                    verifyDownload(downloadId, token, expectedHash, expectedSize, expectedCode, expectedVersion, reinstall);
                 } finally {
                     verifying.set(false);
                 }
@@ -288,6 +442,11 @@ final class ApkUpdater {
 
     private void ensureInstallPermission(long token, boolean allowPrompt) {
         if (!isCurrent(token)) return;
+        if (preferences.getBoolean("reinstall", false)) {
+            if (!ensureReinstallStoragePermission(token, allowPrompt)) return;
+            enqueueDownload(token);
+            return;
+        }
         if (Build.VERSION.SDK_INT >= 26 && !activity.getPackageManager().canRequestPackageInstalls()) {
             saveStage(token, "permission_required");
             emitForToken(token, "permission_required", 0, "Autorize o SPX Route OS a instalar aplicativos.");
@@ -313,26 +472,54 @@ final class ApkUpdater {
         }
     }
 
+    private boolean ensureReinstallStoragePermission(long token, boolean allowPrompt) {
+        if (Build.VERSION.SDK_INT < 23 || Build.VERSION.SDK_INT > 28
+                || activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED) return true;
+        saveStage(token, "permission_required");
+        emitForToken(token, "permission_required", 0,
+                "Autorize o armazenamento para salvar o APK da reinstalação.");
+        if (allowPrompt && !permissionPromptPending) {
+            permissionPromptPending = true;
+            try {
+                activity.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        STORAGE_PERMISSION_REQUEST_CODE);
+            } catch (Exception e) {
+                permissionPromptPending = false;
+                emitForToken(token, "error", 0,
+                        "Autorize o armazenamento nas configurações do aplicativo.");
+            }
+        }
+        return false;
+    }
+
     private void enqueueDownload(long token) {
         if (!isCurrent(token)) return;
         if (downloadManager == null) {
             failForToken(token, "O serviço de download não está disponível.", false);
             return;
         }
+        boolean reinstall = preferences.getBoolean("reinstall", false);
         File directory = activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
         if (directory == null || (!directory.exists() && !directory.mkdirs())) {
             failForToken(token, "Não foi possível preparar o armazenamento da atualização.", false);
             return;
         }
         String versionName = preferences.getString("versionName", "0.0.0");
-        String fileName = "SPX-update-" + versionName + "-" + System.currentTimeMillis() + ".apk";
+        String fileName = reinstall
+                ? "SPX-Route-OS-v" + versionName + "-reinstall-" + System.currentTimeMillis() + ".apk"
+                : "SPX-update-" + versionName + "-" + System.currentTimeMillis() + ".apk";
         try {
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(preferences.getString("url", "")))
                     .setTitle("SPX Route OS - Atualização")
-                    .setDescription("Baixando e verificando a versão " + versionName)
+                    .setDescription(reinstall
+                            ? "Baixando APK independente para reinstalar a versão " + versionName
+                            : "Baixando e verificando a versão " + versionName)
                     .setMimeType("application/vnd.android.package-archive")
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    .setDestinationInExternalFilesDir(activity, Environment.DIRECTORY_DOWNLOADS, fileName);
+                    .setNotificationVisibility(reinstall
+                            ? DownloadManager.Request.VISIBILITY_HIDDEN
+                            : DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalFilesDir(activity, Environment.DIRECTORY_DOWNLOADS, fileName);
             request.addRequestHeader("Accept", "application/vnd.android.package-archive");
             long id = downloadManager.enqueue(request);
             synchronized (stateLock) {
@@ -409,7 +596,7 @@ final class ApkUpdater {
     }
 
     private void verifyDownload(long id, long token, String expectedHash, long expectedSize,
-                                int expectedCode, String expectedVersion) {
+                                int expectedCode, String expectedVersion, boolean reinstall) {
         if (!isCurrent(token)) return;
         Uri uri = downloadManager == null ? null : downloadManager.getUriForDownloadedFile(id);
         if (uri == null) {
@@ -463,7 +650,32 @@ final class ApkUpdater {
             return;
         }
         try {
-            int verifiedCode = validateApk(apk, expectedCode, expectedVersion);
+            int verifiedCode = validateApk(apk, expectedCode, expectedVersion, reinstall);
+            if (reinstall) {
+                ReinstallFile saved = preserveReinstallApk(apk, token, expectedHash, expectedSize);
+                apk.delete();
+                synchronized (stateLock) {
+                    if (!isCurrent(token)) {
+                        deleteSavedReinstallApk(saved);
+                        return;
+                    }
+                    preferences.edit()
+                            .remove("cachedApk")
+                            .putInt("verifiedVersionCode", verifiedCode)
+                            .putBoolean("sessionCommitted", false)
+                            .putString("reinstallUri", saved.uri)
+                            .putString("reinstallPath", saved.path)
+                            .putString("reinstallFileName", saved.name)
+                            .putLong("downloadId", -1)
+                            .putString("stage", "reinstall_ready")
+                            .apply();
+                }
+                if (downloadManager != null) {
+                    try { downloadManager.remove(id); } catch (Exception ignored) {}
+                }
+                emitForToken(token, "reinstall_ready", 100, reinstallReadyMessage());
+                return;
+            }
             synchronized (stateLock) {
                 if (!isCurrent(token)) {
                     apk.delete();
@@ -484,7 +696,184 @@ final class ApkUpdater {
         }
     }
 
-    private int validateApk(File apk, int expectedCode, String expectedVersion) throws Exception {
+    private ReinstallFile preserveReinstallApk(File apk, long token, String expectedHash,
+                                                long expectedSize) throws Exception {
+        if (!isCurrent(token)) throw new IOException("Atualização cancelada");
+        String versionName = preferences.getString("versionName", "0.0.0");
+        String fileName = "SPX-Route-OS-v" + versionName + "-instalar-" + System.currentTimeMillis() + ".apk";
+        if (Build.VERSION.SDK_INT >= 29) {
+            return saveReinstallApkToMediaStore(apk, token, fileName, expectedHash, expectedSize);
+        }
+        return saveReinstallApkToFile(apk, token, fileName, expectedHash, expectedSize);
+    }
+
+    private ReinstallFile saveReinstallApkToMediaStore(File apk, long token, String fileName,
+                                                        String expectedHash, long expectedSize) throws Exception {
+        android.content.ContentResolver resolver = activity.getContentResolver();
+        Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.android.package-archive");
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+        values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+        Uri uri = resolver.insert(collection, values);
+        if (uri == null) throw new IOException("Downloads indisponível");
+        boolean completed = false;
+        try {
+            try (InputStream input = new FileInputStream(apk);
+                 OutputStream output = resolver.openOutputStream(uri, "w")) {
+                if (output == null) throw new IOException("Não foi possível salvar em Downloads");
+                copyReinstallApk(input, output, token, expectedHash, expectedSize);
+            }
+            values.clear();
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            if (resolver.update(uri, values, null, null) != 1) {
+                throw new IOException("Não foi possível concluir a cópia em Downloads");
+            }
+            String actualName = fileName;
+            try (android.database.Cursor cursor = resolver.query(uri,
+                    new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    String name = cursor.getString(0);
+                    if (name != null && !name.isEmpty()) actualName = name;
+                }
+            }
+            completed = true;
+            return new ReinstallFile(uri.toString(), "", actualName);
+        } finally {
+            if (!completed) {
+                try {
+                    resolver.delete(uri, null, null);
+                } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    private ReinstallFile saveReinstallApkToFile(File apk, long token, String fileName,
+                                                  String expectedHash, long expectedSize) throws Exception {
+        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (!directory.exists() && !directory.mkdirs()) throw new IOException("Downloads indisponível");
+        File temporary = new File(directory, fileName + ".part");
+        File destination = new File(directory, fileName);
+        boolean completed = false;
+        try {
+            try (InputStream input = new FileInputStream(apk);
+                 OutputStream output = new FileOutputStream(temporary)) {
+                copyReinstallApk(input, output, token, expectedHash, expectedSize);
+            }
+            if (!temporary.renameTo(destination)) {
+                throw new IOException("Não foi possível salvar o APK em Downloads");
+            }
+            completed = true;
+            try {
+                MediaScannerConnection.scanFile(activity, new String[]{destination.getAbsolutePath()},
+                        new String[]{"application/vnd.android.package-archive"}, null);
+            } catch (Exception ignored) {}
+            return new ReinstallFile("", destination.getAbsolutePath(), fileName);
+        } finally {
+            if (!completed) {
+                temporary.delete();
+                destination.delete();
+            }
+        }
+    }
+
+    private void copyReinstallApk(InputStream input, OutputStream output, long token,
+                                  String expectedHash, long expectedSize) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        long copied = 0;
+        byte[] buffer = new byte[64 * 1024];
+        int read;
+        while ((read = input.read(buffer)) != -1) {
+            if (!isCurrent(token) || Thread.currentThread().isInterrupted()) {
+                throw new IOException("Atualização cancelada");
+            }
+            copied += read;
+            if (copied > MAX_APK_BYTES) throw new IOException("APK excede o limite");
+            digest.update(buffer, 0, read);
+            output.write(buffer, 0, read);
+        }
+        output.flush();
+        if (copied != expectedSize || !bytesToHex(digest.digest()).equals(expectedHash)) {
+            throw new IOException("A cópia do APK em Downloads não confere");
+        }
+    }
+
+    private boolean verifySavedReinstallApk() {
+        String uriValue = preferences.getString("reinstallUri", "");
+        String path = preferences.getString("reinstallPath", "");
+        if (uriValue.isEmpty() && path.isEmpty()) return false;
+        String expectedHash = preferences.getString("sha256", "");
+        long expectedSize = preferences.getLong("expectedSize", 0);
+        if (!isValidSha256(expectedHash) || expectedSize < 1 || expectedSize > MAX_APK_BYTES) return false;
+        long copied = 0;
+        try (InputStream input = uriValue.isEmpty()
+                ? new FileInputStream(path)
+                : activity.getContentResolver().openInputStream(Uri.parse(uriValue))) {
+            if (input == null) return false;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[64 * 1024];
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                copied += read;
+                if (copied > MAX_APK_BYTES) return false;
+                digest.update(buffer, 0, read);
+            }
+            return copied == expectedSize && bytesToHex(digest.digest()).equals(expectedHash);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void deleteSavedReinstallApk() {
+        deleteReinstallUri(preferences.getString("reinstallUri", ""));
+        deleteReinstallPath(preferences.getString("reinstallPath", ""));
+    }
+
+    private void deleteSavedReinstallApk(ReinstallFile saved) {
+        deleteReinstallUri(saved.uri);
+        deleteReinstallPath(saved.path);
+    }
+
+    private void deleteReinstallUri(String value) {
+        if (value.isEmpty()) return;
+        try {
+            Uri uri = Uri.parse(value);
+            List<String> segments = uri.getPathSegments();
+            if ("content".equals(uri.getScheme()) && MediaStore.AUTHORITY.equals(uri.getAuthority())
+                    && segments.contains("downloads")) {
+                activity.getContentResolver().delete(uri, null, null);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private void deleteReinstallPath(String value) {
+        if (value.isEmpty()) return;
+        try {
+            File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    .getCanonicalFile();
+            File apk = new File(value).getCanonicalFile();
+            if (downloads.equals(apk.getParentFile()) && apk.getName().startsWith("SPX-Route-OS-v")
+                    && apk.getName().endsWith(".apk")) {
+                apk.delete();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private static final class ReinstallFile {
+        final String uri;
+        final String path;
+        final String name;
+
+        ReinstallFile(String uri, String path, String name) {
+            this.uri = uri;
+            this.path = path;
+            this.name = name;
+        }
+    }
+
+    private int validateApk(File apk, int expectedCode, String expectedVersion,
+                            boolean allowDifferentSigner) throws Exception {
         int flags = Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES;
         PackageManager packageManager = activity.getPackageManager();
         PackageInfo archive = packageManager.getPackageArchiveInfo(apk.getAbsolutePath(), flags);
@@ -501,10 +890,15 @@ final class ApkUpdater {
             throw new Exception("A versão do APK não corresponde à Release.");
         }
         List<String> candidateSigners = signerHashes(archive);
-        PackageInfo installed = packageManager.getPackageInfo(PACKAGE_NAME, flags);
-        List<String> installedSigners = signerHashes(installed);
-        if (candidateSigners.isEmpty() || installedSigners.isEmpty() || Collections.disjoint(candidateSigners, installedSigners)) {
-            throw new Exception("A assinatura do APK é diferente da versão instalada. Para atualizar sem desinstalar, publique os builds com o mesmo keystore de lançamento.");
+        if (candidateSigners.isEmpty()) {
+            throw new Exception("O APK não possui um certificado de assinatura válido.");
+        }
+        if (!allowDifferentSigner) {
+            PackageInfo installed = packageManager.getPackageInfo(PACKAGE_NAME, flags);
+            List<String> installedSigners = signerHashes(installed);
+            if (installedSigners.isEmpty() || Collections.disjoint(candidateSigners, installedSigners)) {
+                throw new Exception("A assinatura do APK é diferente da versão instalada. Para atualizar sem desinstalar, publique os builds com o mesmo keystore de lançamento.");
+            }
         }
         return archive.versionCode;
     }
@@ -831,7 +1225,9 @@ final class ApkUpdater {
         synchronized (stateLock) {
             if (!isCurrent(token)) return;
             installing.set(false);
+            confirmingReinstall.set(false);
             if (retryDownload) {
+                deleteSavedReinstallApk();
                 long id = preferences.getLong("downloadId", -1);
                 if (id >= 0 && downloadManager != null) {
                     try { downloadManager.remove(id); } catch (Exception ignored) {}
@@ -840,6 +1236,9 @@ final class ApkUpdater {
                         .putLong("downloadId", -1)
                         .remove("cachedApk")
                         .remove("verifiedVersionCode")
+                        .remove("reinstallUri")
+                        .remove("reinstallPath")
+                        .remove("reinstallFileName")
                         .remove("sessionId")
                         .putBoolean("sessionCommitted", false)
                         .putBoolean("commitAttempted", false)

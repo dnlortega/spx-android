@@ -204,6 +204,10 @@ public class MainActivity extends Activity {
                 return apkUpdater.getInstalledSignerSha256();
             }
 
+            @JavascriptInterface public boolean canInstallWithSigner(String signerSha256) {
+                return apkUpdater.canInstallWithSigner(signerSha256);
+            }
+
             @JavascriptInterface public void restartApp() {
                 postUi(() -> {
                     try {
@@ -287,6 +291,15 @@ public class MainActivity extends Activity {
             @JavascriptInterface public void installApk(String downloadUrl, String sha256, int versionCode,
                                                        String versionName, long expectedSize) {
                 postUi(() -> apkUpdater.start(downloadUrl, sha256, versionCode, versionName, expectedSize));
+            }
+
+            @JavascriptInterface public void reinstallApk(String downloadUrl, String sha256, int versionCode,
+                                                          String versionName, long expectedSize) {
+                postUi(() -> apkUpdater.startReinstall(downloadUrl, sha256, versionCode, versionName, expectedSize));
+            }
+
+            @JavascriptInterface public void confirmReinstall() {
+                postUi(apkUpdater::confirmReinstall);
             }
 
             @JavascriptInterface public void openExternalUrl(String url) {
@@ -983,10 +996,12 @@ public class MainActivity extends Activity {
                 clearPendingSave();
             }
         }
+        apkUpdater.handleUninstallResult(requestCode, resultCode);
     }
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+        apkUpdater.onStoragePermissionResult(requestCode, results);
         if (requestCode == LOCATION_PERMISSION && geoCallback != null) {
             boolean granted = false;
             for (int r : results) if (r == PackageManager.PERMISSION_GRANTED) granted = true;

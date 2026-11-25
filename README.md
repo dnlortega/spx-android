@@ -1,4 +1,4 @@
-# SPX Route OS — Aplicativo Android v1.3.3
+# SPX Route OS — Aplicativo Android v1.3.4
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
-| Versão e pacote | `1.3.3`, `versionCode` 11, pacote `br.com.spxroute.app`. |
+| Versão e pacote | `1.3.4`, `versionCode` 12, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -26,29 +26,34 @@ A compatibilidade mínima é definida pelo projeto, mas cada aparelho, ROM e ver
 | Localização precisa e aproximada | Usar GPS, definir a origem, acompanhar desvios e calcular distância/ETA da navegação. |
 | Notificações no Android 13 ou superior | Mostrar avisos locais de andamento, paradas e atualização. Não são notificações ao cliente. |
 | Instalar aplicativos desconhecidos | Necessária no Android 8 ou superior para o atualizador abrir o instalador do APK validado. |
+| Desinstalar aplicativos | Usada somente com confirmação do usuário no fluxo de reinstalação quando o certificado muda. |
+| Armazenamento no Android 6–8 | Permite preservar o APK validado em Downloads antes da desinstalação. No Android 10 ou superior, o app usa o MediaStore. |
 
 Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas configurações do sistema. Para uso prolongado, verifique se a economia de bateria do fabricante não está limitando GPS e atualizações em segundo plano. Negar notificações não impede cadastro ou entregas; negar localização limita os recursos que dependem de GPS.
 
 ### Instalar o APK
 
 1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
-2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.3.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.4.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
 3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
 4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
 5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
 
-Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com assinatura diferente pode exigir desinstalação e apagar os dados locais. Faça exportações antes de trocar de certificado ou limpar os dados.
+Prefira sempre APKs assinados pela mesma chave de lançamento. Um APK com assinatura diferente exige desinstalação e apaga os dados locais; faça exportações antes de trocar de certificado ou limpar os dados.
 
 ### Atualizar pelo aplicativo
 
-- O aplicativo consulta as Releases recentes de `dnlortega/spx-android`, inclusive pré-releases, e oferece a versão mais nova compatível com o certificado instalado.
+- O aplicativo consulta as Releases recentes de `dnlortega/spx-android`, inclusive pré-releases, e oferece a versão mais nova publicada.
 - A versão e o `versionCode` exibidos vêm diretamente do Android; não dependem de um número fixo na interface.
-- Os metadados incluem o SHA-256 do APK e do certificado de assinatura. Uma assinatura diferente é bloqueada antes do download.
-- O download mostra progresso, pode ser retomado e valida tamanho, SHA-256, pacote, versão e assinatura antes da instalação.
-- Use Wi-Fi e mantenha espaço livre. Depois de validado, confirme a instalação na tela do Android.
-- Após instalar, toque em **Reiniciar agora**. O aplicativo reabre e carrega os arquivos da nova versão.
-- Builds sem keystore estável continuam sendo **pré-release**. Só são oferecidos se o certificado for igual ao da versão instalada.
-- Se aparecer **assinatura diferente**, não force a atualização. Publique a próxima versão com o keystore estável correto ou reinstale manualmente após exportar os dados.
+- Os metadados incluem o SHA-256 do APK e do certificado de assinatura. Se o certificado não for informado, a atualização continua bloqueada por segurança.
+- Com o mesmo certificado, o download mostra progresso, pode ser retomado e valida tamanho, SHA-256, pacote, versão e assinatura antes da instalação normal.
+- Com certificado diferente, o app baixa e valida o APK, copia uma versão independente para Downloads e confirma novamente o tamanho e o checksum antes de abrir a desinstalação.
+- A reinstalação exige confirmação explícita porque apaga os dados locais. Exporte rota, carga e POD antes de continuar.
+- Depois de desinstalar, abra **Downloads** e toque no APK indicado no modal para instalar a nova versão. O Android não permite que o próprio app execute essa segunda etapa automaticamente.
+- Builds sem keystore estável continuam sendo **pré-release**. Podem ser atualizados normalmente quando o certificado for igual ou reinstalados de forma guiada quando for diferente.
+- Após uma instalação normal, toque em **Reiniciar agora**. O aplicativo reabre e carrega os arquivos da nova versão.
+
+A versão `1.3.3` instalada não contém o novo fluxo de reinstalação. Na primeira migração da `1.3.3` para a `1.3.4`, baixe o APK da Release, exporte os dados necessários, desinstale a versão antiga e instale o arquivo baixado manualmente. As próximas atualizações feitas pela `1.3.4` já podem usar o fluxo guiado.
 
 ### Rede, GPS e provedores de rota
 
@@ -63,10 +68,21 @@ Use somente APKs assinados pela mesma chave de lançamento. Instalar um APK com 
 | --- | --- |
 | Mapa em branco ou endereço não encontrado | Conexão com a internet e localização do navegador/WebView. |
 | GPS impreciso ou navegação sem posição | GPS ativado, permissão de localização, precisão e economia de bateria. |
-| Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e se existe Release mais nova com o mesmo certificado. |
+| Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e existência de uma Release mais nova com metadados válidos. |
+| Reinstalação pede armazenamento no Android 6–8 | Autorize o armazenamento para o app preservar o APK independente em Downloads. |
+| Desinstalei e não sei qual APK abrir | Abra Downloads e procure o nome indicado no modal, com padrão `SPX-Route-OS-v<versão>-instalar-<data>.apk`. |
 | Instalou, mas a interface continuou antiga | Toque em **Reiniciar agora** no modal; o processo aberto ainda estava com os arquivos antigos. |
-| Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; reinstale manualmente somente após exportar os dados. |
+| Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; use a reinstalação guiada ou reinstale manualmente somente após exportar os dados. |
 | Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
+
+## Novidades da versão 1.3.4
+
+- Atualização normal quando o certificado do APK é igual ao da versão instalada.
+- Reinstalação guiada quando o certificado é diferente, com aviso de perda dos dados locais e confirmação em duas etapas.
+- Cópia independente do APK validado em Downloads, preservada após a desinstalação também no Android 5–9.
+- Verificação do tamanho e do SHA-256 da cópia pública imediatamente antes de abrir a desinstalação.
+- Nome do arquivo de instalação exibido no modal e orientação para abrir Downloads após desinstalar.
+- Seleção corrigida para oferecer a Release mais recente mesmo quando existem várias versões elegíveis.
 
 ## Novidades da versão 1.3.3
 
@@ -232,7 +248,7 @@ Localização deve incluir `lat`, `lng`, `accuracyMeters` e `recordedAt`. Reatri
 1. Envie o projeto ao repositório GitHub.
 2. O workflow `.github/workflows/build-apk.yml` executa os testes JavaScript e compila com Java 17, Android SDK 35 e Gradle 8.7.
 3. A execução salva o artefato `SPX-Route-OS-APK` por 30 dias.
-4. No branch `main` ou em tags `v*`, são publicados o APK genérico, o APK versionado e `release-metadata.json` no Release correspondente. Sem assinatura estável, a publicação é marcada como pré-release de teste e não é oferecida pelo atualizador.
+4. No branch `main` ou em tags `v*`, são publicados o APK genérico, o APK versionado e `release-metadata.json` no Release correspondente. Sem assinatura estável, a publicação é marcada como pré-release de teste; o atualizador oferece instalação normal ou reinstalação guiada conforme o certificado.
 
 ### Assinatura estável para atualizar sem desinstalar
 
@@ -245,9 +261,9 @@ Configure estes secrets nas configurações do repositório GitHub, em **Setting
 | `SPX_KEY_ALIAS` | Alias da chave |
 | `SPX_KEY_PASSWORD` | Senha da chave |
 
-Não versione o keystore nem as senhas. O workflow decodifica a chave somente em `RUNNER_TEMP`, usa `assembleRelease` e não imprime os secrets. Sem os quatro secrets, o build usa a chave de depuração somente para testes e é publicado como pré-release; essa chave pode mudar entre execuções do GitHub Actions. O APK continua disponível no artefato para instalação manual, mas não deve ser usado como atualização automática.
+Não versione o keystore nem as senhas. O workflow decodifica a chave somente em `RUNNER_TEMP`, usa `assembleRelease` e não imprime os secrets. Sem os quatro secrets, o build usa a chave de depuração somente para testes e é publicado como pré-release; essa chave pode mudar entre execuções do GitHub Actions. Nesse caso, use o artefato para instalação manual ou a reinstalação guiada, ciente de que os dados locais serão apagados.
 
-O aplicativo aceita apenas Releases de `dnlortega/spx-android` e exige o mesmo certificado de assinatura da versão instalada. Um APK antigo de depuração assinado por outra chave não pode ser atualizado diretamente: reinstale uma vez uma versão assinada pela chave estável e conserve essa chave nos próximos lançamentos. O aplicativo compara o certificado informado nos metadados com o instalado e informa essa divergência antes do download; a validação nativa repete a checagem antes de abrir o instalador.
+O aplicativo aceita apenas Releases de `dnlortega/spx-android`. Com certificado igual, a validação nativa confere a assinatura e abre o instalador diretamente. Com certificado diferente, o APK é validado sem aceitar a assinatura como atualização direta, salvo como arquivo independente em Downloads e reinstalado manualmente após a desinstalação confirmada. Para evitar perda de dados nas próximas versões, configure e conserve sempre o mesmo keystore estável.
 
 ## Gerar o APK localmente
 

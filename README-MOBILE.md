@@ -20,11 +20,13 @@ O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocu
 ## Requisitos e observações
 
 - Android 5.0 (API 21) ou superior.
-- Versão atual: 1.3.3 (`versionCode` 11).
+- Versão atual: 1.3.4 (`versionCode` 12).
 - A compilação acontece nos servidores do GitHub Actions; não exige SDK no telefone.
 - O código pode ficar privado, mas a Release e seus assets precisam estar públicos para o atualizador nativo conseguir baixá-los.
 - O workflow executa os testes JavaScript e gera `app-release.apk`, o APK versionado e `release-metadata.json` com tamanho e SHA-256.
 - O verificador do aplicativo aceita apenas Releases do repositório `dnlortega/spx-android`, valida o arquivo e a assinatura antes da instalação. Em uma cópia publicada em outro repositório, baixe e instale o artefato manualmente.
 - Para atualizar sem desinstalar, configure no repositório os secrets `SPX_KEYSTORE_BASE64`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD`. Não envie o keystore junto ao código.
-- Sem os secrets, o build usa a chave de depuração apenas para testes e é publicado como pré-release. O atualizador só oferece a pré-release se o certificado for igual ao da versão instalada; caso contrário, avisa antes do download. Para atualizações automáticas sem desinstalar, configure e conserve o mesmo keystore estável.
-- Depois de instalar uma atualização pelo aplicativo, toque em **Reiniciar agora** para carregar a nova versão.
+- Sem os secrets, o build usa a chave de depuração apenas para testes e é publicado como pré-release. Se o certificado for igual, o atualizador instala normalmente; se for diferente, oferece reinstalação guiada. Para atualizações sem desinstalar, configure e conserve o mesmo keystore estável.
+- Na reinstalação guiada, o APK validado é salvo como arquivo independente em Downloads. Confirme a desinstalação, depois abra Downloads e toque no arquivo indicado para instalar. A desinstalação apaga os dados locais.
+- A versão 1.3.3 não possui esse fluxo. A primeira migração para a 1.3.4 deve ser feita manualmente: baixar o APK, exportar os dados, desinstalar e instalar.
+- Depois de instalar uma atualização normal pelo aplicativo, toque em **Reiniciar agora** para carregar a nova versão.

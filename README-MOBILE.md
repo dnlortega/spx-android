@@ -28,5 +28,6 @@ O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocu
 - Para atualizar sem desinstalar, configure no repositório os secrets `SPX_KEYSTORE_BASE64`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD`. Não envie o keystore junto ao código.
 - Sem os secrets, o build usa a chave de depuração apenas para testes e é publicado como pré-release. Se o certificado for igual, o atualizador instala normalmente; se for diferente, oferece reinstalação guiada. Para atualizações sem desinstalar, configure e conserve o mesmo keystore estável.
 - Na reinstalação guiada, o APK validado é salvo como arquivo independente em Downloads. Confirme a desinstalação, depois abra Downloads e toque no arquivo indicado para instalar. A desinstalação apaga os dados locais.
+- Depois que o APK é validado, o modal permanece aberto até a confirmação da desinstalação para não perder o fluxo de reinstalação.
 - A versão 1.3.3 não possui esse fluxo. A primeira migração para a 1.3.4 deve ser feita manualmente: baixar o APK, exportar os dados, desinstalar e instalar.
 - Depois de instalar uma atualização normal pelo aplicativo, toque em **Reiniciar agora** para carregar a nova versão.

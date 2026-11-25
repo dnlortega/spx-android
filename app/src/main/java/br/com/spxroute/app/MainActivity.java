@@ -208,6 +208,10 @@ public class MainActivity extends Activity {
                 return apkUpdater.canInstallWithSigner(signerSha256);
             }
 
+            @JavascriptInterface public String fetchReleaseMetadata(String url) {
+                return apkUpdater.fetchReleaseMetadata(url);
+            }
+
             @JavascriptInterface public void restartApp() {
                 postUi(() -> {
                     try {

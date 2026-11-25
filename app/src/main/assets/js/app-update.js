@@ -160,6 +160,26 @@
         }
     }
 
+    async function readReleaseMetadata(asset) {
+        const bridge = global.SPXAndroid;
+        if (bridge && typeof bridge.fetchReleaseMetadata === 'function') {
+            let text = '';
+            try {
+                text = bridge.fetchReleaseMetadata(asset.browser_download_url);
+            } catch (_) {}
+            if (typeof text !== 'string' || !text.trim()) {
+                throw new Error('Não foi possível ler os metadados da atualização.');
+            }
+            if (text.length > 64 * 1024) throw new Error('Resposta da atualização excede o limite.');
+            return text;
+        }
+        const response = await fetchWithTimeout(asset.browser_download_url, {
+            headers: { 'Accept': 'application/json' }
+        }, 12000);
+        if (!response.ok) throw new Error('Não foi possível ler os metadados da atualização.');
+        return readResponseText(response, 64 * 1024, 12000);
+    }
+
     function requiresReinstallForSigner(signerSha256, previouslyFlagged) {
         if (!currentSignerSha256) return false;
         const bridge = global.SPXAndroid;
@@ -181,11 +201,7 @@
         const metadataAsset = assets.find(asset => asset && asset.name === METADATA_NAME);
         if (metadataAsset) {
             if (!isTrustedReleaseAssetUrl(metadataAsset.browser_download_url, false)) throw new Error('Origem dos metadados não é confiável.');
-            const response = await fetchWithTimeout(metadataAsset.browser_download_url, {
-                headers: { 'Accept': 'application/json' }
-            }, 12000);
-            if (!response.ok) throw new Error('Não foi possível ler os metadados da atualização.');
-            const text = await readResponseText(response, 64 * 1024, 12000);
+            const text = await readReleaseMetadata(metadataAsset);
             const verified = validateReleaseMetadata(JSON.parse(text), release, tag, metadataAsset);
             if (currentSignerSha256 && !verified.signerSha256) {
                 throw new Error('A atualização disponível não informa o certificado de assinatura do APK. A atualização automática foi bloqueada por segurança.');

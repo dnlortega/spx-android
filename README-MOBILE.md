@@ -20,11 +20,12 @@ O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocu
 ## Requisitos e observações
 
 - Android 5.0 (API 21) ou superior.
-- Versão atual: 1.3.5 (`versionCode` 13).
+- Versão atual: 1.3.6 (`versionCode` 14).
 - A compilação acontece nos servidores do GitHub Actions; não exige SDK no telefone.
 - O código pode ficar privado, mas a Release e seus assets precisam estar públicos para o atualizador nativo conseguir baixá-los.
 - O workflow executa os testes JavaScript e gera `app-release.apk`, o APK versionado e `release-metadata.json` com tamanho e SHA-256.
 - O verificador do aplicativo aceita apenas Releases do repositório `dnlortega/spx-android`, valida o arquivo e a assinatura antes da instalação. Em uma cópia publicada em outro repositório, baixe e instale o artefato manualmente.
+- No Android, os metadados são lidos por uma ponte nativa restrita ao GitHub oficial, sem depender de CORS no download do arquivo.
 - Para atualizar sem desinstalar, configure no repositório os secrets `SPX_KEYSTORE_BASE64`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD`. Não envie o keystore junto ao código.
 - Sem os secrets, o build usa a chave de depuração apenas para testes e é publicado como pré-release. Se o certificado for igual, o atualizador instala normalmente; se for diferente, oferece reinstalação guiada. Para atualizações sem desinstalar, configure e conserve o mesmo keystore estável.
 - Na reinstalação guiada, o APK validado é salvo como arquivo independente em Downloads. Confirme a desinstalação, depois abra Downloads e toque no arquivo indicado para instalar. A desinstalação apaga os dados locais.

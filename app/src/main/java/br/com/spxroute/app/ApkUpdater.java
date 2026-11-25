@@ -22,12 +22,15 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.provider.Settings;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -50,6 +53,9 @@ final class ApkUpdater {
     private static final String PACKAGE_NAME = "br.com.spxroute.app";
     private static final String REPOSITORY_PATH = "/dnlortega/spx-android/releases/download/";
     private static final long MAX_APK_BYTES = 150L * 1024 * 1024;
+    private static final int MAX_RELEASE_METADATA_BYTES = 64 * 1024;
+    private static final int METADATA_TIMEOUT_MS = 12000;
+    private static final String METADATA_NAME = "release-metadata.json";
     private static final long POLL_INTERVAL_MS = 900;
     private static final int INSTALL_REQUEST_CODE = 4101;
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 4102;
@@ -191,6 +197,37 @@ final class ApkUpdater {
             return signerHashes(installed).contains(signerSha256.toLowerCase(Locale.ROOT));
         } catch (Exception ignored) {
             return false;
+        }
+    }
+
+    String fetchReleaseMetadata(String value) {
+        if (destroyed || !isAllowedReleaseMetadataUrl(value)) return "";
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) new URL(value).openConnection();
+            connection.setConnectTimeout(METADATA_TIMEOUT_MS);
+            connection.setReadTimeout(METADATA_TIMEOUT_MS);
+            connection.setUseCaches(false);
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("User-Agent", "SPX-Route-OS");
+            int status = connection.getResponseCode();
+            if (status < 200 || status >= 300) return "";
+            try (InputStream input = connection.getInputStream();
+                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[8192];
+                int total = 0;
+                int read;
+                while ((read = input.read(buffer)) != -1) {
+                    total += read;
+                    if (total > MAX_RELEASE_METADATA_BYTES) return "";
+                    output.write(buffer, 0, read);
+                }
+                return new String(output.toByteArray(), StandardCharsets.UTF_8);
+            }
+        } catch (Exception ignored) {
+            return "";
+        } finally {
+            if (connection != null) connection.disconnect();
         }
     }
 
@@ -1381,6 +1418,29 @@ final class ApkUpdater {
 
     private boolean isValidSha256(String value) {
         return value != null && value.matches("(?i)[a-f0-9]{64}");
+    }
+
+    private boolean isAllowedReleaseMetadataUrl(String value) {
+        if (value == null || value.length() > 16384) return false;
+        for (int i = 0; i < value.length(); i++) {
+            if (Character.isISOControl(value.charAt(i))) return false;
+        }
+        Uri uri = Uri.parse(value);
+        if (!"https".equalsIgnoreCase(uri.getScheme()) || !"github.com".equalsIgnoreCase(uri.getHost())
+                || uri.getUserInfo() != null || uri.getQuery() != null || uri.getFragment() != null
+                || (uri.getPort() != -1 && uri.getPort() != 443)) return false;
+        List<String> parts = uri.getPathSegments();
+        if (parts.size() != 6 || !parts.get(0).equals("dnlortega") || !parts.get(1).equals("spx-android")
+                || !parts.get(2).equals("releases") || !parts.get(3).equals("download")
+                || parts.get(4).isEmpty() || !METADATA_NAME.equals(parts.get(5))) return false;
+        String encodedPath = uri.getEncodedPath();
+        if (encodedPath == null || !encodedPath.startsWith(REPOSITORY_PATH) || encodedPath.contains("\\")
+                || encodedPath.toLowerCase(Locale.ROOT).contains("%2f")
+                || encodedPath.toLowerCase(Locale.ROOT).contains("%5c")) return false;
+        for (String part : parts) {
+            if (part.isEmpty() || part.contains("/") || part.contains("\\") || part.indexOf('\0') >= 0) return false;
+        }
+        return true;
     }
 
     private boolean isAllowedApkDownloadUrl(String value) {

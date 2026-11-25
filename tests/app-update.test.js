@@ -184,6 +184,42 @@ test('resolução lê metadados e rejeita release em rascunho', async function (
     assert.equal(prerelease.versionCode, 8);
 });
 
+test('Android lê metadados pela ponte nativa sem depender de CORS', async function () {
+    const data = release();
+    let requestedUrl = '';
+    sandbox.SPXAndroid = {
+        fetchReleaseMetadata: url => {
+            requestedUrl = url;
+            return JSON.stringify(metadata());
+        }
+    };
+    const candidate = await update.resolveCandidate(data);
+    assert.equal(candidate.versionCode, 8);
+    assert.equal(requestedUrl, data.assets[0].browser_download_url);
+});
+
+test('falha da ponte nativa bloqueia metadados vazios ou inválidos', async function () {
+    const data = release();
+    sandbox.SPXAndroid = { fetchReleaseMetadata: () => '' };
+    await assert.rejects(() => update.resolveCandidate(data), /Não foi possível ler os metadados/);
+    sandbox.SPXAndroid.fetchReleaseMetadata = () => '{json inválido';
+    await assert.rejects(() => update.resolveCandidate(data));
+});
+
+test('origem não confiável é rejeitada antes da ponte nativa', async function () {
+    const data = release();
+    let nativeCalled = false;
+    data.assets[0].browser_download_url = 'https://example.com/release-metadata.json';
+    sandbox.SPXAndroid = {
+        fetchReleaseMetadata: () => {
+            nativeCalled = true;
+            return JSON.stringify(metadata());
+        }
+    };
+    await assert.rejects(() => update.resolveCandidate(data), /Origem dos metadados não é confiável/);
+    assert.equal(nativeCalled, false);
+});
+
 test('resolução exige checksum e tamanho mesmo sem metadados', async function () {
     const data = release();
     data.assets = data.assets.filter(asset => asset.name !== 'release-metadata.json');

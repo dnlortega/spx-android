@@ -150,6 +150,7 @@ jobs:
             - Certificado diferente: APK validado e copiado como arquivo independente em Downloads, seguido de desinstalação confirmada e instalação manual.
             - A cópia em Downloads é verificada novamente antes da desinstalação e permanece disponível no Android 5 ou superior.
             - Metadados informam o SHA-256 do certificado de assinatura; a versão instalada é lida diretamente do Android.
+            - No Android, os metadados são lidos por uma ponte nativa restrita à Release oficial, sem depender de CORS do download do GitHub.
             - Após instalar normalmente, o botão Reiniciar agora reabre o aplicativo para carregar os novos arquivos e exibir a versão correta.
             - Retomada do download após interrupções e mensagens claras para permissão, falha de rede e certificado ausente.
             - O modal de reinstalação permanece aberto depois que o APK é validado, evitando que o usuário fique sem acesso à confirmação.

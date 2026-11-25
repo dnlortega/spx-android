@@ -1,4 +1,4 @@
-# SPX Route OS — Aplicativo Android v1.3.5
+# SPX Route OS — Aplicativo Android v1.3.6
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
-| Versão e pacote | `1.3.5`, `versionCode` 13, pacote `br.com.spxroute.app`. |
+| Versão e pacote | `1.3.6`, `versionCode` 14, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -34,7 +34,7 @@ Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas co
 ### Instalar o APK
 
 1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
-2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.5.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.6.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
 3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
 4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
 5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
@@ -46,6 +46,7 @@ Prefira sempre APKs assinados pela mesma chave de lançamento. Um APK com assina
 - O aplicativo consulta as Releases recentes de `dnlortega/spx-android`, inclusive pré-releases, e oferece a versão mais nova publicada.
 - A versão e o `versionCode` exibidos vêm diretamente do Android; não dependem de um número fixo na interface.
 - Os metadados incluem o SHA-256 do APK e do certificado de assinatura. Se o certificado não for informado, a atualização continua bloqueada por segurança.
+- No Android, uma ponte nativa lê o arquivo de metadados da Release oficial sem depender de CORS; o endereço continua validado no JavaScript e no Java.
 - Com o mesmo certificado, o download mostra progresso, pode ser retomado e valida tamanho, SHA-256, pacote, versão e assinatura antes da instalação normal.
 - Com certificado diferente, o app baixa e valida o APK, copia uma versão independente para Downloads e confirma novamente o tamanho e o checksum antes de abrir a desinstalação.
 - A reinstalação exige confirmação explícita porque apaga os dados locais. Exporte rota, carga e POD antes de continuar.
@@ -74,6 +75,11 @@ A versão `1.3.3` instalada não contém o novo fluxo de reinstalação. Na prim
 | Instalou, mas a interface continuou antiga | Toque em **Reiniciar agora** no modal; o processo aberto ainda estava com os arquivos antigos. |
 | Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; use a reinstalação guiada ou reinstale manualmente somente após exportar os dados. |
 | Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
+
+## Novidades da versão 1.3.6
+
+- A consulta de atualização no Android lê os metadados por uma ponte nativa segura, eliminando a falha de CORS nos downloads de assets do GitHub.
+- A ponte aceita somente HTTPS da Release oficial, limita a resposta a 64 KiB e mantém todas as validações de versão, checksum, tamanho e certificado.
 
 ## Novidades da versão 1.3.5
 

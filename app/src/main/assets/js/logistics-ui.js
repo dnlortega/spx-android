@@ -548,7 +548,7 @@
                             <div><h3 class="text-sm font-bold">Ações operacionais</h3><p class="text-[11px] text-zinc-500">Fluxos disponíveis neste aparelho, sem backend.</p></div>
                             <span class="rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900">${icon('hard-drive', 'inline w-3 h-3 mr-1')} Local</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+                        <div class="spx-stagger-grid grid grid-cols-2 gap-3 md:grid-cols-3">
                             ${actionCard('open-address', 'Nova entrega', 'Cadastre pacote, endereço, prioridade e janela.', 'package-plus', 'orange')}
                             ${actionCard('open-finder', 'Localizador de pacotes', 'Busque por SPX TN, recebedor ou endereço.', 'package-search', 'indigo')}
                             ${actionCard('open-load', 'Carga do veículo', 'Organize cada pacote por zona e posição.', 'truck', 'emerald')}

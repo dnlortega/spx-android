@@ -162,6 +162,7 @@ jobs:
             - POD opcional, sem bloquear a conclusão da entrega por falta de comprovante.
             - Conclusão imediata da entrega sem abrir a tela de comprovante e remoção do banner promocional do hub.
             - Atalhos de primeira entrega deixam de aparecer depois que a primeira parada é definida.
+            - Animações leves na abertura, cartões, mapa, modais e ações, com suporte a movimento reduzido.
 
             ### Instalação
             Requer Android 5.0 (API 21) ou superior e Android System WebView atualizado. Permita localização de alta precisão para GPS e, no Android 8 ou superior, autorize a instalação de apps desconhecidos quando solicitado.

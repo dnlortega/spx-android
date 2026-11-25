@@ -20,7 +20,7 @@ O Android pode ocultar pastas iniciadas por ponto. Ative “Mostrar arquivos ocu
 ## Requisitos e observações
 
 - Android 5.0 (API 21) ou superior.
-- Versão atual: 1.3.6 (`versionCode` 14).
+- Versão atual: 1.3.7 (`versionCode` 15).
 - A compilação acontece nos servidores do GitHub Actions; não exige SDK no telefone.
 - O código pode ficar privado, mas a Release e seus assets precisam estar públicos para o atualizador nativo conseguir baixá-los.
 - O workflow executa os testes JavaScript e gera `app-release.apk`, o APK versionado e `release-metadata.json` com tamanho e SHA-256.

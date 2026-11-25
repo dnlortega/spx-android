@@ -70,9 +70,18 @@
             border-radius: 6px;
             font-weight: 500;
             white-space: nowrap;
-            transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
             user-select: none;
             cursor: pointer;
+        }
+        .shadcn-btn svg { transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+        @media (hover: hover) {
+            .shadcn-btn:hover:not(:disabled) { transform: translateY(-1px); }
+            label[for="excelFileInput"]:hover svg { transform: translateY(-2px); }
+            button[onclick="SPXLogistics.openHub()"]:hover svg { transform: rotate(-8deg) scale(1.06); }
+            button[onclick="checkForUpdates(true)"]:hover svg { transform: rotate(45deg); }
+            #btnThemeToggle:hover svg { transform: rotate(18deg); }
+            #btnOptimizeRoute:hover:not(:disabled) svg { transform: rotate(12deg) scale(1.08); }
         }
         /* Garante que "hidden" / "md:inline-flex" funcionem em botões shadcn (antes o display:inline-flex vencia) */
         .shadcn-btn.hidden { display: none !important; }
@@ -135,6 +144,7 @@
         .pin-next {
             background-color: #EE4D2D;
             box-shadow: 0 0 0 4px rgba(238, 77, 45, 0.28), 0 4px 12px rgba(238, 77, 45, 0.45);
+            animation: spxNextPulse 2.2s ease-in-out infinite;
         }
         .pin-parcial {
             background-color: #D97706;
@@ -222,6 +232,79 @@
             animation: shimmerProgress 1.6s linear infinite;
         }
 
+        body > header { animation: spxShellIn 420ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        body > main { animation: spxShellIn 480ms cubic-bezier(0.16, 1, 0.3, 1) 60ms backwards; }
+        #map { animation: spxFadeIn 500ms ease backwards; }
+        #updateModalOverlay, #aiModalOverlay, #chooseFirstStopModalOverlay, #streetClusterModalOverlay, #importModalOverlay { animation: spxOverlayIn 180ms ease backwards; }
+        #spxLogisticsRoot [data-action="modal-backdrop"] { animation: spxOverlayIn 180ms ease backwards; }
+        #spxLogisticsRoot [role="dialog"] { animation: spxDialogIn 240ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        .spx-stagger-grid > * { animation: spxCardIn 340ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        .spx-stagger-grid > *:nth-child(1) { animation-delay: 35ms; }
+        .spx-stagger-grid > *:nth-child(2) { animation-delay: 70ms; }
+        .spx-stagger-grid > *:nth-child(3) { animation-delay: 105ms; }
+        .spx-stagger-grid > *:nth-child(4) { animation-delay: 140ms; }
+        .spx-stagger-grid > *:nth-child(5) { animation-delay: 175ms; }
+        .spx-stagger-grid > *:nth-child(6) { animation-delay: 210ms; }
+        .spx-list-refresh > :nth-child(-n+10) { animation: spxCardIn 280ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        .spx-list-refresh > *:nth-child(1) { animation-delay: 20ms; }
+        .spx-list-refresh > *:nth-child(2) { animation-delay: 45ms; }
+        .spx-list-refresh > *:nth-child(3) { animation-delay: 70ms; }
+        .spx-list-refresh > *:nth-child(4) { animation-delay: 95ms; }
+        .spx-list-refresh > *:nth-child(5) { animation-delay: 120ms; }
+        .spx-list-refresh > *:nth-child(6) { animation-delay: 145ms; }
+        .spx-list-refresh > *:nth-child(7) { animation-delay: 170ms; }
+        .spx-list-refresh > *:nth-child(n+8) { animation-delay: 195ms; }
+        .spx-drawer-in { animation: spxDrawerIn 220ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        .spx-marker-enter { animation: spxMarkerIn 320ms cubic-bezier(0.16, 1, 0.3, 1) var(--spx-delay, 0ms) backwards; transform-origin: center bottom; }
+        .spx-stop-card.spx-status-success { animation: spxStatusSuccess 620ms ease backwards; }
+        .spx-stop-card.spx-status-error { animation: spxStatusError 620ms ease backwards; }
+        #btnOptimizeRoute.spx-is-working svg, #btnReorganize.spx-is-working svg { animation: spin 900ms linear infinite; }
+
+        @keyframes spxShellIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spxFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes spxOverlayIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes spxDialogIn {
+            from { opacity: 0; transform: translateY(18px) scale(.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes spxCardIn {
+            from { opacity: 0; transform: translateY(10px) scale(.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes spxDrawerIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spxMarkerIn {
+            from { opacity: 0; transform: translateY(8px) scale(.55); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes spxNextPulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(238,77,45,.24), 0 4px 12px rgba(238,77,45,.42); }
+            50% { box-shadow: 0 0 0 9px rgba(238,77,45,.08), 0 4px 16px rgba(238,77,45,.58); }
+        }
+        @keyframes spxStatusSuccess {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,.42); }
+            45% { transform: scale(1.015); box-shadow: 0 0 0 7px rgba(16,185,129,.14); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+        @keyframes spxStatusError {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            50% { transform: translateX(3px); }
+            75% { transform: translateX(-2px); }
+            100% { transform: translateX(0); }
+        }
+
         .spx-dark-tiles { filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.9); }
         /* Trava de zoom no app inteiro: zoom permitido APENAS no mapa */
         html, body {
@@ -287,7 +370,16 @@
         .filter-panel-inner { min-height:0; overflow:hidden; }
         .filter-panel.collapsed { grid-template-rows:0fr; border-bottom-width:0; }
         .filter-panel.collapsed .filter-panel-inner { visibility:hidden; transition:visibility 0s linear .22s; }
-        @media (prefers-reduced-motion: reduce) { .filter-panel, .filter-panel.collapsed .filter-panel-inner { transition:none; } }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-delay: 0ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .filter-panel, .filter-panel.collapsed .filter-panel-inner { transition: none; }
+        }
     </style>
 </head>
 <body class="bg-[#FAFAFA] dark:bg-zinc-950 text-[#09090B] dark:text-zinc-50 antialiased overflow-hidden h-screen flex flex-col transition-colors duration-200">
@@ -308,7 +400,7 @@
                     <span class="font-black text-base tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                         <span class="text-[#EE4D2D]">SPX</span> Route OS
                     </span>
-                    <span id="mobileAppVersion" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.6</span>
+                    <span id="mobileAppVersion" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.7</span>
                 </div>
             </div>
         </div>
@@ -330,7 +422,7 @@
                         <span class="font-black text-sm tracking-tight text-[#09090B] dark:text-zinc-50 font-sans">
                             <span class="text-[#EE4D2D]">SPX</span> Route OS
                         </span>
-                        <span id="desktopAppVersion" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.6</span>
+                        <span id="desktopAppVersion" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-[#EE4D2D] dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">v1.3.7</span>
                     </div>
                     <span class="text-[10px] font-medium text-[#71717A] dark:text-zinc-400 leading-tight truncate">Roteirização Shopee Express</span>
                 </div>
@@ -1633,6 +1725,7 @@
             if (!groupedStops.length) return;
             const btn = document.getElementById('btnReorganize');
             btn.disabled = true;
+            setButtonWorking(btn, true);
 
             // 1) Une paradas "sem Stop" que estão exatamente no mesmo ponto (mesma entrega, um só desembarque)
             const seen = new Map(), merged = [];
@@ -1658,6 +1751,7 @@
             const pending = merged.filter(st => !isDone(st));
             if (!pending.length) {
                 showToast("Todas as entregas já foram concluídas.", "info");
+                setButtonWorking(btn, false);
                 btn.disabled = false;
                 return;
             }
@@ -1681,6 +1775,7 @@
             } catch (error) {
                 showToast("Não foi possível reorganizar agora. Verifique a conexão e tente novamente.", "error");
             } finally {
+                setButtonWorking(btn, false);
                 btn.disabled = false;
             }
         }
@@ -2828,12 +2923,14 @@
             }
             const btn = document.getElementById('btnOptimizeRoute');
             if (btn) btn.disabled = true;
+            setButtonWorking(btn, true);
             try {
                 const start = getRouteOrigin();
                 await optimizePendingFrom(start, selectedFirstStopId, isValidLocation(hubLocation) ? "do ponto de partida definido" : "da primeira parada", !!options.silent);
             } catch (error) {
                 showToast("Não foi possível otimizar agora. Verifique a conexão e tente novamente.", "error");
             } finally {
+                setButtonWorking(btn, false);
                 if (btn) btn.disabled = groupedStops.length < 2;
             }
         }
@@ -2867,6 +2964,7 @@
             groupedStops[targetIndex] = temp;
             activeRoutePlan = null;
             refreshAllViews(false);
+            requestAnimationFrame(animateStopList);
         }
 
         // ============================================================================
@@ -3483,6 +3581,7 @@
             updateNextStopFloatingCard();
             renderStopsList();
             renderMapMarkersAndPolyline(shouldFitBounds);
+            if (shouldFitBounds) requestAnimationFrame(animateStopList);
             saveState();
             scheduleRoadRoute();
             document.querySelectorAll('button[title]:not([aria-label]), a[title]:not([aria-label])').forEach(el => el.setAttribute('aria-label', el.title));
@@ -3576,7 +3675,7 @@
 
                 const markerIcon = L.divIcon({
                     className: 'custom-div-icon',
-                    html: `<div style="position:relative;width:30px;height:30px"><div class="gm-pin ${pinColorClass}"><span class="gm-pin-n">${routeOrder}</span></div>${badgeHtml}</div>`,
+                    html: `<div class="${index < 24 ? 'spx-marker-enter' : ''}" style="--spx-delay:${Math.min(index * 22, 220)}ms;position:relative;width:30px;height:30px"><div class="gm-pin ${pinColorClass}"><span class="gm-pin-n">${routeOrder}</span></div>${badgeHtml}</div>`,
                     iconSize: [30, 30],
                     iconAnchor: [15, 36],
                     popupAnchor: [0, -36]
@@ -3896,7 +3995,7 @@
                     }
 
                     const packagesDrawerHtml = isExpanded ? `
-                        <div class="mt-2.5 pt-2.5 border-t border-[#E4E4E7] dark:border-zinc-800 space-y-1.5">
+                        <div class="spx-drawer-in mt-2.5 pt-2.5 border-t border-[#E4E4E7] dark:border-zinc-800 space-y-1.5">
                             ${stop.packages.map(pkg => {
                                 const isDel = pkg.status === 'Entregue';
                                 const isFail = pkg.status === 'Insucesso';
@@ -3924,7 +4023,7 @@
                     ` : '';
 
                     return `
-                        <div class="rounded-xl p-3 border ${cardBorder} shadow-shadcn-xs transition-all">
+                        <div data-stop-id="${escapeHtml(stop.groupId)}" class="spx-stop-card rounded-xl p-3 border ${cardBorder} shadow-shadcn-xs transition-all">
                             <div class="flex items-start gap-2.5">
                                 <!-- Badge Circular Numerado + Setas Discretas Reordenação -->
                                 <div class="flex flex-col items-center gap-1 shrink-0">
@@ -4035,7 +4134,7 @@
                     const isDelivered = pkg.status === 'Entregue';
                     const isFailed = pkg.status === 'Insucesso';
                     return `
-                        <div class="bg-white dark:bg-zinc-900 rounded-xl p-3 border ${isDelivered ? 'border-emerald-200 dark:border-emerald-900/70 bg-emerald-50/30' : isFailed ? 'border-rose-200 dark:border-rose-900/70 bg-rose-50/30' : 'border-[#E4E4E7] dark:border-zinc-800'} shadow-shadcn-xs flex items-center justify-between gap-2.5">
+                        <div data-stop-id="${escapeHtml(stop.groupId)}" data-package-id="${escapeHtml(pkg.id)}" class="spx-stop-card bg-white dark:bg-zinc-900 rounded-xl p-3 border ${isDelivered ? 'border-emerald-200 dark:border-emerald-900/70 bg-emerald-50/30' : isFailed ? 'border-rose-200 dark:border-rose-900/70 bg-rose-50/30' : 'border-[#E4E4E7] dark:border-zinc-800'} shadow-shadcn-xs flex items-center justify-between gap-2.5">
                             <div onclick="focusStopOnMap(${escapeJsString(stop.groupId)})" class="min-w-0 flex-1 cursor-pointer">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span class="font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950">#${orderNum} • Stop ${escapeHtml(stop.stopLabel)}</span>
@@ -4091,6 +4190,7 @@
                 delete pkg.absentJustification;
             }
             refreshAllViews(false);
+            pulseStopCard(groupId, pkg.status);
             return true;
         }
 
@@ -4122,6 +4222,7 @@
                 if (window.SPXStore) SPXStore.deleteEvidenceForStop(groupId).catch(() => {});
             }
             refreshAllViews(false);
+            pulseStopCard(groupId, targetStatus);
             if (targetStatus !== "Pendente") {
                 showToast(`Stop ${stop.stopLabel} atualizado para ${targetStatus}.`, targetStatus === 'Entregue' ? 'success' : 'error');
             }
@@ -4367,6 +4468,43 @@
                 toast.style.transition = 'all 0.2s ease';
                 setTimeout(() => toast.remove(), 220);
             }, 3200);
+        }
+
+        function motionAllowed() {
+            return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        }
+
+        function animateStopList() {
+            const container = document.getElementById('stopsListContainer');
+            if (!container || !motionAllowed() || !container.children.length) return;
+            clearTimeout(container._spxMotionTimer);
+            container.classList.remove('spx-list-refresh');
+            void container.offsetWidth;
+            container.classList.add('spx-list-refresh');
+            container._spxMotionTimer = setTimeout(() => container.classList.remove('spx-list-refresh'), 650);
+        }
+
+        function pulseStopCard(groupId, status) {
+            if (status !== 'Entregue' && status !== 'Insucesso') return;
+            const container = document.getElementById('stopsListContainer');
+            if (!container || !motionAllowed()) return;
+            const cards = container.querySelectorAll('[data-stop-id]');
+            let card = null;
+            for (let index = 0; index < cards.length; index++) {
+                if (String(cards[index].dataset.stopId) === String(groupId)) { card = cards[index]; break; }
+            }
+            if (!card) return;
+            card.classList.remove('spx-status-success', 'spx-status-error');
+            void card.offsetWidth;
+            card.classList.add(status === 'Entregue' ? 'spx-status-success' : 'spx-status-error');
+            clearTimeout(card._spxStatusTimer);
+            card._spxStatusTimer = setTimeout(() => card.classList.remove('spx-status-success', 'spx-status-error'), 650);
+        }
+
+        function setButtonWorking(button, working) {
+            if (!button) return;
+            button.classList.toggle('spx-is-working', working);
+            button.setAttribute('aria-busy', String(working));
         }
 
         // ============================================================================

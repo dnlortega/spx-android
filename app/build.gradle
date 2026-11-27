@@ -2,12 +2,13 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'br.com.spxroute.app'
-    compileSdk 35
+    compileSdk 36
+    buildToolsVersion '36.0.0'
 
     defaultConfig {
         applicationId 'br.com.spxroute.app'
         minSdk 21
-        targetSdk 35
+        targetSdk 36
         versionCode 15
         versionName '1.3.7'
     }
@@ -18,6 +19,12 @@ android {
     def releaseKeyPassword = System.getenv('SPX_KEY_PASSWORD') ?: ''
     def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
 
+    def playStoreFile = System.getenv('SPX_PLAY_KEYSTORE_FILE') ?: ''
+    def playStorePassword = System.getenv('SPX_PLAY_KEYSTORE_PASSWORD') ?: ''
+    def playKeyAlias = System.getenv('SPX_PLAY_KEY_ALIAS') ?: ''
+    def playKeyPassword = System.getenv('SPX_PLAY_KEY_PASSWORD') ?: ''
+    def hasPlaySigning = playStoreFile && playStorePassword && playKeyAlias && playKeyPassword
+
     signingConfigs {
         release {
             if (hasReleaseSigning) {
@@ -27,12 +34,21 @@ android {
                 keyPassword releaseKeyPassword
             }
         }
+        playUpload {
+            if (hasPlaySigning) {
+                storeFile file(playStoreFile)
+                storePassword playStorePassword
+                keyAlias playKeyAlias
+                keyPassword playKeyPassword
+                storeType System.getenv('SPX_PLAY_KEYSTORE_TYPE') ?: 'PKCS12'
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
+            signingConfig hasPlaySigning ? signingConfigs.playUpload : (hasReleaseSigning ? signingConfigs.release : signingConfigs.debug)
         }
     }
 }

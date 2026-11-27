@@ -1,0 +1,90 @@
+name: Gerar AAB para Google Play
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compilar Android App Bundle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código do projeto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: 'false'
+
+      - name: Instalar plataformas do Android SDK 36
+        run: |
+          sdkmanager "platforms;android-36"
+          sdkmanager "build-tools;36.0.0"
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Configurar chave de upload do Play
+        env:
+          SPX_PLAY_KEYSTORE_BASE64: ${{ secrets.SPX_PLAY_KEYSTORE_BASE64 }}
+          SPX_PLAY_KEYSTORE_PASSWORD: ${{ secrets.SPX_PLAY_KEYSTORE_PASSWORD }}
+          SPX_PLAY_KEY_ALIAS: ${{ secrets.SPX_PLAY_KEY_ALIAS }}
+          SPX_PLAY_KEY_PASSWORD: ${{ secrets.SPX_PLAY_KEY_PASSWORD }}
+        run: |
+          if [ -z "$SPX_PLAY_KEYSTORE_BASE64" ] || [ -z "$SPX_PLAY_KEYSTORE_PASSWORD" ] || [ -z "$SPX_PLAY_KEY_ALIAS" ] || [ -z "$SPX_PLAY_KEY_PASSWORD" ]; then
+            echo "Configure os quatro secrets SPX_PLAY_* antes de gerar o AAB." >&2
+            exit 1
+          fi
+          printf '%s' "$SPX_PLAY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/spx-play-upload.p12"
+          chmod 600 "$RUNNER_TEMP/spx-play-upload.p12"
+
+      - name: Executar testes JavaScript
+        run: node --test tests/*.test.js
+
+      - name: Compilar AAB assinado
+        env:
+          SPX_PLAY_KEYSTORE_FILE: ${{ runner.temp }}/spx-play-upload.p12
+          SPX_PLAY_KEYSTORE_PASSWORD: ${{ secrets.SPX_PLAY_KEYSTORE_PASSWORD }}
+          SPX_PLAY_KEY_ALIAS: ${{ secrets.SPX_PLAY_KEY_ALIAS }}
+          SPX_PLAY_KEY_PASSWORD: ${{ secrets.SPX_PLAY_KEY_PASSWORD }}
+          SPX_PLAY_KEYSTORE_TYPE: PKCS12
+        run: gradle bundleRelease
+
+      - name: Preparar AAB e metadados
+        run: |
+          VERSION=$(grep "versionName" app/build.gradle | head -n1 | sed -E "s/.*'([^']+)'.*/\1/")
+          VERSION_CODE=$(grep "versionCode" app/build.gradle | head -n1 | sed -E "s/.*versionCode ([0-9]+).*/\1/")
+          if [ -z "$VERSION" ] || [ -z "$VERSION_CODE" ]; then
+            echo "Versão inválida em app/build.gradle" >&2
+            exit 1
+          fi
+          AAB_NAME="SPX-Route-OS-v${VERSION}.aab"
+          mkdir -p release-assets
+          cp app/build/outputs/bundle/release/app-release.aab "release-assets/${AAB_NAME}"
+          jarsigner -verify "release-assets/${AAB_NAME}"
+          sha256sum "release-assets/${AAB_NAME}" > "release-assets/${AAB_NAME}.sha256"
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "VERSION_CODE=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "AAB_NAME=${AAB_NAME}" >> "$GITHUB_OUTPUT"
+          echo "AAB assinado preparado para a versão ${VERSION}"
+
+      - name: Salvar artefato AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: SPX-Route-OS-AAB
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 30

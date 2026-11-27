@@ -8,7 +8,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 
 | Item | Requisito |
 | --- | --- |
-| Android | Android 5.0 ou superior (`minSdk 21`). O APK é compilado para a API 35 e direcionado ao Android 15. |
+| Android | Android 5.0 ou superior (`minSdk 21`). O APK e o AAB são compilados para a API 36 e direcionados ao Android 16. |
 | Versão e pacote | `1.3.7`, `versionCode` 15, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
@@ -264,7 +264,7 @@ Localização deve incluir `lat`, `lng`, `accuracyMeters` e `recordedAt`. Reatri
 ## Gerar o APK pelo GitHub Actions
 
 1. Envie o projeto ao repositório GitHub.
-2. O workflow `.github/workflows/build-apk.yml` executa os testes JavaScript e compila com Java 17, Android SDK 35 e Gradle 8.7.
+2. O workflow `.github/workflows/build-apk.yml` executa os testes JavaScript e compila com Java 17, Android SDK 36 e Gradle 8.11.1.
 3. A execução salva o artefato `SPX-Route-OS-APK` por 30 dias.
 4. No branch `main` ou em tags `v*`, são publicados o APK genérico, o APK versionado e `release-metadata.json` no Release correspondente. Sem assinatura estável, a publicação é marcada como pré-release de teste; o atualizador oferece instalação normal ou reinstalação guiada conforme o certificado.
 
@@ -286,11 +286,21 @@ O aplicativo aceita apenas Releases de `dnlortega/spx-android`. Com certificado 
 ## Gerar o APK localmente
 
 1. Abra a pasta `spx-android` no Android Studio.
-2. Use JDK 17 e instale Android SDK Platform 35 e Build Tools 35.0.0.
+2. Use JDK 17 e instale Android SDK Platform 36 e Build Tools 36.0.0.
 3. Sincronize o Gradle e execute **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
 4. O APK ficará em `app/build/outputs/apk/debug/app-debug.apk`.
 
 Para compilar uma versão `release` assinada localmente, configure as variáveis de ambiente `SPX_KEYSTORE_FILE`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD` e execute `gradle assembleRelease`. Sem as quatro variáveis, o build de release usa a chave de depuração e serve apenas para teste. O APK ficará em `app/build/outputs/apk/release/app-release.apk`.
+
+## Publicar na Google Play com AAB
+
+O pacote do aplicativo é `br.com.spxroute.app`. A Google Play exige um Android App Bundle (`.aab`) assinado por uma chave de upload; o Play App Signing cuida da chave de assinatura distribuída aos usuários.
+
+Para gerar pela nuvem, configure os secrets `SPX_PLAY_KEYSTORE_BASE64`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS` e `SPX_PLAY_KEY_PASSWORD` em **Settings > Secrets and variables > Actions**. Depois execute manualmente o workflow `.github/workflows/build-aab.yml` e baixe o artefato `SPX-Route-OS-AAB`.
+
+Localmente, configure `SPX_PLAY_KEYSTORE_FILE`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS`, `SPX_PLAY_KEY_PASSWORD` e `SPX_PLAY_KEYSTORE_TYPE=PKCS12`, depois execute `gradle bundleRelease`. O arquivo ficará em `app/build/outputs/bundle/release/app-release.aab`.
+
+Nunca versione a chave de upload ou suas senhas. Faça backup seguro delas e não as confunda com a chave de lançamento usada nos APKs. Como o Play App Signing pode usar um certificado diferente do APK atual, a primeira instalação pela Play pode exigir desinstalação manual dos APKs de teste.
 
 Requisitos do aplicativo: Android 5.0 (API 21) ou superior.
 

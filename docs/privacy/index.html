@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Política de Privacidade do SPX Route OS, aplicativo Android de roteirização, carga e entregas desenvolvido por Daniel Ortega Pereira.">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Política de Privacidade — SPX Route OS">
+    <meta property="og:description" content="Como o SPX Route OS coleta, usa, armazena e compartilha dados.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dnlortega.github.io/spx-android/privacy/">
+    <link rel="canonical" href="https://dnlortega.github.io/spx-android/privacy/">
+    <title>Política de Privacidade — SPX Route OS</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #f7f7f8;
+            --surface: #ffffff;
+            --text: #18181b;
+            --muted: #52525b;
+            --line: #e4e4e7;
+            --brand: #d73211;
+            --brand-soft: #fff1ed;
+            --link: #9f2c0d;
+            --focus: #2563eb;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: var(--link); text-underline-offset: 3px; }
+        a:hover { text-decoration-thickness: 2px; }
+        a:focus-visible, button:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: -64px;
+            z-index: 10;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: var(--text);
+            color: var(--surface);
+        }
+        .skip-link:focus { top: 16px; }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+        }
+        .header-inner, main, .footer-inner {
+            width: min(100% - 32px, 940px);
+            margin-inline: auto;
+        }
+        .header-inner {
+            min-height: 88px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding-block: 20px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ee4d2d, #b4230b);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: .04em;
+            box-shadow: 0 6px 18px rgba(183, 45, 17, .18);
+        }
+        .brand-name {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.2;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+        .brand-name span { color: var(--brand); }
+        .brand-subtitle {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .back-link {
+            flex: 0 0 auto;
+            font-size: 14px;
+            font-weight: 650;
+        }
+        .back-short { display: none; }
+
+        main { padding-block: 40px 56px; }
+        .hero {
+            padding: 28px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: 0 10px 30px rgba(24, 24, 27, .04);
+        }
+        .eyebrow {
+            margin: 0 0 8px;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        h1 {
+            margin: 0;
+            font-size: clamp(30px, 5vw, 46px);
+            line-height: 1.12;
+            letter-spacing: -.04em;
+        }
+        .intro {
+            max-width: 760px;
+            margin: 16px 0 0;
+            color: var(--muted);
+            font-size: 17px;
+        }
+        .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+            margin: 22px 0 0;
+            padding: 16px 0 0;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .meta strong { color: var(--text); }
+
+        nav {
+            margin-block: 24px;
+            padding: 20px 22px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--surface);
+        }
+        nav h2 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        nav ul {
+            columns: 2;
+            column-gap: 36px;
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+        nav li { break-inside: avoid; margin: 5px 0; }
+
+        article {
+            padding: 30px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: var(--surface);
+        }
+        section { scroll-margin-top: 24px; }
+        section + section {
+            margin-top: 34px;
+            padding-top: 30px;
+            border-top: 1px solid var(--line);
+        }
+        h2 {
+            margin: 0 0 14px;
+            font-size: 24px;
+            line-height: 1.25;
+            letter-spacing: -.025em;
+        }
+        h3 {
+            margin: 24px 0 8px;
+            font-size: 17px;
+            line-height: 1.35;
+        }
+        p { margin: 0 0 14px; }
+        ul, ol { margin: 0 0 16px; padding-left: 24px; }
+        li { margin: 7px 0; }
+        li::marker { color: var(--brand); }
+        strong { font-weight: 750; }
+        code {
+            padding: 2px 6px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--bg);
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: .88em;
+            overflow-wrap: anywhere;
+        }
+
+        .notice {
+            margin: 18px 0;
+            padding: 16px 18px;
+            border: 1px solid #fed7aa;
+            border-left: 4px solid #ea580c;
+            border-radius: 10px;
+            background: #fff7ed;
+            color: #7c2d12;
+        }
+        .notice strong { display: block; margin-bottom: 4px; }
+
+        .table-wrap {
+            margin: 16px 0 20px;
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+        table {
+            width: 100%;
+            min-width: 680px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: var(--bg);
+            color: var(--text);
+            font-size: 12px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        tr:last-child td { border-bottom: 0; }
+
+        .contact {
+            padding: 20px;
+            border: 1px solid #fed7aa;
+            border-radius: 12px;
+            background: var(--brand-soft);
+        }
+        .contact p:last-child { margin-bottom: 0; }
+
+        footer {
+            border-top: 1px solid var(--line);
+            background: var(--surface);
+        }
+        .footer-inner {
+            padding-block: 24px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .footer-inner p { margin: 4px 0; }
+
+        @media (max-width: 680px) {
+            .header-inner { align-items: flex-start; }
+            .back-link { margin-top: 4px; }
+            .back-label { display: none; }
+            .back-short { display: inline; }
+            .hero, article { padding: 22px; }
+            nav { padding: 18px; }
+            nav ul { columns: 1; }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #09090b;
+                --surface: #18181b;
+                --text: #fafafa;
+                --muted: #a1a1aa;
+                --line: #3f3f46;
+                --brand: #fb8a70;
+                --brand-soft: #2a1813;
+                --link: #fdba74;
+            }
+            .notice {
+                border-color: #7c2d12;
+                border-left-color: #fb923c;
+                background: #23160f;
+                color: #fed7aa;
+            }
+            .contact { border-color: #7c2d12; }
+            .brand-mark { box-shadow: none; }
+        }
+
+        @media print {
+            body { background: #ffffff; color: #000000; font-size: 11pt; }
+            header, nav, footer, .back-link, .skip-link { display: none; }
+            main { width: 100%; padding: 0; }
+            .hero, article { border: 0; box-shadow: none; padding: 0; }
+            .hero { margin-bottom: 24px; }
+            section + section { break-inside: avoid; }
+            a { color: #000000; }
+            .table-wrap { overflow: visible; }
+            table { min-width: 0; font-size: 9pt; }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <header>
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">SPX</div>
+                <div>
+                    <p class="brand-name"><span>SPX</span> Route OS</p>
+                    <p class="brand-subtitle">Roteirização, carga e entregas</p>
+                </div>
+            </div>
+            <a class="back-link" href="https://github.com/dnlortega/spx-android"><span class="back-label">Repositório oficial</span><span class="back-short">GitHub</span></a>
+        </div>
+    </header>
+
+    <main id="conteudo">
+        <div class="hero">
+            <p class="eyebrow">Transparência e proteção de dados</p>
+            <h1>Política de Privacidade</h1>
+            <p class="intro">Esta Política explica quais dados o SPX Route OS utiliza, para que servem, onde ficam armazenados, quando são enviados a terceiros e como você pode controlar ou excluir essas informações.</p>
+            <div class="meta">
+                <span><strong>Aplicativo:</strong> SPX Route OS</span>
+                <span><strong>Pacote:</strong> <code>io.github.dnlortega.spxandroid</code></span>
+                <span><strong>Responsável:</strong> Daniel Ortega Pereira</span>
+                <span><strong>Última atualização:</strong> 27 de novembro de 2026</span>
+            </div>
+        </div>
+
+        <nav aria-label="Seções desta política">
+            <h2>Nesta página</h2>
+            <ul>
+                <li><a href="#escopo">1. Escopo e princípios</a></li>
+                <li><a href="#dados">2. Dados utilizados</a></li>
+                <li><a href="#permissoes">3. Permissões do Android</a></li>
+                <li><a href="#uso">4. Como usamos os dados</a></li>
+                <li><a href="#terceiros">5. Serviços e terceiros</a></li>
+                <li><a href="#transferencias">6. Exportações e transferências</a></li>
+                <li><a href="#armazenamento">7. Armazenamento e retenção</a></li>
+                <li><a href="#seguranca">8. Segurança</a></li>
+                <li><a href="#direitos">9. Seus direitos e escolhas</a></li>
+                <li><a href="#criancas">10. Crianças e adolescentes</a></li>
+                <li><a href="#alteracoes">11. Alterações desta política</a></li>
+                <li><a href="#contato">12. Contato</a></li>
+            </ul>
+        </nav>
+
+        <article>
+            <section id="escopo">
+                <h2>1. Escopo e princípios</h2>
+                <p>O SPX Route OS é um aplicativo Android para auxiliar motoristas na organização de rotas, carga, navegação, transferência de paradas e comprovantes de entrega. O aplicativo funciona primeiro no dispositivo e não exige conta ou login próprio para suas funções locais.</p>
+                <p>Não operamos um servidor próprio para sincronizar seu romaneio, não vendemos dados pessoais e não integramos publicidade ou rastreamento publicitário próprio. Dados de rota, entregas e POD permanecem no dispositivo, salvo quando você escolhe usar um serviço externo ou compartilhar um arquivo ou link.</p>
+                <p>Ao utilizar o aplicativo, você concorda com o tratamento descrito nesta política. Permissões sensíveis, como localização, são solicitadas pelo Android no momento em que o recurso correspondente é utilizado e podem ser revogadas nas configurações do aparelho.</p>
+            </section>
+
+            <section id="dados">
+                <h2>2. Dados utilizados</h2>
+                <h3>2.1. Dados que você informa, importa ou gera</h3>
+                <ul>
+                    <li>Endereços, bairros, cidades, CEPs, coordenadas, códigos de romaneio e identificadores de pacotes ou paradas.</li>
+                    <li>Nome do recebedor, telefone, prioridade, janelas de entrega, tempo de serviço, posição no veículo e observações operacionais.</li>
+                    <li>Identificação local de equipe e motorista, preferências de interface, ponto de partida e plano de rota.</li>
+                    <li>Status de entrega ou insucesso, horários, motivo da insucesso, recebedor, assinatura e fotos de comprovante de entrega, quando você optar por registrar o POD.</li>
+                    <li>Chaves de API do Google Routes e do Google Gemini, quando você as configura. Essas chaves ficam no armazenamento local do aplicativo e não são enviadas ao desenvolvedor.</li>
+                </ul>
+
+                <h3>2.2. Dados de localização e funcionamento</h3>
+                <ul>
+                    <li>Localização precisa ou aproximada, velocidade, direção, precisão e horário das leituras, enquanto o GPS estiver sendo utilizado para mapa, origem da rota ou navegação.</li>
+                    <li>Coordenadas calculadas para endereços, ordem e distância das paradas, duração estimada, ETA e histórico local de importações.</li>
+                    <li>Texto reconhecido por voz, OCR ou leitura de código de barras, quando você usar esses recursos opcionais.</li>
+                </ul>
+
+                <h3>2.3. Dados técnicos de rede</h3>
+                <p>Ao acessar mapas, geocodificação, provedores de rota ou atualizações, os serviços externos podem receber metadados técnicos da conexão, como endereço IP, data e hora, tipo de solicitação, agente do usuário e status da resposta. O aplicativo não mantém um banco de dados próprio desses metadados.</p>
+            </section>
+
+            <section id="permissoes">
+                <h2>3. Permissões do Android</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Permissão</th>
+                                <th scope="col">Finalidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Internet e estado da rede</td>
+                                <td>Carregar mapas, consultar endereços e rotas, usar serviços opcionais e verificar atualizações.</td>
+                            </tr>
+                            <tr>
+                                <td>Localização precisa e aproximada</td>
+                                <td>Exibir sua posição, definir a origem, apoiar a navegação e recalcular a rota.</td>
+                            </tr>
+                            <tr>
+                                <td>Notificações</td>
+                                <td>Exibir avisos locais de andamento, paradas e atualização. Não são notificações enviadas ao cliente.</td>
+                            </tr>
+                            <tr>
+                                <td>Instalação de aplicativos e desinstalação</td>
+                                <td>Permitir o atualizador e o fluxo de reinstalação, sempre com validação e confirmação do usuário.</td>
+                            </tr>
+                            <tr>
+                                <td>Armazenamento em versões antigas do Android</td>
+                                <td>Salvar exportações e preservar um APK validado antes da reinstalação.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>O aplicativo não solicita acesso à câmera ou ao microfone pelo manifesto. Fotos e arquivos são selecionados pelos controles do sistema. A entrada por voz é tratada pelo serviço de reconhecimento de fala escolhido no Android; o aplicativo recebe o texto reconhecido.</p>
+            </section>
+
+            <section id="uso">
+                <h2>4. Como usamos os dados</h2>
+                <p>Os dados são utilizados para:</p>
+                <ul>
+                    <li>Cadastrar, importar, organizar e otimizar paradas e pacotes.</li>
+                    <li>Calcular rotas, distâncias, tempo estimado e navegação.</li>
+                    <li>Preencher endereços por autocomplete, geocodificação, voz, OCR ou código de barras.</li>
+                    <li>Registrar conclusão, insucesso e comprovantes de entrega.</li>
+                    <li>Gerar relatórios e transferir paradas pendentes quando você solicitar.</li>
+                    <li>Salvar preferências e permitir o uso offline dos dados já armazenados.</li>
+                    <li>Verificar, baixar e instalar atualizações oficiais do aplicativo.</li>
+                </ul>
+                <p>Não usamos os dados para publicidade, venda de perfis ou rastreamento comercial próprio.</p>
+            </section>
+
+            <section id="terceiros">
+                <h2>5. Serviços e terceiros</h2>
+                <p>Alguns recursos dependem de provedores externos. O conteúdo enviado varia conforme o recurso utilizado:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Provedor ou serviço</th>
+                                <th scope="col">Dados enviados</th>
+                                <th scope="col">Finalidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Photon / Komoot</td>
+                                <td>Texto de endereço, bairro, cidade e CEP.</td>
+                                <td>Autocomplete e sugestões de endereço.</td>
+                            </tr>
+                            <tr>
+                                <td>Nominatim / OpenStreetMap</td>
+                                <td>Endereços, CEP e coordenadas, incluindo sua posição na geocodificação reversa.</td>
+                                <td>Converter endereços em coordenadas e identificar a rua atual.</td>
+                            </tr>
+                            <tr>
+                                <td>ViaCEP</td>
+                                <td>CEP informado.</td>
+                                <td>Complementar dados de endereço no Brasil.</td>
+                            </tr>
+                            <tr>
+                                <td>Google Routes</td>
+                                <td>Origem, destinos, pontos intermediários, horário de partida, modo de viagem, preferência de trânsito e sua chave de API.</td>
+                                <td>Calcular rotas e matrizes de distância quando você configura o serviço.</td>
+                            </tr>
+                            <tr>
+                                <td>OSRM</td>
+                                <td>Coordenadas de origem e paradas.</td>
+                                <td>Calcular rotas e matrizes como alternativa ao Google Routes.</td>
+                            </tr>
+                            <tr>
+                                <td>OpenStreetMap e Esri</td>
+                                <td>Solicitações de tiles do mapa e metadados de rede.</td>
+                                <td>Exibir mapa base e camada de satélite.</td>
+                            </tr>
+                            <tr>
+                                <td>Google Fonts</td>
+                                <td>Metadados de rede e solicitação de fontes.</td>
+                                <td>Carregar a tipografia da interface.</td>
+                            </tr>
+                            <tr>
+                                <td>Google ML Kit</td>
+                                <td>Imagens de etiquetas e códigos, processadas pelo componente local do aplicativo.</td>
+                                <td>OCR e leitura de código de barras no dispositivo. O aplicativo não faz upload intencional dessas imagens pelo fluxo do ML Kit.</td>
+                            </tr>
+                            <tr>
+                                <td>Google Gemini</td>
+                                <td>Perguntas, resumo do contexto da rota e imagens de etiquetas, quando você configura uma chave.</td>
+                                <td>Assistente opcional e OCR na nuvem.</td>
+                            </tr>
+                            <tr>
+                                <td>Reconhecimento de voz do Android</td>
+                                <td>Áudio capturado pelo provedor de fala escolhido no sistema.</td>
+                                <td>Converter fala em texto para preenchimento de campos.</td>
+                            </tr>
+                            <tr>
+                                <td>Google Maps, Waze ou Apple Maps</td>
+                                <td>Coordenadas de destino e dados da navegação, conforme o serviço escolhido.</td>
+                                <td>Abrir navegação externa por sua escolha.</td>
+                            </tr>
+                            <tr>
+                                <td>GitHub</td>
+                                <td>Solicitação de Releases e download do APK e de seus metadados.</td>
+                                <td>Verificar e instalar atualizações oficiais. O aplicativo não envia sua rota, POD ou localização ao GitHub.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Cada provedor pode tratar metadados técnicos e reter informações conforme sua própria política e contratos aplicáveis. Ao utilizar um serviço opcional, você também deve observar os termos e a política de privacidade do respectivo provedor, especialmente ao configurar chaves de API ou abrir um aplicativo de navegação.</p>
+            </section>
+
+            <section id="transferencias">
+                <h2>6. Exportações e transferências</h2>
+                <p>Quando você exporta um relatório ou transfere paradas, o aplicativo gera um arquivo ou link no seu dispositivo. Você decide se deseja salvar, copiar, compartilhar ou enviar esse conteúdo.</p>
+                <ul>
+                    <li>O relatório de entregas pode conter dados operacionais, recebedor, telefone, coordenadas, status e horários.</li>
+                    <li>A transferência inclui paradas e pacotes pendentes, endereços, coordenadas, recebedor, telefone, janelas, prioridade, posição no veículo, observações e identificadores locais.</li>
+                    <li>Fotos, assinaturas e POD não são incluídos na transferência nem no relatório exportado pelo fluxo atual.</li>
+                    <li>Arquivos enviados a outras pessoas devem ser compartilhados apenas com destinatários autorizados.</li>
+                </ul>
+                <div class="notice">
+                    <strong>Atenção aos links e QR Codes de transferência</strong>
+                    O conteúdo é comprimido e codificado para transporte, mas não é criptografado pelo aplicativo. Não há autenticação, expiração ou revogação do link. Qualquer pessoa que obtiver o link, QR Code ou arquivo poderá ler os dados incluídos. Não compartilhe transferências em locais públicos ou com pessoas não autorizadas.
+                </div>
+            </section>
+
+            <section id="armazenamento">
+                <h2>7. Armazenamento e retenção</h2>
+                <p>O SPX Route OS armazena dados no armazenamento interno do aplicativo, incluindo armazenamento local do WebView, IndexedDB e preferências do Android. Não há sincronização automática com um servidor próprio e o backup Android do aplicativo está desativado.</p>
+                <p>Não existe um prazo automático geral de exclusão. Em regra, os dados permanecem até você limpar o romaneio, limpar os dados do aplicativo ou desinstalar o aplicativo. Limpar apenas o romaneio pode não remover fotos e assinaturas antigas do POD, chaves de API, caches, preferências ou histórico de transferências.</p>
+                <p>Para remover todos os dados locais, use as configurações do Android para limpar o armazenamento do SPX Route OS ou desinstale o aplicativo. Arquivos já exportados, transferências e APKs salvos em Downloads precisam ser excluídos separadamente.</p>
+                <p>Dados enviados a provedores externos ficam sujeitos às políticas de retenção desses provedores. O desenvolvedor não possui acesso remoto aos dados armazenados no seu dispositivo.</p>
+            </section>
+
+            <section id="seguranca">
+                <h2>8. Segurança</h2>
+                <p>O aplicativo bloqueia comunicações de rede sem criptografia e utiliza HTTPS para acessar os serviços integrados. O atualizador valida o pacote, a versão, o tamanho, o checksum SHA-256 e o certificado de assinatura antes de instalar um APK.</p>
+                <p>Os dados locais não recebem uma camada de criptografia adicional própria do aplicativo. A proteção desses dados depende da segurança do aparelho, da tela de bloqueio, das permissões e do controle de acesso ao dispositivo. Nenhum sistema oferece segurança absoluta; mantenha o Android e o WebView atualizados e não compartilhe chaves de API ou transferências com pessoas não autorizadas.</p>
+            </section>
+
+            <section id="direitos">
+                <h2>9. Seus direitos e escolhas</h2>
+                <p>Você pode controlar o tratamento dos seus dados por meio das configurações do aplicativo e do Android:</p>
+                <ul>
+                    <li>Revogar localização, notificações ou outras permissões nas configurações do aparelho.</li>
+                    <li>Corrigir, substituir ou limpar paradas, recebedores, telefones, observações e registros de entrega.</li>
+                    <li>Remover chaves de API e preferências salvas.</li>
+                    <li>Excluir fotos e assinaturas ao substituir ou reverter registros de POD quando essa opção estiver disponível.</li>
+                    <li>Apagar todos os dados locais limpando o armazenamento ou desinstalando o aplicativo.</li>
+                    <li>Controlar o compartilhamento de relatórios, arquivos, links e QR Codes.</li>
+                </ul>
+                <p>Se você estiver no Brasil, poderá exercer os direitos previstos na Lei Geral de Proteção de Dados, como confirmação, acesso, correção, anonimização, portabilidade e eliminação, conforme aplicável. Como os dados operacionais ficam no seu dispositivo, a principal forma de acesso e exclusão é pelos controles do aplicativo e do Android. Para dados enviados a provedores externos, consulte também os canais desses provedores.</p>
+            </section>
+
+            <section id="criancas">
+                <h2>10. Crianças e adolescentes</h2>
+                <p>O SPX Route OS é destinado a uso operacional por motoristas e profissionais de logística e não é direcionado a crianças. Não solicitamos intencionalmente dados pessoais de crianças. Se você identificar que uma criança forneceu dados ao aplicativo, remova os dados locais e entre em contato pelo canal indicado abaixo.</p>
+            </section>
+
+            <section id="alteracoes">
+                <h2>11. Alterações desta política</h2>
+                <p>Esta Política pode ser atualizada para refletir mudanças no aplicativo, nos recursos ou nos serviços utilizados. A data da última atualização será mantida no início desta página. Alterações relevantes serão publicadas neste mesmo endereço.</p>
+            </section>
+
+            <section id="contato">
+                <h2>12. Contato</h2>
+                <div class="contact">
+                    <p><strong>Responsável pelo aplicativo:</strong> Daniel Ortega Pereira.</p>
+                    <p><strong>Canal público:</strong> <a href="https://github.com/dnlortega/spx-android/issues">https://github.com/dnlortega/spx-android/issues</a></p>
+                    <p>Para dúvidas ou solicitações sobre privacidade, abra uma issue com o assunto “Privacidade — SPX Route OS”. Não inclua senhas, chaves de API, fotos de POD ou dados de entregas de clientes na mensagem.</p>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <p><strong>SPX Route OS</strong> — Política de Privacidade.</p>
+            <p>Última atualização em 27 de novembro de 2026. Esta página é informativa, pública e não exige login.</p>
+        </div>
+    </footer>
+</body>
+</html>

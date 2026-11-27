@@ -70,11 +70,11 @@ A versão `1.3.3` instalada não contém o novo fluxo de reinstalação. Na prim
 | Mapa em branco ou endereço não encontrado | Conexão com a internet e localização do navegador/WebView. |
 | GPS impreciso ou navegação sem posição | GPS ativado, permissão de localização, precisão e economia de bateria. |
 | Atualização não inicia | Conexão, espaço livre, permissão para instalar apps desconhecidos e existência de uma Release mais nova com metadados válidos. |
-| Reinstalação pede armazenamento no Android 6–8 | Autorize o armazenamento para o app preservar o APK independente em Downloads. |
+| Reinstalação pede armazenamento no Android 7–8 | Autorize o armazenamento para o app preservar o APK independente em Downloads. |
 | Desinstalei e não sei qual APK abrir | Abra Downloads e procure o nome indicado no modal, com padrão `SPX-Route-OS-v<versão>-instalar-<data>.apk`. |
 | Instalou, mas a interface continuou antiga | Toque em **Reiniciar agora** no modal; o processo aberto ainda estava com os arquivos antigos. |
 | Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; use a reinstalação guiada ou reinstale manualmente somente após exportar os dados. |
-| Interface antiga ou travando no Android 5/6 | Atualize o Android System WebView e teste novamente no aparelho. |
+| Interface antiga ou travando no Android 7+ | Atualize o Android System WebView e teste novamente no aparelho. |
 
 ## Novidades da versão 1.3.7
 

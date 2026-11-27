@@ -85,7 +85,7 @@ jobs:
           mkdir -p release-assets
           cp app/build/outputs/apk/release/app-release.apk "release-assets/${APK_NAME}"
           cp "release-assets/${APK_NAME}" release-assets/SPX-Route-OS.apk
-          SIGNER_SHA256=$(keytool -printcert -jarfile app/build/outputs/apk/release/app-release.apk 2>/dev/null | sed -n 's/.*SHA256: //p' | head -n1 | tr -d '[:space:]:' | tr '[:upper:]' '[:lower:]')
+          SIGNER_SHA256=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk | sed -n 's/.*certificate SHA-256 digest: //p' | head -n1 | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
           if ! printf '%s' "$SIGNER_SHA256" | grep -Eq '^[a-f0-9]{64}$'; then
             echo "Não foi possível identificar o certificado de assinatura do APK" >&2
             exit 1
@@ -148,7 +148,7 @@ jobs:
             - Atualizador consulta as Releases recentes, inclusive pré-releases, e seleciona a versão mais recente publicada.
             - Certificado igual: instalação normal após validar SHA-256, tamanho, pacote, versão e assinatura.
             - Certificado diferente: APK validado e copiado como arquivo independente em Downloads, seguido de desinstalação confirmada e instalação manual.
-            - A cópia em Downloads é verificada novamente antes da desinstalação e permanece disponível no Android 5 ou superior.
+            - A cópia em Downloads é verificada novamente antes da desinstalação e permanece disponível no Android 7 ou superior.
             - Metadados informam o SHA-256 do certificado de assinatura; a versão instalada é lida diretamente do Android.
             - No Android, os metadados são lidos por uma ponte nativa restrita à Release oficial, sem depender de CORS do download do GitHub.
             - Após instalar normalmente, o botão Reiniciar agora reabre o aplicativo para carregar os novos arquivos e exibir a versão correta.

@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 7.0 ou superior (`minSdk 24`). O APK e o AAB são compilados para a API 36 e direcionados ao Android 16. |
-| Versão e pacote | `1.3.7`, `versionCode` 15, pacote `br.com.spxroute.app`. |
+| Versão e pacote | `1.3.7`, `versionCode` 15, pacote `io.github.dnlortega.spxandroid`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -169,7 +169,7 @@ Abra **Central logística > Configurações** para informar a chave do Google Ro
 
 1. No console do Google Cloud, ative **Routes API** e configure o faturamento do projeto.
 2. Crie uma chave com acesso somente à Routes API.
-3. Para o APK, restrinja a chave ao aplicativo Android usando o pacote `br.com.spxroute.app` e a impressão digital do certificado de assinatura.
+3. Para o APK, restrinja a chave ao aplicativo Android usando o pacote `io.github.dnlortega.spxandroid` e a impressão digital do certificado de assinatura.
 4. Para testes no navegador, use uma chave separada e restrinja os referenciadores HTTP necessários.
 5. Informe a chave no aplicativo. No Android, ela fica nas preferências privadas; no navegador, fica no `localStorage` da origem.
 
@@ -294,7 +294,7 @@ Para compilar uma versão `release` assinada localmente, configure as variáveis
 
 ## Publicar na Google Play com AAB
 
-O pacote do aplicativo é `br.com.spxroute.app`. A Google Play exige um Android App Bundle (`.aab`) assinado por uma chave de upload; o Play App Signing cuida da chave de assinatura distribuída aos usuários.
+O pacote do aplicativo é `io.github.dnlortega.spxandroid`. A Google Play exige um Android App Bundle (`.aab`) assinado por uma chave de upload; o Play App Signing cuida da chave de assinatura distribuída aos usuários.
 
 Para gerar pela nuvem, configure os secrets `SPX_PLAY_KEYSTORE_BASE64`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS` e `SPX_PLAY_KEY_PASSWORD` em **Settings > Secrets and variables > Actions**. Depois execute manualmente o workflow `.github/workflows/build-aab.yml` e baixe o artefato `SPX-Route-OS-AAB`.
 

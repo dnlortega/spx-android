@@ -46,11 +46,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 final class ApkUpdater {
-    static final String STATUS_ACTION = "br.com.spxroute.app.APK_UPDATE_STATUS";
-    static final String EXTRA_UPDATE_TOKEN = "br.com.spxroute.app.APK_UPDATE_TOKEN";
-    static final String EXTRA_UPDATE_NONCE = "br.com.spxroute.app.APK_UPDATE_NONCE";
+    static final String STATUS_ACTION = "io.github.dnlortega.spxandroid.APK_UPDATE_STATUS";
+    static final String EXTRA_UPDATE_TOKEN = "io.github.dnlortega.spxandroid.APK_UPDATE_TOKEN";
+    static final String EXTRA_UPDATE_NONCE = "io.github.dnlortega.spxandroid.APK_UPDATE_NONCE";
     private static final String PREFS = "spx_apk_updater";
-    private static final String PACKAGE_NAME = "br.com.spxroute.app";
+    private static final String PACKAGE_NAME = "io.github.dnlortega.spxandroid";
     private static final String REPOSITORY_PATH = "/dnlortega/spx-android/releases/download/";
     private static final long MAX_APK_BYTES = 150L * 1024 * 1024;
     private static final int MAX_RELEASE_METADATA_BYTES = 64 * 1024;

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1024, initial-scale=1">
+  <title>SPX Route OS — Google Play 1024 × 500</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 1024px; height: 500px; margin: 0; overflow: hidden; }
+    body { font-family: "Segoe UI", Arial, Helvetica, sans-serif; background: #0b0d12; color: #f8fafc; }
+    .banner {
+      position: relative;
+      width: 1024px;
+      height: 500px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 83% 42%, rgba(238, 77, 45, .28), transparent 34%),
+        radial-gradient(circle at 57% 112%, rgba(238, 77, 45, .16), transparent 38%),
+        linear-gradient(120deg, #171a21 0%, #101218 48%, #090b10 100%);
+    }
+    .grid {
+      position: absolute;
+      inset: 0;
+      opacity: .16;
+      background-image:
+        linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: linear-gradient(90deg, transparent 0%, #000 58%, #000 100%);
+    }
+    .routes { position: absolute; inset: 0; width: 1024px; height: 500px; }
+    .content { position: absolute; left: 62px; top: 45px; width: 535px; z-index: 3; }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .app-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 15px;
+      box-shadow: 0 12px 30px rgba(238, 77, 45, .28), inset 0 0 0 1px rgba(255,255,255,.16);
+    }
+    .brand-name { font-size: 22px; line-height: 1; font-weight: 850; letter-spacing: .11em; }
+    .brand-name span { color: #ff6a3d; }
+    .brand-caption { margin-top: 7px; color: #94a3b8; font-size: 10px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; }
+    .eyebrow { margin-top: 37px; color: #ff8a65; font-size: 12px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; }
+    h1 { margin: 11px 0 0; max-width: 540px; font-size: 58px; line-height: .98; letter-spacing: -.045em; font-weight: 900; text-transform: uppercase; }
+    h1 span { color: #ff6238; }
+    .subtitle { margin: 20px 0 0; max-width: 480px; color: #cbd5e1; font-size: 18px; line-height: 1.45; font-weight: 450; }
+    .android {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 24px;
+      padding: 10px 15px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 999px;
+      background: rgba(255,255,255,.055);
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .android-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px rgba(52,211,153,.6); }
+    .phone-zone { position: absolute; right: 75px; top: 25px; width: 238px; height: 452px; z-index: 2; transform: rotate(4deg); }
+    .phone {
+      position: relative;
+      width: 238px;
+      height: 452px;
+      padding: 9px;
+      border: 2px solid #414754;
+      border-radius: 36px;
+      background: linear-gradient(145deg, #242933, #050609 70%);
+      box-shadow: 0 38px 70px rgba(0,0,0,.58), 0 0 0 1px rgba(255,255,255,.05), inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    .screen { position: relative; width: 216px; height: 430px; overflow: hidden; border-radius: 27px; background: #111318; }
+    .screen img { display: block; width: 216px; height: 430px; object-fit: cover; object-position: top center; }
+    .screen-version { position: absolute; top: 10px; right: 0; min-width: 68px; padding: 4px 7px; border-radius: 999px; background: #2b1a17; color: #fb923c; font-size: 7px; line-height: 1.2; font-weight: 800; text-align: center; letter-spacing: .02em; }
+    .notch { position: absolute; top: 8px; left: 50%; width: 72px; height: 17px; border-radius: 999px; background: #050609; transform: translateX(-50%); box-shadow: inset 0 -1px 0 rgba(255,255,255,.08); }
+    .phone-glow { position: absolute; right: 25px; top: 65px; width: 300px; height: 360px; border-radius: 50%; background: rgba(238,77,45,.18); filter: blur(65px); z-index: 1; }
+    .floating-card {
+      position: absolute;
+      left: -92px;
+      bottom: 58px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      width: 245px;
+      padding: 15px 17px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 17px;
+      background: rgba(248,250,252,.97);
+      color: #111318;
+      box-shadow: 0 20px 45px rgba(0,0,0,.38);
+      transform: rotate(-4deg);
+      z-index: 4;
+    }
+    .check { display: grid; place-items: center; flex: 0 0 auto; width: 35px; height: 35px; border-radius: 50%; background: #dcfce7; color: #15803d; font-size: 20px; font-weight: 900; }
+    .card-title { font-size: 15px; line-height: 1.15; font-weight: 850; }
+    .card-subtitle { margin-top: 4px; color: #64748b; font-size: 11px; font-weight: 600; }
+    .corner-mark { position: absolute; right: 38px; bottom: 26px; color: rgba(255,255,255,.28); font-size: 10px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; z-index: 3; }
+  </style>
+</head>
+<body>
+  <main class="banner" aria-label="Recurso gráfico do SPX Route OS para o Google Play">
+    <div class="grid"></div>
+    <svg class="routes" viewBox="0 0 1024 500" fill="none" aria-hidden="true">
+      <g stroke="#FF6A3D" stroke-width="1.4" opacity=".2">
+        <path d="M-40 402 C120 330 205 454 345 372 C470 299 524 344 622 248 C702 170 792 192 900 80 C963 18 1018 42 1070 -12"/>
+        <path d="M-30 438 C138 367 222 474 362 400 C487 333 566 383 654 286 C738 194 827 220 921 116 C984 46 1034 70 1070 38"/>
+      </g>
+      <g stroke="#FFFFFF" stroke-width="1" opacity=".08">
+        <path d="M552 -20 C592 102 548 174 623 250 C704 333 684 419 750 530"/>
+        <path d="M680 -20 C718 96 672 178 746 252 C820 326 804 418 868 530"/>
+        <path d="M824 -20 C858 84 818 174 892 254 C954 322 950 420 1010 530"/>
+      </g>
+      <g fill="#FF6A3D">
+        <circle cx="622" cy="248" r="4" opacity=".75"/>
+        <circle cx="900" cy="80" r="4" opacity=".65"/>
+      </g>
+      <circle cx="900" cy="80" r="11" stroke="#FF6A3D" opacity=".25"/>
+      <circle cx="622" cy="248" r="11" stroke="#FF6A3D" opacity=".25"/>
+    </svg>
+
+    <section class="content">
+      <div class="brand">
+        <img class="app-icon" src="../../app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png" alt="Ícone do SPX Route OS">
+        <div>
+          <div class="brand-name">SPX <span>ROUTE OS</span></div>
+          <div class="brand-caption">Roteirização inteligente</div>
+        </div>
+      </div>
+      <div class="eyebrow">Mais controle para o motorista</div>
+      <h1>Entregas<br><span>mais ágeis.</span></h1>
+      <p class="subtitle">Rotas organizadas. Paradas priorizadas. Mais controle para o motorista.</p>
+      <div class="android"><span class="android-dot"></span>Android 7.0+</div>
+    </section>
+
+    <div class="phone-glow"></div>
+    <div class="phone-zone">
+      <div class="phone">
+        <div class="screen">
+          <img src="../linkedin/assets/spx-app-mobile.png" alt="Interface do aplicativo SPX Route OS">
+          <div class="screen-version">v1.3.7</div>
+          <div class="notch"></div>
+        </div>
+      </div>
+      <div class="floating-card">
+        <div class="check">✓</div>
+        <div>
+          <div class="card-title">Rotas inteligentes</div>
+          <div class="card-subtitle">Menos tempo na estrada</div>
+        </div>
+      </div>
+    </div>
+    <div class="corner-mark">Rotas • Carga • Entregas</div>
+  </main>
+</body>
+</html>

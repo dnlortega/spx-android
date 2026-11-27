@@ -8,7 +8,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 
 | Item | Requisito |
 | --- | --- |
-| Android | Android 5.0 ou superior (`minSdk 21`). O APK e o AAB são compilados para a API 36 e direcionados ao Android 16. |
+| Android | Android 7.0 ou superior (`minSdk 24`). O APK e o AAB são compilados para a API 36 e direcionados ao Android 16. |
 | Versão e pacote | `1.3.7`, `versionCode` 15, pacote `br.com.spxroute.app`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
@@ -302,7 +302,7 @@ Localmente, configure `SPX_PLAY_KEYSTORE_FILE`, `SPX_PLAY_KEYSTORE_PASSWORD`, `S
 
 Nunca versione a chave de upload ou suas senhas. Faça backup seguro delas e não as confunda com a chave de lançamento usada nos APKs. Como o Play App Signing pode usar um certificado diferente do APK atual, a primeira instalação pela Play pode exigir desinstalação manual dos APKs de teste.
 
-Requisitos do aplicativo: Android 5.0 (API 21) ou superior.
+Requisitos do aplicativo: Android 7.0 (API 24) ou superior.
 
 ## Manter o CSS
 

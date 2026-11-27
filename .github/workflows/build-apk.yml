@@ -165,7 +165,7 @@ jobs:
             - Animações leves na abertura, cartões, mapa, modais e ações, com suporte a movimento reduzido.
 
             ### Instalação
-            Requer Android 5.0 (API 21) ou superior e Android System WebView atualizado. Permita localização de alta precisão para GPS e, no Android 8 ou superior, autorize a instalação de apps desconhecidos quando solicitado.
+            Requer Android 7.0 (API 24) ou superior e Android System WebView atualizado. Permita localização de alta precisão para GPS e, no Android 8 ou superior, autorize a instalação de apps desconhecidos quando solicitado.
 
             1. Baixe `${{ steps.prep.outputs.APK_NAME }}` abaixo.
             2. Toque no arquivo e autorize a instalação de fontes desconhecidas, se solicitado.

@@ -64,13 +64,13 @@ jobs:
       - name: Executar testes JavaScript
         run: node --test tests/*.test.js
 
-      - name: Compilar APK (assembleRelease)
+      - name: Compilar APK GitHub (assembleGithubRelease)
         env:
           SPX_KEYSTORE_FILE: ${{ steps.signing.outputs.configured == 'true' && format('{0}/spx-release.jks', runner.temp) || '' }}
           SPX_KEYSTORE_PASSWORD: ${{ secrets.SPX_KEYSTORE_PASSWORD }}
           SPX_KEY_ALIAS: ${{ secrets.SPX_KEY_ALIAS }}
           SPX_KEY_PASSWORD: ${{ secrets.SPX_KEY_PASSWORD }}
-        run: gradle assembleRelease
+        run: gradle assembleGithubRelease
 
       - name: Preparar APK e metadados de atualização
         id: prep
@@ -82,10 +82,27 @@ jobs:
             exit 1
           fi
           APK_NAME="SPX-Route-OS-v${VERSION}.apk"
+          APK_PATH="app/build/outputs/apk/github/release/app-github-release.apk"
+          BADGING=$("$ANDROID_HOME/build-tools/36.0.0/aapt2" dump badging "$APK_PATH")
+          if ! printf '%s\n' "$BADGING" | grep -q "package: name='io.github.dnlortega.spxandroid'"; then
+            echo "Pacote do APK GitHub incorreto" >&2
+            exit 1
+          fi
+          if ! printf '%s\n' "$BADGING" | grep -q "versionCode='${VERSION_CODE}'"; then
+            echo "versionCode do APK GitHub incorreto" >&2
+            exit 1
+          fi
+          PERMISSIONS=$("$ANDROID_HOME/build-tools/36.0.0/aapt2" dump permissions "$APK_PATH")
+          for PERMISSION in REQUEST_INSTALL_PACKAGES REQUEST_DELETE_PACKAGES; do
+            if ! printf '%s\n' "$PERMISSIONS" | grep -q "android.permission.${PERMISSION}"; then
+              echo "Permissão obrigatória ausente no APK GitHub: ${PERMISSION}" >&2
+              exit 1
+            fi
+          done
           mkdir -p release-assets
-          cp app/build/outputs/apk/release/app-release.apk "release-assets/${APK_NAME}"
+          cp app/build/outputs/apk/github/release/app-github-release.apk "release-assets/${APK_NAME}"
           cp "release-assets/${APK_NAME}" release-assets/SPX-Route-OS.apk
-          SIGNER_SHA256=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk | sed -n 's/.*certificate SHA-256 digest: //p' | head -n1 | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+          SIGNER_SHA256=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs app/build/outputs/apk/github/release/app-github-release.apk | sed -n 's/.*certificate SHA-256 digest: //p' | head -n1 | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
           if ! printf '%s' "$SIGNER_SHA256" | grep -Eq '^[a-f0-9]{64}$'; then
             echo "Não foi possível identificar o certificado de assinatura do APK" >&2
             exit 1
@@ -145,6 +162,10 @@ jobs:
             ${{ steps.signing.outputs.configured == 'true' && 'Build assinado com o keystore estável de lançamento.' || '> **Atenção:** pré-release de teste. O atualizador instala normalmente se o certificado for igual; se for diferente, oferece reinstalação guiada com perda dos dados locais.' }}
 
             ### Novidades
+            - Versão 1.3.8 com distribuições separadas para GitHub e Google Play.
+            - O AAB do Google Play não solicita permissões para instalar ou excluir pacotes e encaminha a atualização para a Google Play.
+            - O APK do GitHub mantém o atualizador próprio com validação de SHA-256, tamanho, versão e certificado.
+            - As duas distribuições usam o mesmo applicationId e preservam as respectivas chaves estáveis para permitir atualização sem desinstalar.
             - Atualizador consulta as Releases recentes, inclusive pré-releases, e seleciona a versão mais recente publicada.
             - Certificado igual: instalação normal após validar SHA-256, tamanho, pacote, versão e assinatura.
             - Certificado diferente: APK validado e copiado como arquivo independente em Downloads, seguido de desinstalação confirmada e instalação manual.

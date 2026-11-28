@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -61,9 +61,10 @@ jobs:
           SPX_PLAY_KEY_ALIAS: ${{ secrets.SPX_PLAY_KEY_ALIAS }}
           SPX_PLAY_KEY_PASSWORD: ${{ secrets.SPX_PLAY_KEY_PASSWORD }}
           SPX_PLAY_KEYSTORE_TYPE: PKCS12
-        run: gradle bundleRelease
+        run: gradle bundlePlayRelease
 
       - name: Preparar AAB e metadados
+        id: prep
         run: |
           VERSION=$(grep "versionName" app/build.gradle | head -n1 | sed -E "s/.*'([^']+)'.*/\1/")
           VERSION_CODE=$(grep "versionCode" app/build.gradle | head -n1 | sed -E "s/.*versionCode ([0-9]+).*/\1/")
@@ -72,8 +73,16 @@ jobs:
             exit 1
           fi
           AAB_NAME="SPX-Route-OS-v${VERSION}.aab"
+          AAB_PATH="app/build/outputs/bundle/playRelease/app-play-release.aab"
+          MANIFEST_TEXT=$(unzip -p "$AAB_PATH" base/manifest/AndroidManifest.xml | LC_ALL=C tr -cd '\11\12\15\40-\176')
+          for PERMISSION in REQUEST_INSTALL_PACKAGES REQUEST_DELETE_PACKAGES com.google.android.gms.permission.AD_ID; do
+            if printf '%s\n' "$MANIFEST_TEXT" | grep -q "$PERMISSION"; then
+              echo "Permissão proibida encontrada no AAB do Google Play: ${PERMISSION}" >&2
+              exit 1
+            fi
+          done
           mkdir -p release-assets
-          cp app/build/outputs/bundle/release/app-release.aab "release-assets/${AAB_NAME}"
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab "release-assets/${AAB_NAME}"
           jarsigner -verify "release-assets/${AAB_NAME}"
           sha256sum "release-assets/${AAB_NAME}" > "release-assets/${AAB_NAME}.sha256"
           echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -88,3 +97,15 @@ jobs:
           path: release-assets/*
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publicar AAB na Release do GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.prep.outputs.VERSION }}
+          AAB_NAME: ${{ steps.prep.outputs.AAB_NAME }}
+        run: |
+          if ! gh release view "v${VERSION}" >/dev/null 2>&1; then
+            echo "A Release v${VERSION} ainda não existe. Execute o workflow do APK antes de publicar o AAB." >&2
+            exit 1
+          fi
+          gh release upload "v${VERSION}" "release-assets/${AAB_NAME}" "release-assets/${AAB_NAME}.sha256"

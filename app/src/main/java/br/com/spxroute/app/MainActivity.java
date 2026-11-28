@@ -123,18 +123,20 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         restorePendingState(state);
-        apkUpdater = new ApkUpdater(this, (stage, percent, message) -> dispatchUpdateEvent(stage, percent, message));
-        downloadReceiver = new BroadcastReceiver() {
-            @Override public void onReceive(Context context, Intent intent) {
-                apkUpdater.onDownloadNotification(intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1));
+        if (BuildConfig.SELF_UPDATE_ENABLED) {
+            apkUpdater = new ApkUpdater(this, (stage, percent, message) -> dispatchUpdateEvent(stage, percent, message));
+            downloadReceiver = new BroadcastReceiver() {
+                @Override public void onReceive(Context context, Intent intent) {
+                    apkUpdater.onDownloadNotification(intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1));
+                }
+            };
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
             }
-        };
-        if (Build.VERSION.SDK_INT >= 33) {
-            registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
-        } else {
-            registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+            apkUpdater.handleInstallResult(getIntent());
         }
-        apkUpdater.handleInstallResult(getIntent());
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         getWindow().setStatusBarColor(android.graphics.Color.rgb(248,249,250));
         getWindow().setNavigationBarColor(android.graphics.Color.BLACK);
@@ -200,16 +202,24 @@ public class MainActivity extends Activity {
                 }
             }
 
+            @JavascriptInterface public String getUpdateChannel() {
+                return BuildConfig.SELF_UPDATE_ENABLED ? "github" : "play";
+            }
+
+            @JavascriptInterface public void openPlayStore() {
+                postUi(MainActivity.this::openPlayStoreOnUi);
+            }
+
             @JavascriptInterface public String getAppSignerSha256() {
-                return apkUpdater.getInstalledSignerSha256();
+                return apkUpdater == null ? "" : apkUpdater.getInstalledSignerSha256();
             }
 
             @JavascriptInterface public boolean canInstallWithSigner(String signerSha256) {
-                return apkUpdater.canInstallWithSigner(signerSha256);
+                return apkUpdater != null && apkUpdater.canInstallWithSigner(signerSha256);
             }
 
             @JavascriptInterface public String fetchReleaseMetadata(String url) {
-                return apkUpdater.fetchReleaseMetadata(url);
+                return apkUpdater == null ? "" : apkUpdater.fetchReleaseMetadata(url);
             }
 
             @JavascriptInterface public void restartApp() {
@@ -294,15 +304,18 @@ public class MainActivity extends Activity {
 
             @JavascriptInterface public void installApk(String downloadUrl, String sha256, int versionCode,
                                                        String versionName, long expectedSize) {
+                if (apkUpdater == null) return;
                 postUi(() -> apkUpdater.start(downloadUrl, sha256, versionCode, versionName, expectedSize));
             }
 
             @JavascriptInterface public void reinstallApk(String downloadUrl, String sha256, int versionCode,
                                                           String versionName, long expectedSize) {
+                if (apkUpdater == null) return;
                 postUi(() -> apkUpdater.startReinstall(downloadUrl, sha256, versionCode, versionName, expectedSize));
             }
 
             @JavascriptInterface public void confirmReinstall() {
+                if (apkUpdater == null) return;
                 postUi(apkUpdater::confirmReinstall);
             }
 
@@ -333,13 +346,15 @@ public class MainActivity extends Activity {
                 pageReady = true;
                 installBlobDownloadBridge();
                 deliverPendingTransferLink();
-                String pendingUpdate = apkUpdater.consumePendingEvent();
-                if (pendingUpdate != null) {
-                    String[] parts = pendingUpdate.split("\\|", 3);
-                    if (parts.length == 3) {
-                        try {
-                            dispatchUpdateEvent(parts[0], Integer.parseInt(parts[1]), parts[2]);
-                        } catch (NumberFormatException ignored) {}
+                if (apkUpdater != null) {
+                    String pendingUpdate = apkUpdater.consumePendingEvent();
+                    if (pendingUpdate != null) {
+                        String[] parts = pendingUpdate.split("\\|", 3);
+                        if (parts.length == 3) {
+                            try {
+                                dispatchUpdateEvent(parts[0], Integer.parseInt(parts[1]), parts[2]);
+                            } catch (NumberFormatException ignored) {}
+                        }
                     }
                 }
             }
@@ -385,17 +400,31 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
+    private void openPlayStoreOnUi() {
+        String packageName = getPackageName();
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + packageName)));
+        } catch (ActivityNotFoundException error) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=" + packageName)));
+            } catch (Exception ignored) {
+                Toast.makeText(this, "Não foi possível abrir o Google Play.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        apkUpdater.handleInstallResult(intent);
+        if (apkUpdater != null) apkUpdater.handleInstallResult(intent);
         handleDeepLinkIntent(intent);
         deliverPendingTransferLink();
     }
 
     @Override protected void onResume() {
         super.onResume();
-        apkUpdater.resume();
+        if (apkUpdater != null) apkUpdater.resume();
         if (webView != null) {
             webView.onResume();
             webView.resumeTimers();
@@ -1000,12 +1029,12 @@ public class MainActivity extends Activity {
                 clearPendingSave();
             }
         }
-        apkUpdater.handleUninstallResult(requestCode, resultCode);
+        if (apkUpdater != null) apkUpdater.handleUninstallResult(requestCode, resultCode);
     }
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
-        apkUpdater.onStoragePermissionResult(requestCode, results);
+        if (apkUpdater != null) apkUpdater.onStoragePermissionResult(requestCode, results);
         if (requestCode == LOCATION_PERMISSION && geoCallback != null) {
             boolean granted = false;
             for (int r : results) if (r == PackageManager.PERMISSION_GRANTED) granted = true;
@@ -1034,7 +1063,7 @@ public class MainActivity extends Activity {
             try { unregisterReceiver(downloadReceiver); } catch (Exception ignored) {}
             downloadReceiver = null;
         }
-        apkUpdater.shutdown();
+        if (apkUpdater != null) apkUpdater.shutdown();
         backgroundExecutor.shutdownNow();
         if (textRecognizer != null) {
             try { textRecognizer.close(); } catch (Exception ignored) {}

@@ -7,6 +7,7 @@
     const MAX_APK_BYTES = 150 * 1024 * 1024;
     const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
     const SNOOZE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+    const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=io.github.dnlortega.spxandroid';
 
     let currentVersion = '0.0.0';
     let currentVersionCode = 0;
@@ -282,6 +283,61 @@
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     }
 
+    function isPlayStoreBuild() {
+        const bridge = global.SPXAndroid;
+        return !!(bridge && typeof bridge.getUpdateChannel === 'function' &&
+            bridge.getUpdateChannel() === 'play');
+    }
+
+    function openPlayStore() {
+        const bridge = global.SPXAndroid;
+        if (bridge && typeof bridge.openPlayStore === 'function') {
+            try {
+                bridge.openPlayStore();
+                return;
+            } catch (_) {}
+        }
+        const opened = global.open(PLAY_STORE_URL, '_blank', 'noopener,noreferrer');
+        if (!opened && global.showToast) global.showToast('Não foi possível abrir o Google Play.', 'error');
+    }
+
+    function showPlayStoreUpdateModal() {
+        if (updateSessionActive || reinstallReady) return;
+        const modal = document.getElementById('updateModalOverlay');
+        if (!modal) return;
+        latestCandidate = null;
+        installed = false;
+        reinstallReady = false;
+        updateInProgress = false;
+        updateSessionActive = false;
+        setElementText('updateModalTitle', 'Atualização pelo Google Play');
+        setElementText('updateModalTag', 'Play');
+        setElementText('updateModalCurrentTag', `v${currentVersion}`);
+        setElementText('updateModalSize', '');
+        setElementText('updateModalNotesHeading', 'Atualização do aplicativo');
+        setElementText('updateModalNotes', 'Esta versão é distribuída pelo Google Play. Abra a loja para verificar e instalar a atualização disponível.');
+        setElementText('updateStatusText', 'Atualizações gerenciadas pelo Google Play.');
+        setElementText('updateProgressPercent', '0%');
+        const progress = document.getElementById('updateProgressBar');
+        if (progress) progress.style.width = '0%';
+        const progressBox = document.getElementById('updateProgressSection');
+        if (progressBox) progressBox.classList.add('hidden');
+        const warning = document.getElementById('updateReinstallWarning');
+        if (warning) warning.classList.add('hidden');
+        const action = document.getElementById('updateActionButton');
+        if (action) {
+            action.disabled = false;
+            action.innerHTML = '<i data-lucide="external-link" class="w-4 h-4"></i> Atualizar pelo Google Play';
+        }
+        const close = document.getElementById('updateCloseButton');
+        if (close) {
+            close.disabled = false;
+            close.textContent = 'Fechar';
+        }
+        modal.classList.remove('hidden');
+        if (global.lucide) global.lucide.createIcons();
+    }
+
     function showUpdateModal(candidate) {
         if (updateSessionActive || reinstallReady) return;
         const modal = document.getElementById('updateModalOverlay');
@@ -291,6 +347,8 @@
         reinstallReady = false;
         updateInProgress = false;
         updateSessionActive = false;
+        setElementText('updateModalTitle', 'Nova Versão Disponível!');
+        setElementText('updateModalNotesHeading', 'Novidades do Release');
         setElementText('updateModalTag', `v${candidate.versionName}`);
         setElementText('updateModalCurrentTag', `v${currentVersion}`);
         setElementText('updateModalSize', formatBytes(candidate.size) ? ` · ${formatBytes(candidate.size)}` : '');
@@ -370,6 +428,10 @@
     }
 
     async function checkForUpdates(isManualCheck) {
+        if (isPlayStoreBuild()) {
+            if (isManualCheck) showPlayStoreUpdateModal();
+            return;
+        }
         if (checkInProgress || updateSessionActive || reinstallReady) {
             if (isManualCheck && global.showToast) global.showToast('Aguarde a atualização em andamento.', 'info');
             return;
@@ -554,6 +616,10 @@
     }
 
     function triggerAppUpdate() {
+        if (isPlayStoreBuild()) {
+            openPlayStore();
+            return;
+        }
         if (updateInProgress) return;
         if (installed) { restartApp(); return; }
         if (!latestCandidate) return;
@@ -630,7 +696,7 @@
             setElementText('mobileAppVersion', `v${currentVersion}`);
             setElementText('desktopAppVersion', `v${currentVersion}`);
         }
-        restoreCandidate();
+        if (!isPlayStoreBuild()) restoreCandidate();
     }
 
     global.SPXUpdate = {

@@ -1,4 +1,4 @@
-# SPX Route OS — Aplicativo Android v1.3.7
+# SPX Route OS — Aplicativo Android v1.3.8
 
 **Desenvolvido por Daniel Ortega Pereira.**
 
@@ -9,7 +9,7 @@ Aplicativo Android nativo com WebView para roteirização, carga e entregas Shop
 | Item | Requisito |
 | --- | --- |
 | Android | Android 7.0 ou superior (`minSdk 24`). O APK e o AAB são compilados para a API 36 e direcionados ao Android 16. |
-| Versão e pacote | `1.3.7`, `versionCode` 15, pacote `io.github.dnlortega.spxandroid`. |
+| Versão e pacote | `1.3.8`, `versionCode` 16, pacote `io.github.dnlortega.spxandroid`. |
 | WebView | Android System WebView atualizado. Em celulares antigos, atualize o WebView/Chrome pela Play Store antes de abrir o aplicativo. |
 | Armazenamento | Espaço livre para instalar o aplicativo, baixar o APK de atualização e guardar rota, fotos e assinaturas do POD. |
 | Rede | Wi-Fi ou dados móveis para mapas, geocodificação, Google Routes/OSRM e atualizações. |
@@ -25,23 +25,34 @@ A compatibilidade mínima é definida pelo projeto, mas cada aparelho, ROM e ver
 | Internet e estado da rede | Carregar mapas, buscar endereços, consultar provedores de rota e verificar Releases. |
 | Localização precisa e aproximada | Usar GPS, definir a origem, acompanhar desvios e calcular distância/ETA da navegação. |
 | Notificações no Android 13 ou superior | Mostrar avisos locais de andamento, paradas e atualização. Não são notificações ao cliente. |
-| Instalar aplicativos desconhecidos | Necessária no Android 8 ou superior para o atualizador abrir o instalador do APK validado. |
-| Desinstalar aplicativos | Usada somente com confirmação do usuário no fluxo de reinstalação quando o certificado muda. |
+| Instalar aplicativos desconhecidos | Somente no APK GitHub: necessária no Android 8 ou superior para o atualizador abrir o instalador do APK validado. O AAB do Google Play não solicita essa permissão. |
+| Desinstalar aplicativos | Somente no APK GitHub, com confirmação do usuário no fluxo de reinstalação quando o certificado muda. O AAB do Google Play não solicita essa permissão. |
 | Armazenamento no Android 6–8 | Permite preservar o APK validado em Downloads antes da desinstalação. No Android 10 ou superior, o app usa o MediaStore. |
 
 Conceda **Localização enquanto usa o aplicativo** e ative **Precisão** nas configurações do sistema. Para uso prolongado, verifique se a economia de bateria do fabricante não está limitando GPS e atualizações em segundo plano. Negar notificações não impede cadastro ou entregas; negar localização limita os recursos que dependem de GPS.
 
+### Distribuições separadas
+
+O projeto usa duas variantes com o mesmo `applicationId` e a mesma versão:
+
+- **GitHub (`github`)**: gera o APK com o atualizador próprio e com as permissões de instalação e desinstalação.
+- **Google Play (`play`)**: gera o AAB sem `REQUEST_INSTALL_PACKAGES`, `REQUEST_DELETE_PACKAGES` e `AD_ID`. A checagem manual oferece a atualização pela Google Store e o botão abre a loja; não há download nem instalação de APK dentro do app.
+
+Cada variante usa sua própria configuração de assinatura. O APK GitHub continua vinculado ao keystore de lançamento e o AAB à chave de upload do Play. Não use a chave de upload do Play para assinar o APK GitHub.
+
 ### Instalar o APK
 
 1. Abra as Releases oficiais em `https://github.com/dnlortega/spx-android/releases`.
-2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.7.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
+2. Baixe o APK versionado, por exemplo `SPX-Route-OS-v1.3.8.apk`. O arquivo `SPX-Route-OS.apk` é uma cópia do mesmo build.
 3. Toque no arquivo baixado. Se o Android bloquear, autorize o navegador ou gerenciador de arquivos em **Configurações > Aplicativos > Acesso especial > Instalar apps desconhecidos**.
 4. Instale e abra o SPX Route OS. Conceda localização e notificações quando solicitado.
 5. Cadastre o ponto de partida manualmente ou use **Meu GPS**. A Central da Shopee não é mais uma origem automática.
 
 Prefira sempre APKs assinados pela mesma chave de lançamento. Um APK com assinatura diferente exige desinstalação e apaga os dados locais; faça exportações antes de trocar de certificado ou limpar os dados.
 
-### Atualizar pelo aplicativo
+### Atualizar o APK GitHub pelo aplicativo
+
+O fluxo abaixo se aplica somente ao APK instalado pelas Releases do GitHub. A versão instalada pela Google Play usa a atualização da própria loja.
 
 - O aplicativo consulta as Releases recentes de `dnlortega/spx-android`, inclusive pré-releases, e oferece a versão mais nova publicada.
 - A versão e o `versionCode` exibidos vêm diretamente do Android; não dependem de um número fixo na interface.
@@ -55,6 +66,10 @@ Prefira sempre APKs assinados pela mesma chave de lançamento. Um APK com assina
 - Após uma instalação normal, toque em **Reiniciar agora**. O aplicativo reabre e carrega os arquivos da nova versão.
 
 A versão `1.3.3` instalada não contém o novo fluxo de reinstalação. Na primeira migração da `1.3.3` para a `1.3.4`, baixe o APK da Release, exporte os dados necessários, desinstale a versão antiga e instale o arquivo baixado manualmente. As próximas atualizações feitas pela `1.3.4` já podem usar o fluxo guiado.
+
+### Atualizar a versão Google Play
+
+Toque no botão de verificação de atualizações e escolha **Atualizar pelo Google Play**. O app abre `market://details?id=io.github.dnlortega.spxandroid` e, se a loja não estiver instalada, usa o endereço HTTPS da Play Store. A checagem automática não consulta as Releases do GitHub nem abre a loja sem ação do usuário.
 
 ### Rede, GPS e provedores de rota
 
@@ -75,6 +90,13 @@ A versão `1.3.3` instalada não contém o novo fluxo de reinstalação. Na prim
 | Instalou, mas a interface continuou antiga | Toque em **Reiniciar agora** no modal; o processo aberto ainda estava com os arquivos antigos. |
 | Erro de assinatura do APK | O build não usa o mesmo keystore da versão instalada; use a reinstalação guiada ou reinstale manualmente somente após exportar os dados. |
 | Interface antiga ou travando no Android 7+ | Atualize o Android System WebView e teste novamente no aparelho. |
+
+## Novidades da versão 1.3.8
+
+- Variante Google Play sem permissões de instalação e exclusão de pacotes.
+- Atualização da versão Play pelo Google Play, com fallback HTTPS quando a loja não está disponível.
+- Variante GitHub mantém o atualizador próprio e a assinatura estável do APK.
+- Mesmo `applicationId` nas duas distribuições e assinatura separada por variante.
 
 ## Novidades da versão 1.3.7
 
@@ -279,7 +301,7 @@ Configure estes secrets nas configurações do repositório GitHub, em **Setting
 | `SPX_KEY_ALIAS` | Alias da chave |
 | `SPX_KEY_PASSWORD` | Senha da chave |
 
-Não versione o keystore nem as senhas. O workflow decodifica a chave somente em `RUNNER_TEMP`, usa `assembleRelease` e não imprime os secrets. Sem os quatro secrets, o build usa a chave de depuração somente para testes e é publicado como pré-release; essa chave pode mudar entre execuções do GitHub Actions. Nesse caso, use o artefato para instalação manual ou a reinstalação guiada, ciente de que os dados locais serão apagados.
+Não versione o keystore nem as senhas. O workflow decodifica a chave somente em `RUNNER_TEMP`, usa `assembleGithubRelease` e não imprime os secrets. Sem os quatro secrets, o build usa a chave de depuração somente para testes e é publicado como pré-release; essa chave pode mudar entre execuções do GitHub Actions. Nesse caso, use o artefato para instalação manual ou a reinstalação guiada, ciente de que os dados locais serão apagados.
 
 O aplicativo aceita apenas Releases de `dnlortega/spx-android`. Com certificado igual, a validação nativa confere a assinatura e abre o instalador diretamente. Com certificado diferente, o APK é validado sem aceitar a assinatura como atualização direta, salvo como arquivo independente em Downloads e reinstalado manualmente após a desinstalação confirmada. Para evitar perda de dados nas próximas versões, configure e conserve sempre o mesmo keystore estável.
 
@@ -287,18 +309,20 @@ O aplicativo aceita apenas Releases de `dnlortega/spx-android`. Com certificado 
 
 1. Abra a pasta `spx-android` no Android Studio.
 2. Use JDK 17 e instale Android SDK Platform 36 e Build Tools 36.0.0.
-3. Sincronize o Gradle e execute **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
-4. O APK ficará em `app/build/outputs/apk/debug/app-debug.apk`.
+3. Sincronize o Gradle e execute **Build > Build Bundle(s) / APK(s) > Build APK(s)** para a variante `githubDebug`.
+4. O APK de depuração ficará em `app/build/outputs/apk/github/debug/app-github-debug.apk`.
 
-Para compilar uma versão `release` assinada localmente, configure as variáveis de ambiente `SPX_KEYSTORE_FILE`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD` e execute `gradle assembleRelease`. Sem as quatro variáveis, o build de release usa a chave de depuração e serve apenas para teste. O APK ficará em `app/build/outputs/apk/release/app-release.apk`.
+Para compilar uma versão `release` assinada localmente, configure as variáveis de ambiente `SPX_KEYSTORE_FILE`, `SPX_KEYSTORE_PASSWORD`, `SPX_KEY_ALIAS` e `SPX_KEY_PASSWORD` e execute `gradle assembleGithubRelease`. Sem as quatro variáveis, o build de release usa a chave de depuração e serve apenas para teste. O APK ficará em `app/build/outputs/apk/github/release/app-github-release.apk`.
 
 ## Publicar na Google Play com AAB
 
 O pacote do aplicativo é `io.github.dnlortega.spxandroid`. A Google Play exige um Android App Bundle (`.aab`) assinado por uma chave de upload; o Play App Signing cuida da chave de assinatura distribuída aos usuários.
 
-Para gerar pela nuvem, configure os secrets `SPX_PLAY_KEYSTORE_BASE64`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS` e `SPX_PLAY_KEY_PASSWORD` em **Settings > Secrets and variables > Actions**. Depois execute manualmente o workflow `.github/workflows/build-aab.yml` e baixe o artefato `SPX-Route-OS-AAB`.
+Para gerar pela nuvem, configure os secrets `SPX_PLAY_KEYSTORE_BASE64`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS` e `SPX_PLAY_KEY_PASSWORD` em **Settings > Secrets and variables > Actions**. Depois execute manualmente o workflow `.github/workflows/build-aab.yml` e baixe o artefato `SPX-Route-OS-AAB`. Se a Release da mesma versão já existir, o workflow também envia o AAB e seu checksum para essa Release.
 
-Localmente, configure `SPX_PLAY_KEYSTORE_FILE`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS`, `SPX_PLAY_KEY_PASSWORD` e `SPX_PLAY_KEYSTORE_TYPE=PKCS12`, depois execute `gradle bundleRelease`. O arquivo ficará em `app/build/outputs/bundle/release/app-release.aab`.
+Localmente, configure `SPX_PLAY_KEYSTORE_FILE`, `SPX_PLAY_KEYSTORE_PASSWORD`, `SPX_PLAY_KEY_ALIAS`, `SPX_PLAY_KEY_PASSWORD` e `SPX_PLAY_KEYSTORE_TYPE=PKCS12`, depois execute `gradle bundlePlayRelease`. O arquivo ficará em `app/build/outputs/bundle/playRelease/app-play-release.aab`.
+
+O AAB da variante `play` é validado no workflow para garantir que não contenha `REQUEST_INSTALL_PACKAGES`, `REQUEST_DELETE_PACKAGES` ou `AD_ID`. O APK da variante `github` é validado para garantir que as duas permissões do atualizador continuem presentes.
 
 Nunca versione a chave de upload ou suas senhas. Faça backup seguro delas e não as confunda com a chave de lançamento usada nos APKs. Como o Play App Signing pode usar um certificado diferente do APK atual, a primeira instalação pela Play pode exigir desinstalação manual dos APKs de teste.
 

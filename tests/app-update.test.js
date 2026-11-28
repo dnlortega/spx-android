@@ -569,3 +569,117 @@ test('aviso de perda de dados é restaurado com o evento nativo de reinstalaçã
     assert.equal(element('updateReinstallWarning').classList.contains('hidden'), false);
     assert.match(element('updateActionButton').innerHTML, /Confirmar desinstalação/);
 });
+
+test('variante Play não consulta GitHub nem abre a loja na checagem automática', async function () {
+    let fetches = 0;
+    let storeOpens = 0;
+    sandbox.fetch = async () => { fetches += 1; throw new Error('Consulta inesperada'); };
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.3.8',
+        getAppVersionCode: () => 16,
+        getUpdateChannel: () => 'play',
+        openPlayStore: () => { storeOpens += 1; }
+    };
+    element('updateModalOverlay').classList.add('hidden');
+    update.init();
+    await update.check(false);
+    assert.equal(fetches, 0);
+    assert.equal(storeOpens, 0);
+    assert.equal(element('updateModalOverlay').classList.contains('hidden'), true);
+});
+
+test('checagem manual do Play mostra instruções da loja sem instalar APK', async function () {
+    let fetches = 0;
+    let storeOpens = 0;
+    let installRequests = 0;
+    let reinstallRequests = 0;
+    sandbox.fetch = async () => { fetches += 1; throw new Error('Consulta inesperada'); };
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.3.8',
+        getAppVersionCode: () => 16,
+        getUpdateChannel: () => 'play',
+        openPlayStore: () => { storeOpens += 1; },
+        installApk: () => { installRequests += 1; },
+        reinstallApk: () => { reinstallRequests += 1; }
+    };
+    element('updateReinstallWarning').classList.remove('hidden');
+    element('updateProgressSection').classList.remove('hidden');
+    update.init();
+    await update.check(true);
+    assert.equal(fetches, 0);
+    assert.equal(element('updateModalTitle').textContent, 'Atualização pelo Google Play');
+    assert.equal(element('updateModalTag').textContent, 'Play');
+    assert.equal(element('updateModalCurrentTag').textContent, 'v1.3.8');
+    assert.equal(element('updateModalSize').textContent, '');
+    assert.equal(element('updateReinstallWarning').classList.contains('hidden'), true);
+    assert.equal(element('updateProgressSection').classList.contains('hidden'), true);
+    assert.match(element('updateModalNotes').textContent, /Google Play/);
+    assert.match(element('updateActionButton').innerHTML, /Atualizar pelo Google Play/);
+    sandbox.triggerAppUpdate();
+    sandbox.triggerAppUpdate();
+    assert.equal(storeOpens, 2);
+    assert.equal(installRequests, 0);
+    assert.equal(reinstallRequests, 0);
+});
+
+test('variante Play usa URL HTTPS quando a ponte nativa da loja não existe', async function () {
+    const opened = [];
+    sandbox.open = (...args) => { opened.push(args); return true; };
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.3.8',
+        getAppVersionCode: () => 16,
+        getUpdateChannel: () => 'play'
+    };
+    update.init();
+    await update.check(true);
+    sandbox.triggerAppUpdate();
+    assert.deepEqual(opened, [[
+        'https://play.google.com/store/apps/details?id=io.github.dnlortega.spxandroid',
+        '_blank',
+        'noopener,noreferrer'
+    ]]);
+});
+
+test('variante Play ignora atualização GitHub pendente de outra distribuição', function () {
+    const data = release('1.4.0');
+    storage.set('spx_update_pending', JSON.stringify({
+        downloadUrl: data.assets[2].browser_download_url,
+        sha256: 'a'.repeat(64),
+        versionCode: 12,
+        versionName: '1.4.0',
+        signerSha256: 'c'.repeat(64),
+        size: 2048,
+        tag: '1.4.0',
+        notes: 'Nova versão'
+    }));
+    let installRequests = 0;
+    let reinstallRequests = 0;
+    let storeOpens = 0;
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.3.8',
+        getAppVersionCode: () => 16,
+        getUpdateChannel: () => 'play',
+        openPlayStore: () => { storeOpens += 1; },
+        installApk: () => { installRequests += 1; },
+        reinstallApk: () => { reinstallRequests += 1; }
+    };
+    update.init();
+    assert.equal(storeOpens, 0);
+    assert.equal(installRequests, 0);
+    assert.equal(reinstallRequests, 0);
+    assert.equal(element('updateModalTag').textContent, '');
+});
+
+test('modal do Play pode ser fechado sem agendar nova tentativa do GitHub', async function () {
+    sandbox.SPXAndroid = {
+        getAppVersion: () => '1.3.8',
+        getAppVersionCode: () => 16,
+        getUpdateChannel: () => 'play'
+    };
+    update.init();
+    await update.check(true);
+    sandbox.closeUpdateModal();
+    assert.equal(element('updateModalOverlay').classList.contains('hidden'), true);
+    assert.equal(storage.has('spx_update_snoozed_tag'), false);
+    assert.equal(storage.has('spx_update_snoozed_until'), false);
+});
